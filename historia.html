@@ -306,8 +306,11 @@ a.logo{text-decoration:none;white-space:nowrap;display:inline-flex;align-items:c
 .navlink[aria-current="page"]{color:var(--tinta);border-bottom-color:var(--tinta)}
 .btn-bol{flex:none;background:var(--tinta);color:var(--fondo);padding:9px 16px;border-radius:999px;font-size:var(--t-s);font-weight:700;text-decoration:none;white-space:nowrap}
 .btn-bol:hover{opacity:.85}
-@media (max-width:900px){.top .nav{display:none}.btn-bol{margin-left:auto}}
-@media (max-width:420px){.hamb-txt{display:none}.top .logo{font-size:1.6rem}.btn-bol{padding:8px 13px}}
+.btn-buscar{flex:none;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;margin:0 6px 0 10px;border-radius:999px;color:var(--tinta)}
+.btn-buscar:hover,.btn-buscar[aria-current="page"]{background:var(--linea)}
+@media (max-width:900px){.top .nav{display:none}.btn-buscar{margin-left:auto}}
+@media (max-width:420px){.hamb-txt{display:none}.top .logo{font-size:1.6rem}.btn-bol{padding:8px 13px}.btn-buscar{width:34px;height:34px;margin-right:4px}}
+@media (max-width:370px){.top .logo{font-size:1.45rem}}
 .menu{position:absolute;left:0;right:0;top:100%;background:var(--fondo);border-bottom:1px solid var(--linea);box-shadow:0 24px 48px rgba(0,0,0,.10);max-height:calc(100dvh - 64px);overflow-y:auto;overscroll-behavior:contain}
 .menu[hidden]{display:none}
 body{margin:0}
@@ -508,6 +511,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
       <a class="navlink" href="metodologia.html">Cómo lo hacemos</a>
       <a class="navlink" href="quienes-somos.html">Quiénes somos</a>
     </nav>
+<a class="btn-buscar" href="buscar.html" aria-label="Buscar noticias" title="Buscar noticias"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5L21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></a>
     <a class="btn-bol" href="./#boletin">Boletín</a>
   </div>
   <div class="menu" id="menu" hidden>
@@ -515,6 +519,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
       <div><span class="eti">Noticias</span>
         <a class="fuerte" href="./">Portada</a>
         <a class="fuerte" href="./?vista=ciegos">Cobertura desigual</a>
+        <a class="fuerte" href="buscar.html">Buscar noticias</a>
         <a href="./?vista=izquierda">Poca cobertura en la izquierda</a>
         <a href="./?vista=derecha">Poca cobertura en la derecha</a>
         <a href="./?guia=1">Cómo leer Vista Plena</a>
