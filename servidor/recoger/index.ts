@@ -220,8 +220,11 @@ async function depurar(url: URL) {
       for (let j = 0; j < L.length; j++) if (j !== i && nuevas.filter((w: string) => L[j].set.has(w)).length >= 2) otros++;
       return otros >= 2;
     };
-    // Sale si casi nada del titular es del hecho, o si es poco y además trae la firma de otro hecho
-    const sale = (i: number) => media(i) < UMBRAL_DEP || (media(i) < UMBRAL_FIRMA && firma(i));
+    // Palabra ancla: la del vocabulario del hecho que más titulares de la historia comparten («huelga», «Biedma»)
+    let ancla = "", maxA = 0;
+    for (const w of vocab) { const c = L.filter((a) => a.set.has(w)).length; if (c > maxA) { maxA = c; ancla = w; } }
+    // Sale si casi nada del titular es del hecho, o si es poco y además trae la firma de otro hecho o no nombra el ancla
+    const sale = (i: number) => media(i) < UMBRAL_DEP || (media(i) < UMBRAL_FIRMA && (firma(i) || (!!ancla && !L[i].set.has(ancla))));
     const nucleo = new Set<number>([...duro, ...L.map((_, i) => i).filter((i) => !sale(i))]);
     if (url.searchParams.get("todo") === "1" && unaH) informe.push({ puntuaciones: L.map((a, i) => `${sale(i) ? "SALE" : "queda"} ${media(i)}${firma(i) ? " firma" : ""} · ${a.titulo}`).sort() });
     const fuera = L.filter((_, i) => !nucleo.has(i));
