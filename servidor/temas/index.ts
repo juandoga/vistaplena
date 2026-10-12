@@ -269,10 +269,13 @@ Deno.serve(async (req) => {
       !/(en directo|directo:|directo \||última hora|ultima hora|minuto a minuto|encuesta:)/i.test(a.titulo)));
     if (!data || data.length < 1000) break;
   }
-  // Firma de cada tema vivo: su protagonista (nombres poco habituales en al menos el 40 % de sus historias)
+  // Firma de cada tema vivo: su protagonista (las palabras de su nombre; si no hay, los nombres poco habituales en al menos el 40 % de sus historias)
   // y sus palabras clave (las que salen en 2 o más historias, o en alguna de las 3 últimas)
   const firmas = temas.filter((t) => idDe.has(t) && Date.now() - t.fin < 72 * H).map((t) => {
-    const prota = new Set([...t.nombres].filter(([w, c]) => !comodin(w) && c >= Math.max(1, t.hs.length * 0.4)).map(([w]) => w));
+    // El protagonista es el nombre del tema («Jordi Wild», «Biedma»), no cualquier nombre de sus historias:
+    // si no, un tema sobre Jordi Wild en el que sale Abascal se tragaría todos los titulares sobre Abascal.
+    const delNombre = trozos(nombreDe.get(t) ?? "").map((x) => x.norm).filter((w) => w.length > 2 && !NO_NOMBRE.has(w) && !comodin(w) && t.nombres.has(w) && !/^(del|las|los|jueza?|caso|ley|ministr[oa]|rey|reina|papa|premio|presidenta|alcalde(sa)?|exjuez|exministr[oa]|fiscal|operacion|elecciones)$/.test(w));
+    const prota = new Set(delNombre.length ? delNombre : [...t.nombres].filter(([w, c]) => !comodin(w) && c >= Math.max(1, t.hs.length * 0.4)).map(([w]) => w));
     const cuenta = new Map<string, number>();
     for (const h of t.hs) h.claves.forEach((w) => cuenta.set(w, (cuenta.get(w) ?? 0) + 1));
     const recientesT = new Set(t.hs.slice(-3).flatMap((h) => [...h.claves]));
@@ -287,7 +290,8 @@ Deno.serve(async (req) => {
     let mejor = 0, mejorP = 0;
     for (const f of firmas) {
       if (+new Date(a.publicado) < f.ini || ![...f.prota].some((w) => ns.has(w))) continue;
-      const comunes = ks.filter((w) => f.claves.has(w) && !f.prota.has(w)).length;
+      // Las palabras muy repetidas en la semana («Sánchez», «Gobierno») no cuentan como palabras en común
+      const comunes = ks.filter((w) => f.claves.has(w) && !f.prota.has(w) && !comodin(w)).length;
       if (comunes >= 2 && comunes > mejorP) { mejor = f.id; mejorP = comunes; }
     }
     if (mejor) { const l = asignar.get(mejor) ?? []; l.push(a.id); asignar.set(mejor, l); }
