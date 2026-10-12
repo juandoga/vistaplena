@@ -477,21 +477,41 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .g-dato .f{margin-top:auto;font-size:var(--t-xs);color:var(--gris)}
 .g-dato .f a{color:var(--gris)}
 .g-vacio{font-size:var(--t-s);color:var(--gris);border:1px dashed var(--linea);border-radius:8px;padding:12px 14px;margin:0!important}
-.vot-wrap{overflow-x:auto;border:1px solid var(--linea);border-radius:8px}
-.vot{border-collapse:collapse;width:100%;min-width:760px;font-size:var(--t-s)}
-.vot th,.vot td{padding:10px;border-bottom:1px solid var(--linea);text-align:center;vertical-align:top}
-.vot tr:last-child td{border-bottom:0}
-.vot thead th{font-size:var(--t-xs);font-weight:700;color:var(--gris);background:var(--panel);white-space:nowrap}
-.vot th:first-child,.vot td:first-child{text-align:left;min-width:280px;max-width:420px}
-.vot td:first-child a{color:var(--tinta);text-decoration:none;font-weight:500;line-height:1.35;display:block}
-.vot td:first-child a:hover{text-decoration:underline}
-.vot .m{display:block;font-family:var(--num);font-size:var(--t-xs);color:var(--gris);margin-top:3px}
-.vt{display:inline-block;min-width:38px;font-size:var(--t-xs);font-weight:700;padding:2px 6px;border-radius:4px;border:1.5px solid var(--tinta)}
-.vt.si{background:var(--tinta);color:var(--fondo)}
-.vt.no{color:var(--tinta)}
-.vt.ab{border-style:dashed;border-color:var(--gris);color:var(--gris)}
-.vt.nv{border-color:transparent;color:var(--gris);font-weight:400}
-.vot-ley{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:var(--t-xs);color:var(--gris);align-items:center}
+.vc-lista{display:grid;gap:12px}
+.vc{--si:#1d7f46;--no:#b8402f;border:1px solid var(--linea);border-radius:10px;padding:14px 16px;background:var(--fondo)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .vc,:root:not([data-theme="light"]) .vc-guia{--si:#4cbf7c;--no:#e0776a;--sobre:#111213}}
+:root[data-theme="dark"] .vc,:root[data-theme="dark"] .vc-guia{--si:#4cbf7c;--no:#e0776a;--sobre:#111213}
+.vc-top{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:var(--t-xs);color:var(--gris)}
+.vc-top time{font-family:var(--num)}
+.vc-res{margin-left:auto;font-weight:700;border-radius:999px;padding:2px 10px;font-size:var(--t-xs)}
+.vc-res.ok{background:color-mix(in srgb,var(--si) 14%,transparent);color:var(--si)}
+.vc-res.ko{background:color-mix(in srgb,var(--no) 14%,transparent);color:var(--no)}
+.vc-t{margin:8px 0 4px;font-size:var(--t-m,1.05rem);line-height:1.35;color:var(--tinta);font-weight:700}
+.vc-quien{margin:0;font-size:var(--t-s);color:var(--texto)}
+.vc-si{margin:6px 0 0;font-size:var(--t-s);color:var(--texto);background:var(--panel);border-radius:6px;padding:7px 10px;line-height:1.45}
+.vc-barra{display:flex;height:10px;border-radius:5px;overflow:hidden;margin:12px 0 4px;background:var(--linea);position:relative}
+.vc-barra i{display:block;height:100%}
+.vc-barra .s{background:var(--si)}.vc-barra .a{background:var(--cen)}.vc-barra .n{background:var(--no)}
+.vc-barra::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;border-left:2px solid var(--fondo)}
+.vc-num{font-family:var(--num);font-size:var(--t-xs);color:var(--gris);display:flex;flex-wrap:wrap;gap:2px 12px}
+.vc-num b{font-weight:700}.vc-num .s b{color:var(--si)}.vc-num .n b{color:var(--no)}
+.vc-gr{display:grid;gap:6px;margin-top:10px}
+.vc-fila{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.vc-fila .l{font-size:var(--t-xs);font-weight:700;min-width:92px;color:var(--gris)}
+.vc-fila.s .l{color:var(--si)}.vc-fila.n .l{color:var(--no)}
+.pv{font-size:var(--t-xs);font-weight:600;border-radius:999px;padding:3px 9px;border:1.5px solid transparent;white-space:nowrap}
+.vc-fila.s .pv{background:var(--si);color:var(--sobre,#fff)}
+.vc-fila.n .pv{background:var(--no);color:var(--sobre,#fff)}
+.vc-fila.a .pv{background:var(--panel);border-color:var(--cen);color:var(--texto)}
+.vc-fila.x .pv{border:1.5px dashed var(--linea);color:var(--gris);font-weight:400}
+.vc-nota{margin:10px 0 0;font-size:var(--t-xs);color:var(--texto);border-left:3px solid var(--aviso);padding-left:8px}
+.vc-pie{margin-top:10px;font-size:var(--t-xs)}
+.vc-pie a{color:var(--gris)}
+.vc-guia{display:flex;flex-wrap:wrap;gap:6px 14px;margin:0 0 12px;font-size:var(--t-xs);color:var(--gris);align-items:center}
+.vc-guia .pv{display:inline-block}
+.vc-guia .s{background:var(--si);color:var(--sobre,#fff)}.vc-guia .n{background:var(--no);color:var(--sobre,#fff)}.vc-guia .a{background:var(--panel);border-color:var(--cen);color:var(--texto)}
+.vc-guia{--si:#1d7f46;--no:#b8402f}
+@media (max-width:520px){.vc-res{margin-left:0}.vc-fila .l{min-width:100%}}
 .vot-mas{margin-top:8px;font-size:var(--t-s)}
 .vot-mas summary{cursor:pointer;font-weight:500;color:var(--tinta)}
 </style>
@@ -582,6 +602,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     </ol>
     <h3>Lo que votaron</h3>
     <p>Las votaciones salen de los <a href="https://www.congreso.es/opendata/votaciones" target="_blank" rel="noopener">datos abiertos del Congreso</a>, que publican el voto de cada diputado. Mostramos lo que votó la mayoría de los diputados de cada partido; los del Grupo Mixto (Podemos, BNG, Coalición Canaria, UPN…) van por separado. Se actualiza cada día.</p>
+    <p>Los títulos oficiales son muy técnicos («Real Decreto-ley 8/2026…»). Por eso cada votación lleva un título en palabras sencillas, escrito a mano a partir del oficial y sin añadir nada que el oficial no diga, y una frase que explica qué suponía votar «Sí». El título oficial y el acta están siempre enlazados en cada ficha. No mostramos las votaciones de trámite ni las repetidas (la misma ley votada por partes).</p>
     <h3>Los datos de cada tema</h3>
     <p>Solo cifras de organismos oficiales (INE, Banco de España, ministerios, Eurostat, OCDE), con el periodo y un enlace a la página donde se publican. Están en <a href="guia.json">guia.json</a>.</p>
     <p class="aparte">Los datos de esta guía están en un archivo público, <a href="programas.json">programas.json</a>, con su historial de cambios en GitHub. Si ves un error, <a href="https://github.com/juandoga/vistaplena/issues/new?title=Gu%C3%ADa%2029N%3A%20">avísanos</a>.</p>
@@ -607,29 +628,57 @@ const fechaCorta = d => new Date(d + "T12:00:00").toLocaleDateString("es-ES", { 
 let PROG = null, GUIA = null, HIST = [], VOT = null;
 // Partidos en la tabla de votaciones (los del Grupo Mixto, por separado)
 const PARTIDOS_V = ["PSOE", "PP", "Vox", "Sumar", "ERC", "Junts", "EH Bildu", "PNV", "Podemos", "BNG", "CC", "UPN"];
-const TIPO = { decreto: "Decreto ley", toma: "Proposición de ley", totalidad: "Enmienda a la totalidad", ley: "Ley (votación final)" };
-const resultado = v => {
-  const pasa = v.si > v.no;
-  if (v.tipo === "decreto") return pasa ? "Convalidado" : "Derogado";
-  if (v.tipo === "toma") return pasa ? "Admitida a trámite" : "Rechazada";
-  if (v.tipo === "totalidad") return pasa ? "Enmienda aprobada" : "Enmienda rechazada";
-  return pasa ? "Aprobada" : "Rechazada";
-};
-const chipVoto = x => !x ? `<span class="vt nv">—</span>` : x.voto === "Sí" ? `<span class="vt si" title="${x.si} a favor">Sí</span>` : x.voto === "No" ? `<span class="vt no" title="${x.no} en contra">No</span>` : x.voto === "Abstención" ? `<span class="vt ab">Abst.</span>` : `<span class="vt nv">No vota</span>`;
-// El texto del Congreso empieza a veces por «Votación de…»: se deja solo lo que se votó
+// Nombre completo de cada partido (en las fichas se usa el corto)
+const NOMBRE_P = { CC: "Coalición Canaria", UPN: "Unión del Pueblo Navarro", BNG: "Bloque Nacionalista Galego", ERC: "Esquerra Republicana", PNV: "Partido Nacionalista Vasco" };
+const esDev = v => /^Sí: devolver/.test(v.si_significa || "");
+const pasa = v => v.aprobada ?? (v.si > v.no);
+// Qué tipo de votación es y qué pasó, en palabras sencillas
+function tipoLlano(v){
+  if (v.tipo === "decreto") return "Decreto del Gobierno";
+  if (v.tipo === "toma") return "Propuesta de ley · primer paso";
+  if (v.tipo === "ley") return "Votación final de una ley";
+  if (v.tipo === "totalidad") return esDev(v) ? "Intento de frenar una ley" : "Texto alternativo a una ley";
+  return "Votación";
+}
+function resLlano(v){
+  const ok = pasa(v);
+  if (v.tipo === "decreto") return [ok, ok ? "Sigue en vigor" : "Anulado"];
+  if (v.tipo === "toma") return [ok, ok ? "Sale adelante" : "Rechazada"];
+  if (v.tipo === "totalidad") return esDev(v) ? [!ok, ok ? "Ley frenada" : "La ley sigue adelante"] : [!ok, ok ? "Texto cambiado" : "Se mantiene el texto original"];
+  return [ok, ok ? "Aprobada" : "Rechazada"];
+}
+// El texto del Congreso empieza a veces por «Votación de…»: se deja solo lo que se votó (si no hay título sencillo)
 const limpia = t => t.replace(/^Votaci[oó]n (conjunta )?de (la|las) /i, "").replace(/\s+/g, " ").trim();
-function filaVot(v){
-  return `<tr><td><a href="${esc(v.url.replace(/\.json$/, ".pdf"))}" target="_blank" rel="noopener">${esc(limpia(v.expediente).slice(0, 220))}${limpia(v.expediente).length > 220 ? "…" : ""}</a>
-    <span class="m">${fechaCorta(v.fecha)} · ${TIPO[v.tipo] || "Votación"} · ${resultado(v)} · ${v.si} sí, ${v.no} no${v.abst ? `, ${v.abst} abst.` : ""}</span></td>
-    ${PARTIDOS_V.map(p => `<td>${chipVoto(v.partidos[p])}</td>`).join("")}</tr>`;
+const corta = t => t.length > 200 ? t.slice(0, 197).replace(/\s+\S*$/, "") + "…" : t;
+function fichaVot(v){
+  const [verde, res] = resLlano(v);
+  const grupos = { s: [], n: [], a: [], x: [] };
+  for (const p of PARTIDOS_V) {
+    const x = v.partidos[p];
+    const k = !x ? null : x.voto === "Sí" ? "s" : x.voto === "No" ? "n" : x.voto === "Abstención" ? "a" : "x";
+    if (k) grupos[k].push(`<span class="pv" title="${esc(NOMBRE_P[p] || p)}${x.voto !== "No vota" ? ` · ${x.si} sí, ${x.no} no, ${x.abst} abst.` : ""}">${esc(p)}</span>`);
+  }
+  const fila = (k, l) => grupos[k].length ? `<div class="vc-fila ${k}"><span class="l">${l}</span>${grupos[k].join("")}</div>` : "";
+  const tot = v.si + v.no + v.abst || 1, w = n => (100 * n / tot).toFixed(1) + "%";
+  return `<article class="vc">
+    <div class="vc-top"><time datetime="${v.fecha}">${fechaCorta(v.fecha)}</time><span>${tipoLlano(v)}</span><span class="vc-res ${verde ? "ok" : "ko"}">${res}</span></div>
+    <h4 class="vc-t">${esc(v.titulo_llano || corta(limpia(v.expediente)))}</h4>
+    ${v.propone ? `<p class="vc-quien">Lo propuso: <b>${esc(v.propone)}</b></p>` : ""}
+    ${v.si_significa ? `<p class="vc-si">${esc(v.si_significa)}</p>` : ""}
+    <div class="vc-barra" role="img" aria-label="${v.si} a favor, ${v.abst} abstenciones, ${v.no} en contra"><i class="s" style="width:${w(v.si)}"></i><i class="a" style="width:${w(v.abst)}"></i><i class="n" style="width:${w(v.no)}"></i></div>
+    <div class="vc-num"><span class="s"><b>${v.si}</b> a favor</span>${v.abst ? `<span><b>${v.abst}</b> abstenciones</span>` : ""}<span class="n"><b>${v.no}</b> en contra</span></div>
+    <div class="vc-gr">${fila("s", "A favor")}${fila("n", "En contra")}${fila("a", "Abstención")}${fila("x", "No votaron")}</div>
+    ${v.nota ? `<p class="vc-nota">${esc(v.nota)}</p>` : ""}
+    <div class="vc-pie"><a href="${esc(v.url.replace(/\.json$/, ".pdf"))}" target="_blank" rel="noopener" title="${esc(limpia(v.expediente))}">Título oficial y acta del Congreso</a></div>
+  </article>`;
 }
 function votaciones(id){
   if (!VOT) return `<p class="g-vacio">Cargando las votaciones del Congreso…</p>`;
   const L = VOT.filter(v => v.temas.includes(id));
   if (!L.length) return `<p class="g-vacio">Todavía no hemos encontrado votaciones del Pleno sobre este tema en esta legislatura.</p>`;
-  const tabla = lista => `<div class="vot-wrap"><table class="vot"><thead><tr><th>Qué se votó</th>${PARTIDOS_V.map(p => `<th>${p}</th>`).join("")}</tr></thead><tbody>${lista.map(filaVot).join("")}</tbody></table></div>`;
-  return tabla(L.slice(0, 5)) + (L.length > 5 ? `<details class="vot-mas"><summary>Ver las otras ${L.length - 5} votaciones</summary>${tabla(L.slice(5))}</details>` : "") +
-    `<div class="vot-ley"><span class="vt si">Sí</span> a favor <span class="vt no">No</span> en contra <span class="vt ab">Abst.</span> abstención · Cada votación enlaza a su acta oficial</div>`;
+  const guia = `<div class="vc-guia"><span class="pv s">A favor</span><span class="pv n">En contra</span><span class="pv a">Abstención</span><span>Cada ficha dice qué se votó, quién lo propuso y qué suponía votar «Sí». La raya de la barra marca la mitad de los votos.</span></div>`;
+  return guia + `<div class="vc-lista">${L.slice(0, 4).map(fichaVot).join("")}</div>` +
+    (L.length > 4 ? `<details class="vot-mas"><summary>${L.length === 5 ? "Ver 1 votación más" : `Ver las otras ${L.length - 4} votaciones`}</summary><div class="vc-lista" style="margin-top:12px">${L.slice(4).map(fichaVot).join("")}</div></details>` : "");
 }
 
 function pintar(){
@@ -696,7 +745,7 @@ campana();
 (async () => {
   const h = { apikey: SUPA.key, Authorization: "Bearer " + SUPA.key };
   try {
-    const r = await fetch(`${SUPA.url}/rest/v1/votaciones?select=id,fecha,tipo,expediente,si,no,abst,partidos,url,temas&destacada=eq.true&temas=neq.{}&order=fecha.desc,numero.desc&limit=600`, { headers: h });
+    const r = await fetch(`${SUPA.url}/rest/v1/votaciones?select=id,fecha,tipo,expediente,si,no,abst,partidos,url,temas,titulo_llano,propone,si_significa,aprobada,nota&destacada=eq.true&oculta=eq.false&temas=neq.{}&order=fecha.desc,numero.desc&limit=600`, { headers: h });
     if (r.ok) { VOT = await r.json(); pintar(); }
   } catch (e) {}
   try {
