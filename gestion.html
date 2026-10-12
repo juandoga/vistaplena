@@ -335,6 +335,8 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .pie nav{display:flex;flex-direction:column;gap:7px;font-size:var(--t-s);min-width:0}
 .pie nav .eti{margin-bottom:4px}
 .pie nav a{text-decoration:none;color:var(--texto)}
+.pie-gestion{color:inherit;text-decoration:none}
+.pie-gestion:hover{text-decoration:underline}
 .pie nav a:hover{color:var(--tinta);text-decoration:underline;text-underline-offset:3px}
 .pie-fin{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 20px;border-top:1px solid var(--linea);padding-block:18px 32px;font-size:var(--t-xs);color:var(--gris)}
 .pendiente{background:color-mix(in srgb,var(--aviso) 20%,transparent);color:var(--tinta);padding:0 5px;border-radius:3px;font-weight:500}
@@ -392,8 +394,10 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .info-b:hover,.info-b[aria-expanded="true"]{border-color:var(--tinta);color:var(--tinta)}
 .info-p{position:absolute;z-index:20;top:calc(100% + 8px);left:-10px;width:min(320px,80vw);background:var(--fondo);color:var(--texto);border:1px solid var(--linea);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:12px 14px;font-size:.85rem;line-height:1.5;text-align:left}
 .info-p a{color:var(--tinta)}
-.g-clave{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:20px}
-.g-clave input{font:inherit;padding:10px 12px;border:1px solid var(--linea);border-radius:8px;background:var(--fondo);color:var(--tinta);min-width:220px}
+.g-acceso{margin-top:20px;max-width:560px;display:grid;gap:12px;justify-items:start}
+.g-acceso p{margin:0;line-height:1.5}
+.g-acceso .boton{border:0;cursor:pointer}
+.g-acceso .boton:disabled{opacity:.5;cursor:default}
 .gestion section{padding-top:32px}
 .gestion h2 .n{font-weight:400;font-size:var(--t-s);color:var(--gris);margin-left:8px}
 .aviso-g{border-top:1px solid var(--linea);padding:14px 0;display:grid;gap:6px}
@@ -468,15 +472,14 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   <div class="subtop"><span>Gestión privada</span><span id="estadoG"></span></div>
   <header class="metodo-cab">
     <h1>Gestión</h1>
-    <p class="resumen">Avisos de error de los lectores y corrección de temas. Esta página no está enlazada ni aparece en buscadores, y sin la clave no muestra nada.</p>
+    <p class="resumen">Avisos de error de los lectores y corrección de temas.</p>
   </header>
 
-  <form id="fClave" class="g-clave">
-    <label for="clave" class="eti">Clave</label>
-    <input id="clave" type="password" autocomplete="current-password" required>
-    <button class="boton" type="submit">Entrar</button>
-    <p class="aparte" id="msgClave" role="status"></p>
-  </form>
+  <div id="acceso" class="g-acceso" hidden>
+    <p>Para entrar no hace falta clave: te mandamos un enlace al correo de Vista Plena (contacto@vistaplena.es, que llega a tu Gmail).</p>
+    <button class="boton" type="button" id="pedir">Enviarme el enlace de acceso</button>
+    <p class="aparte" id="msgAcceso" role="status"></p>
+  </div>
 
   <div id="panel" hidden>
     <section id="avisos">
@@ -500,26 +503,43 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <nav aria-label="Proyecto"><span class="eti">Proyecto</span><a href="quienes-somos.html">Quiénes somos</a><a href="metodologia.html">Metodología</a><a href="metodologia.html#datos">Datos abiertos</a><a href="quienes-somos.html#correcciones">Correcciones</a></nav>
     <nav aria-label="Legal"><span class="eti">Legal</span><a href="aviso-legal.html">Aviso legal</a><a href="privacidad.html">Privacidad</a><a href="https://github.com/juandoga/vistaplena" target="_blank" rel="noopener">Código en GitHub</a></nav>
   </div>
-  <div class="wrap pie-fin"><span>© 2026 Vista Plena</span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
+  <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
 <script src="comun.js?v=329b8de0"></script>
 <script>
 const API = `${SUPA.url}/functions/v1/gestion`;
 const MOTIVO = { titular_no_encaja: "Un titular habla de otra cosa", historia_duplicada: "Historia repetida", etiqueta_medio: "Etiqueta de un medio", otro: "Otra cosa" };
-let CLAVE = "";
-try { CLAVE = localStorage.getItem("vp-gestion") || ""; } catch (e) {}
+let SESION = "";
+try { SESION = localStorage.getItem("vp-sesion") || ""; localStorage.removeItem("vp-gestion"); } catch (e) {}
 const llamar = async (q, cuerpo) => {
-  const r = await fetch(q ? `${API}?q=${q}` : API, { method: cuerpo ? "POST" : "GET", headers: { "x-clave": CLAVE, "Content-Type": "application/json" }, body: cuerpo ? JSON.stringify(cuerpo) : undefined });
-  if (r.status === 401) throw new Error("clave");
+  const r = await fetch(q ? `${API}?q=${q}` : API, { method: cuerpo ? "POST" : "GET", headers: { "x-sesion": SESION, "Content-Type": "application/json" }, body: cuerpo ? JSON.stringify(cuerpo) : undefined });
+  const d = await r.json().catch(() => ({}));
+  if (r.status === 401) throw Object.assign(new Error("acceso"), { detalle: d.error });
   if (!r.ok) throw new Error(r.status);
-  return r.json();
+  return d;
 };
 const fecha = iso => new Date(iso).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+const acceso = document.getElementById("acceso"), msgAcceso = document.getElementById("msgAcceso");
+function pedirAcceso(texto = ""){
+  try { localStorage.removeItem("vp-sesion"); } catch (e) {}
+  SESION = "";
+  document.getElementById("panel").hidden = true;
+  acceso.hidden = false;
+  msgAcceso.textContent = texto;
+}
+document.getElementById("pedir").addEventListener("click", async e => {
+  e.target.disabled = true; msgAcceso.textContent = "Enviando…";
+  try {
+    await llamar(null, { accion: "pedir_enlace" });
+    msgAcceso.textContent = "Listo. Revisa tu correo y toca «Entrar en la gestión». El enlace vale 30 minutos. Si no lo ves en un par de minutos, mira en Spam.";
+  } catch (er) { msgAcceso.textContent = "No se ha podido enviar ahora. Prueba otra vez en un momento."; }
+  setTimeout(() => { e.target.disabled = false; }, 120000);
+});
 
 async function cargar(){
   try {
     const [avisos, temas] = await Promise.all([llamar("avisos"), llamar("temas")]);
-    document.getElementById("fClave").hidden = true;
+    acceso.hidden = true;
     document.getElementById("panel").hidden = false;
     const pend = avisos.filter(a => !a.revisado).length;
     document.getElementById("nAvisos").textContent = `${pend} sin revisar`;
@@ -536,18 +556,11 @@ async function cargar(){
       <button class="boton secundario" type="button" data-tema="${t.id}">Guardar</button></div></div>`).join("") || `<p class="vacio">No hay temas activos.</p>`;
     document.getElementById("estadoG").textContent = "Actualizado " + new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
   } catch (e) {
-    document.getElementById("fClave").hidden = false;
-    document.getElementById("panel").hidden = true;
-    document.getElementById("msgClave").textContent = e.message === "clave" ? (CLAVE ? "La clave no es correcta." : "") : "No se ha podido cargar. Vuelve a intentarlo.";
+    if (e.message === "acceso") pedirAcceso(SESION ? "Tu acceso ha caducado. Pide un enlace nuevo." : "");
+    else { acceso.hidden = true; document.getElementById("estadoG").textContent = "No se ha podido cargar. Recarga la página."; }
   }
 }
-document.getElementById("fClave").addEventListener("submit", e => {
-  e.preventDefault();
-  CLAVE = document.getElementById("clave").value.trim();
-  try { localStorage.setItem("vp-gestion", CLAVE); } catch (er) {}
-  cargar();
-});
-document.getElementById("salir").addEventListener("click", () => { try { localStorage.removeItem("vp-gestion"); } catch (e) {} CLAVE = ""; location.reload(); });
+document.getElementById("salir").addEventListener("click", async () => { await llamar(null, { accion: "salir" }).catch(() => {}); pedirAcceso("Has salido. Para volver a entrar, pide un enlace."); });
 document.addEventListener("change", async e => {
   const id = e.target.dataset.aviso;
   if (!id) return;
@@ -564,7 +577,19 @@ document.addEventListener("click", async e => {
   } catch (er) { e.target.textContent = "Error"; }
   setTimeout(() => { e.target.disabled = false; e.target.textContent = "Guardar"; }, 1500);
 });
-if (CLAVE) cargar();
+// Entrada: con un enlace del correo (?enlace=…), con la sesión guardada, o pidiendo el enlace
+(async () => {
+  const enlace = new URLSearchParams(location.search).get("enlace");
+  if (enlace) {
+    history.replaceState(null, "", location.pathname);
+    try {
+      const d = await llamar(null, { accion: "entrar", enlace });
+      SESION = d.sesion;
+      try { localStorage.setItem("vp-sesion", SESION); } catch (e) {}
+    } catch (e) { return pedirAcceso(e.detalle || "El enlace no vale. Pide otro."); }
+  }
+  if (SESION) cargar(); else pedirAcceso();
+})();
 </script>
 
 </body>

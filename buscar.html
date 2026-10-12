@@ -335,6 +335,8 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .pie nav{display:flex;flex-direction:column;gap:7px;font-size:var(--t-s);min-width:0}
 .pie nav .eti{margin-bottom:4px}
 .pie nav a{text-decoration:none;color:var(--texto)}
+.pie-gestion{color:inherit;text-decoration:none}
+.pie-gestion:hover{text-decoration:underline}
 .pie nav a:hover{color:var(--tinta);text-decoration:underline;text-underline-offset:3px}
 .pie-fin{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 20px;border-top:1px solid var(--linea);padding-block:18px 32px;font-size:var(--t-xs);color:var(--gris)}
 .pendiente{background:color-mix(in srgb,var(--aviso) 20%,transparent);color:var(--tinta);padding:0 5px;border-radius:3px;font-weight:500}
@@ -392,8 +394,10 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .info-b:hover,.info-b[aria-expanded="true"]{border-color:var(--tinta);color:var(--tinta)}
 .info-p{position:absolute;z-index:20;top:calc(100% + 8px);left:-10px;width:min(320px,80vw);background:var(--fondo);color:var(--texto);border:1px solid var(--linea);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:12px 14px;font-size:.85rem;line-height:1.5;text-align:left}
 .info-p a{color:var(--tinta)}
-.g-clave{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:20px}
-.g-clave input{font:inherit;padding:10px 12px;border:1px solid var(--linea);border-radius:8px;background:var(--fondo);color:var(--tinta);min-width:220px}
+.g-acceso{margin-top:20px;max-width:560px;display:grid;gap:12px;justify-items:start}
+.g-acceso p{margin:0;line-height:1.5}
+.g-acceso .boton{border:0;cursor:pointer}
+.g-acceso .boton:disabled{opacity:.5;cursor:default}
 .gestion section{padding-top:32px}
 .gestion h2 .n{font-weight:400;font-size:var(--t-s);color:var(--gris);margin-left:8px}
 .aviso-g{border-top:1px solid var(--linea);padding:14px 0;display:grid;gap:6px}
@@ -504,7 +508,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <nav aria-label="Proyecto"><span class="eti">Proyecto</span><a href="quienes-somos.html">Quiénes somos</a><a href="metodologia.html">Metodología</a><a href="metodologia.html#datos">Datos abiertos</a><a href="quienes-somos.html#correcciones">Correcciones</a></nav>
     <nav aria-label="Legal"><span class="eti">Legal</span><a href="aviso-legal.html">Aviso legal</a><a href="privacidad.html">Privacidad</a><a href="https://github.com/juandoga/vistaplena" target="_blank" rel="noopener">Código en GitHub</a></nav>
   </div>
-  <div class="wrap pie-fin"><span>© 2026 Vista Plena</span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
+  <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
 <script src="comun.js?v=329b8de0"></script>
 <script>

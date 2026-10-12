@@ -1,30 +1,83 @@
 // Vista Plena — gestión privada: leer los avisos de error de los lectores y corregir temas a mano.
-// Solo responde si la petición lleva la clave privada en la cabecera x-clave (se compara su huella SHA-256 con la guardada en la tabla privada «ajustes»).
 //
+// Acceso sin clave: la página pide un enlace, que llega por correo a la dirección guardada en ajustes («gestion_correo»).
+// Al abrir el enlace se crea una sesión de 180 días que el navegador guarda. Solo se guardan huellas SHA-256, nunca los valores.
+//
+// POST {accion:"pedir_enlace"}            manda el enlace (como mucho 1 cada 2 minutos y 10 al día)
+// POST {accion:"entrar", enlace}          cambia el enlace (30 minutos, un solo uso) por una sesión
+// Con la cabecera x-sesion:
 // GET  ?q=avisos           avisos de los lectores, primero los pendientes, con el titular de la historia
 // GET  ?q=temas            temas activos, con su nombre automático y el manual
 // POST {accion:"revisar", id, revisado}
 // POST {accion:"tema", id, nombre_manual, oculto}
+// POST {accion:"salir"}
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "content-type, authorization, apikey, x-clave", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
+const RESEND = Deno.env.get("RESEND_API_KEY") ?? "";
+const DE = Deno.env.get("NEWSLETTER_FROM") ?? "Vista Plena <boletin@vistaplena.es>";
+const WEB = "https://vistaplena.es/gestion.html";
+const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "content-type, authorization, apikey, x-sesion", "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
 const json = (d: unknown, status = 200) => new Response(JSON.stringify(d), { status, headers: { ...CORS, "Content-Type": "application/json" } });
+const huella = async (s: string) => Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))).map((b) => b.toString(16).padStart(2, "0")).join("");
+const aleatorio = () => btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const ahora = () => new Date().toISOString();
+
+async function pedirEnlace() {
+  const respuesta = json({ ok: true }); // siempre la misma respuesta, se mande o no
+  const hace = (min: number) => new Date(Date.now() - min * 60e3).toISOString();
+  const { count: recientes } = await db.from("gestion_accesos").select("id", { count: "exact", head: true }).eq("tipo", "enlace").gt("creado", hace(2));
+  const { count: hoy } = await db.from("gestion_accesos").select("id", { count: "exact", head: true }).eq("tipo", "enlace").gt("creado", hace(24 * 60));
+  if ((recientes ?? 0) >= 1 || (hoy ?? 0) >= 10) return respuesta;
+  const { data: aj } = await db.from("ajustes").select("valor").eq("nombre", "gestion_correo").single();
+  if (!aj?.valor || !RESEND) return json({ ok: false, error: "No está configurado el correo de la gestión" }, 500);
+  const enlace = aleatorio();
+  await db.from("gestion_accesos").insert({ huella: await huella(enlace), tipo: "enlace", caduca: new Date(Date.now() + 30 * 60e3).toISOString() });
+  const url = `${WEB}?enlace=${enlace}`;
+  const html = `<div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#111">
+    <p style="font-size:18px;font-weight:bold;margin:0 0 12px">Entrar en la gestión de Vista Plena</p>
+    <p style="margin:0 0 20px;line-height:1.5">Toca el botón para entrar. El enlace sirve una sola vez y durante 30 minutos. Después, este móvil u ordenador te recordará durante seis meses.</p>
+    <p style="margin:0 0 24px"><a href="${url}" style="display:inline-block;background:#111;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:bold">Entrar en la gestión</a></p>
+    <p style="margin:0;font-size:13px;color:#666;line-height:1.5">Si no lo has pedido tú, ignora este correo: nadie puede entrar sin este enlace.<br>La página de gestión está siempre en ${WEB} (enlace «Gestión» al pie de la web).</p></div>`;
+  const r = await fetch("https://api.resend.com/emails", {
+    method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: DE, to: [aj.valor], subject: "Entrar en la gestión de Vista Plena", html }),
+  });
+  if (!r.ok) return json({ ok: false, error: `Resend respondió ${r.status}` }, 502);
+  return respuesta;
+}
+
+async function entrar(enlace: string) {
+  const { data: fila } = await db.from("gestion_accesos").select("id, caduca, usado").eq("huella", await huella(String(enlace ?? ""))).eq("tipo", "enlace").maybeSingle();
+  if (!fila || fila.usado || new Date(fila.caduca) < new Date()) return json({ error: "El enlace no vale: ya se usó o han pasado más de 30 minutos. Pide otro." }, 401);
+  await db.from("gestion_accesos").update({ usado: ahora() }).eq("id", fila.id);
+  const sesion = aleatorio();
+  await db.from("gestion_accesos").insert({ huella: await huella(sesion), tipo: "sesion", caduca: new Date(Date.now() + 180 * 864e5).toISOString() });
+  // Limpieza: enlaces y sesiones caducados
+  await db.from("gestion_accesos").delete().lt("caduca", new Date(Date.now() - 864e5).toISOString());
+  return json({ ok: true, sesion });
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
-  const { data: aj } = await db.from("ajustes").select("valor").eq("nombre", "gestion_clave_sha256").single();
-  const huella = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(req.headers.get("x-clave") ?? "")))).map((b) => b.toString(16).padStart(2, "0")).join("");
-  if (!aj?.valor || huella !== aj.valor) return json({ error: "Clave incorrecta" }, 401);
   const q = new URL(req.url).searchParams.get("q");
   try {
+    const b = req.method === "POST" ? await req.json().catch(() => ({})) : {};
+    if (b.accion === "pedir_enlace") return await pedirEnlace();
+    if (b.accion === "entrar") return await entrar(b.enlace);
+
+    // A partir de aquí hace falta una sesión válida
+    const h = await huella(req.headers.get("x-sesion") ?? "");
+    const { data: ses } = await db.from("gestion_accesos").select("id, caduca").eq("huella", h).eq("tipo", "sesion").maybeSingle();
+    if (!ses || new Date(ses.caduca) < new Date()) return json({ error: "Sesión no válida" }, 401);
+
     if (req.method === "GET" && q === "avisos") {
       const { data: avisos } = await db.from("reportes").select("*").order("revisado").order("creado", { ascending: false }).limit(300);
       const ids = [...new Set((avisos ?? []).map((a) => a.historia_id))];
       const titulos = new Map<number, string>();
       if (ids.length) {
-        const { data: h } = await db.from("historias").select("id, titulo").in("id", ids);
-        for (const x of h ?? []) titulos.set(x.id, x.titulo);
+        const { data: hs } = await db.from("historias").select("id, titulo").in("id", ids);
+        for (const x of hs ?? []) titulos.set(x.id, x.titulo);
         const faltan = ids.filter((i) => !titulos.has(i));
         if (faltan.length) { const { data: a } = await db.from("archivo").select("historia_id, titulo").in("historia_id", faltan); for (const x of a ?? []) titulos.set(x.historia_id, x.titulo); }
       }
@@ -35,7 +88,6 @@ Deno.serve(async (req) => {
       return json(data ?? []);
     }
     if (req.method === "POST") {
-      const b = await req.json();
       if (b.accion === "revisar") {
         await db.from("reportes").update({ revisado: !!b.revisado }).eq("id", b.id);
         return json({ ok: true });
@@ -43,6 +95,10 @@ Deno.serve(async (req) => {
       if (b.accion === "tema") {
         const nombre = String(b.nombre_manual ?? "").trim().slice(0, 80) || null;
         await db.from("temas").update({ nombre_manual: nombre, oculto: !!b.oculto }).eq("id", b.id);
+        return json({ ok: true });
+      }
+      if (b.accion === "salir") {
+        await db.from("gestion_accesos").delete().eq("id", ses.id);
         return json({ ok: true });
       }
     }
