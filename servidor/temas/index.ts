@@ -32,6 +32,7 @@ function palabras(t: string): string[] {
 
 // Nombres propios por reglas: palabras con mayúscula que no abren la frase, y siglas (PP, PSOE, UCO).
 // La primera palabra del titular solo cuenta si esa misma palabra aparece con mayúscula en mitad de otros titulares.
+const SORTEO = /(loter[ií]a|sorteo|bonoloto|euromillones|la primitiva|el gordo|super ?once|triplex|cup[oó]n (diario|de la once)|cuponazo|eurojackpot|quiniela|lotto)/i;
 const NO_NOMBRE = new Set(("el la los las lo un una unos unas de del y e o u en por para con sin a al asi que como quien cual cuando donde este esta estos estas ese esa " +
   "su sus mi tu nuestro nuestra hoy ayer manana ultima ultimo nuevo nueva directo video claves todo todos lunes martes miercoles jueves viernes sabado domingo " +
   "enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre").split(" "));
@@ -67,7 +68,8 @@ Deno.serve(async (req) => {
   const hist: any[] = [];
   for (let p = 0; p < 20; p++) {
     const { data } = await db.from("historias").select("id, titulo, anterior, tema_id").gte("actualizada", desde).order("id").range(p * 1000, p * 1000 + 999);
-    hist.push(...(data ?? []));
+    // Los resultados de sorteos (Bonoloto, Euromillones, ONCE…) no forman temas: no son noticias que comparar entre medios
+    hist.push(...(data ?? []).filter((h: any) => !SORTEO.test(h.titulo)));
     if (!data || data.length < 1000) break;
   }
   const infoH = new Map(hist.map((h) => [h.id, h]));
@@ -266,7 +268,7 @@ Deno.serve(async (req) => {
     const { data } = await db.from("articulos").select("id, historia_id, titulo, publicado, tema_id").gte("publicado", desdeS).order("id").range(p * 1000, p * 1000 + 999);
     // Los directos («en directo», «última hora») mezclan muchos asuntos: no entran
     sueltosA.push(...(data ?? []).filter((a: any) => (!a.historia_id || !visibles.has(a.historia_id)) &&
-      !/(en directo|directo:|directo \||última hora|ultima hora|minuto a minuto|encuesta:)/i.test(a.titulo)));
+      !/(en directo|directo:|directo \||última hora|ultima hora|minuto a minuto|encuesta:)/i.test(a.titulo) && !SORTEO.test(a.titulo)));
     if (!data || data.length < 1000) break;
   }
   // Firma de cada tema vivo: su protagonista (las palabras de su nombre; si no hay, los nombres poco habituales en al menos el 40 % de sus historias)
