@@ -259,6 +259,17 @@ async function depurar(url: URL) {
   return { probar, marcar, revisadas, con_cambios: informe.length, articulos_que_salen: sacados, umbral: UMBRAL_DEP, detalle: informe.slice(0, unaH ? 1 : 40) };
 }
 
+
+// ---------- Temas que no son asuntos públicos ----------
+// Vista Plena compara cómo cubre cada lado los asuntos públicos. Deportes, sorteos, famosos, televisión, el tiempo,
+// moda, gastronomía, viajes o motor no tienen esa dimensión: falsean la barra (la izquierda apenas tiene secciones de
+// deportes) y empeoran la agrupación. No se recogen, salvo que el titular toque un asunto público
+// («el Barça pide aplazar el partido por la huelga general», «la gestión de la DANA»).
+const LIGERA_URL = /\/(deportes?|futbol|baloncesto|tenis|motor|formula-?1|motogp|ciclismo|laotraliga|golf|toros|gente|famosos|corazon|cool|chic|lifestyle|estilo|moda|belleza|vanitatis|television|tv|series|cine-y-series|el-?tiempo|tiempo|meteorologia|loterias?|horoscopo|viajes|gastronomia|recetas|videojuegos|gadgets|moviles)(\/|$)/i;
+const LIGERA_TIT = /(loter[ií]a|sorteo|bonoloto|euromillones|la primitiva|super ?once|triplex|cup[oó]n (diario|de la once)|cuponazo|eurojackpot|quiniela|hor[oó]scopo|el tiempo (hoy|de este|para|en)|previsi[oó]n del tiempo)/i;
+const PUBLICO = /(gobierno|ministr|congreso|senado|parlament|psoe|\bpp\b|\bvox\b|sumar|podemos|s[aá]nchez|feij[oó]o|abascal|\bley\b|decreto|tribunal|\bjuez|jueza|fiscal|huelga|protest|manifestaci|sindicat|elecciones|ayuntamiento|alcald|generalitat|xunta|junta de|israel|gaza|ucrania|rusia|inmigra|migrant|vivienda|impuesto|hacienda|corrupci|imputad|investigad|\bdana\b|racism|machis|violencia de g[eé]nero|casa real|\brey\b|monarqu)/i;
+const esLigera = (titulo: string, url: string) => (LIGERA_URL.test(url) || LIGERA_TIT.test(titulo)) && !PUBLICO.test(titulo);
+
 // ---------- Programa principal ----------
 // El trabajo se hace en dos fases para no superar el límite de cálculo de cada ejecución:
 // ?fase=leer descarga los titulares; ?fase=agrupar los junta en historias.
@@ -276,7 +287,7 @@ Deno.serve(async (req) => {
     try {
       // Como mucho 50 titulares por medio y lectura: así nadie pesa más por publicar más.
       // Se descartan las ediciones locales y las secciones de compras o pasatiempos (ver FUERA).
-      const items = (await leer(m.rss)).filter((i) => +i.publicado >= desde && +i.publicado <= Date.now() + 3600e3 && !FUERA.test(i.url))
+      const items = (await leer(m.rss)).filter((i) => +i.publicado >= desde && +i.publicado <= Date.now() + 3600e3 && !FUERA.test(i.url) && !esLigera(i.titulo, i.url))
         .sort((x, y) => +y.publicado - +x.publicado).slice(0, 50);
       if (items.length) {
         await db.from("articulos").upsert(items.map((i) => ({
@@ -315,7 +326,7 @@ Deno.serve(async (req) => {
   if (simular) for (const a of recientes) a.historia_id = null;
   // Los directos ("en directo", "última hora") mezclan muchos temas: no se agrupan.
   const esDirecto = (t: string) => /(en directo|directo:|última hora|ultima hora|minuto a minuto|horóscopo|noticias de hoy|resumen de noticias|lotería|sorteo|el tiempo hoy)/i.test(t);
-  const arts = recientes.filter((a) => !esDirecto(a.titulo) && a.palabras.length >= 3);
+  const arts = recientes.filter((a) => !esDirecto(a.titulo) && !esLigera(a.titulo, a.url) && a.palabras.length >= 3);
   const orient = new Map((medios ?? []).map((m) => [m.id, m.orientacion]));
 
   // Peso de cada palabra: las raras (nombres propios, temas concretos) cuentan más que las comunes.
@@ -556,8 +567,8 @@ Deno.serve(async (req) => {
   }
   if (tambien.length) await db.rpc("poner_tambien", { datos: tambien });
 
-  // Los directos que se colaron antes salen de las historias
-  const directos = recientes.filter((a) => (esDirecto(a.titulo) || a.palabras.length < 3) && a.historia_id).map((a) => a.id);
+  // Los directos y los temas que no son asuntos públicos (deportes, sorteos…) que se colaron antes salen de las historias
+  const directos = recientes.filter((a) => (esDirecto(a.titulo) || esLigera(a.titulo, a.url) || a.palabras.length < 3) && a.historia_id).map((a) => a.id);
   if (directos.length) await db.from("articulos").update({ historia_id: null }).in("id", directos);
 
   // 4. Limpieza: borrar lo de hace más de 14 días
