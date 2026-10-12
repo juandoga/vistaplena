@@ -149,10 +149,10 @@ const FUERA = new RegExp(`^https?://[^/]+/(?:(?:es/)?(?:${REGIONES})|(?:es/|espa
 // Una historia debe contar UN hecho. Si a lo largo de las horas se le han ido pegando titulares de otros hechos
 // (p. ej. «la huelga general por la vivienda» acabó con «los médicos aplazan su huelga» o «el Barça pide aplazar
 // un partido»), aquí se detectan y se sacan, para que se reagrupen en su propia historia.
-// Método: parecido entre cada par de titulares (peso de las palabras compartidas, las raras pesan más); se toma
-// los titulares más centrales (núcleo duro) y cada titular se compara, de media, con ese núcleo. Los que no
-// llegan al umbral salen. ?fase=depurar&probar=1 solo informa; &historia=ID revisa una sola; &dias=N (por defecto 2).
-const UMBRAL_DEP_DEF = 0.2;
+// Método: se buscan los titulares más centrales (núcleo duro, por parecido entre pares) y su vocabulario común.
+// Cada titular se mide por la parte de su peso que es vocabulario del hecho (las palabras raras pesan más).
+// Los que no llegan al umbral salen. ?fase=depurar&probar=1 solo informa; &historia=ID revisa una sola; &dias=N (por defecto 2).
+const UMBRAL_DEP_DEF = 0.5;
 async function depurar(url: URL) {
   const UMBRAL_DEP = Number(url.searchParams.get("umbral") || UMBRAL_DEP_DEF);
   const probar = url.searchParams.get("probar") === "1";
@@ -202,7 +202,13 @@ async function depurar(url: URL) {
     // no se apoya en sí mismo para quedarse.
     const k = Math.max(3, Math.min(10, Math.floor(L.length / 3)));
     const duro = centralidad.map((c, i) => ({ c, i })).sort((x, y) => y.c - x.c).slice(0, k).map((x) => x.i);
-    const media = (i: number) => { const otros = duro.filter((j) => j !== i); let m = 0; for (const j of otros) m += S[i][j]; return Math.round(100 * m / (otros.length || 1)) / 100; };
+    // Vocabulario del hecho: palabras que están en al menos el 40 % del núcleo duro
+    const cuentaV = new Map<string, number>();
+    for (const j of duro) for (const w of L[j].w) cuentaV.set(w, (cuentaV.get(w) ?? 0) + 1);
+    const vocab = new Set([...cuentaV].filter(([, c]) => c >= Math.max(2, Math.ceil(duro.length * 0.4))).map(([w]) => w));
+    // Cobertura: qué parte del titular (por peso) es vocabulario del hecho. Un titular de otro hecho trae palabras
+    // propias de peso («Barça», «UEFA», «médicos», «paros indefinidos») que el hecho no tiene, y su cobertura baja.
+    const media = (i: number) => { let c = 0; for (const w of L[i].w) if (vocab.has(w)) c += peso(w); return Math.round(100 * c / L[i].tot) / 100; };
     const nucleo = new Set<number>([...duro, ...L.map((_, i) => i).filter((i) => media(i) >= UMBRAL_DEP)]);
     if (url.searchParams.get("todo") === "1" && unaH) informe.push({ puntuaciones: L.map((a, i) => `${media(i)} · ${a.titulo}`).sort() });
     const fuera = L.filter((_, i) => !nucleo.has(i));
