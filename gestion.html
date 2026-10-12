@@ -406,6 +406,15 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .g-acceso p{margin:0;line-height:1.5}
 .g-acceso .boton{border:0;cursor:pointer}
 .g-acceso .boton:disabled{opacity:.5;cursor:default}
+.g-clave{display:grid;gap:6px;width:100%;max-width:420px}
+.g-clave label{font-size:var(--t-s);font-weight:600;color:var(--tinta)}
+.g-clave .fila{display:flex;gap:8px;flex-wrap:wrap}
+.g-clave input[type=password]{flex:1;min-width:180px;font:inherit;padding:9px 12px;border:1px solid var(--linea);border-radius:8px;background:var(--fondo);color:var(--tinta)}
+.g-clave .boton{border:0;cursor:pointer}
+.g-enlace{font-size:var(--t-s);color:var(--texto)}
+.g-enlace summary{cursor:pointer;color:var(--gris)}
+.g-enlace p{margin:8px 0!important}
+#gBtn{min-height:44px}
 .gestion section{padding-top:32px}
 .gestion h2 .n{font-weight:400;font-size:var(--t-s);color:var(--gris);margin-left:8px}
 .aviso-g{border-top:1px solid var(--linea);padding:14px 0;display:grid;gap:6px}
@@ -484,9 +493,19 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   </header>
 
   <div id="acceso" class="g-acceso" hidden>
-    <p>Para entrar no hace falta clave: te mandamos un enlace al correo de Vista Plena (contacto@vistaplena.es, que llega a tu Gmail).</p>
-    <button class="boton" type="button" id="pedir">Enviarme el enlace de acceso</button>
+    <div id="viaGoogle" hidden><div id="gBtn"></div></div>
+    <form id="fClave" class="g-clave" hidden autocomplete="on">
+      <input type="text" name="username" autocomplete="username" value="contacto@vistaplena.es" hidden readonly>
+      <label for="clave">Contraseña</label>
+      <div class="fila"><input id="clave" name="password" type="password" autocomplete="current-password" required>
+      <button class="boton" type="submit">Entrar</button></div>
+    </form>
     <p class="aparte" id="msgAcceso" role="status"></p>
+    <details class="g-enlace" id="viaEnlace">
+      <summary>¿No puedes entrar? Recibe un enlace en el correo</summary>
+      <p>Te mandamos un enlace de un solo uso a contacto@vistaplena.es, que llega a tu Gmail.</p>
+      <button class="boton secundario" type="button" id="pedir">Enviarme el enlace de acceso</button>
+    </details>
   </div>
 
   <div id="panel" hidden>
@@ -503,6 +522,17 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
       <h2>Temas activos</h2>
       <p class="aparte">Cambia el nombre de un tema o ocúltalo de la web. Si el tema desaparece y se vuelve a formar con otro número, la corrección no se conserva.</p>
       <div id="filasTemas"></div>
+    </section>
+    <section id="miAcceso">
+      <h2>Tu acceso</h2>
+      <p class="aparte" id="estadoClave"></p>
+      <form id="fNueva" class="g-clave" autocomplete="on">
+        <input type="text" name="username" autocomplete="username" value="contacto@vistaplena.es" hidden readonly>
+        <label for="nueva">Contraseña nueva (al menos 10 caracteres)</label>
+        <div class="fila"><input id="nueva" name="new-password" type="password" autocomplete="new-password" minlength="10" required>
+        <button class="boton secundario" type="submit">Guardar contraseña</button></div>
+        <p class="aparte" id="msgNueva" role="status"></p>
+      </form>
     </section>
     <p><button class="boton secundario" type="button" id="salir">Salir</button></p>
   </div>
@@ -527,19 +557,55 @@ try { SESION = localStorage.getItem("vp-sesion") || ""; localStorage.removeItem(
 const llamar = async (q, cuerpo) => {
   const r = await fetch(q ? `${API}?q=${q}` : API, { method: cuerpo ? "POST" : "GET", headers: { "x-sesion": SESION, "Content-Type": "application/json" }, body: cuerpo ? JSON.stringify(cuerpo) : undefined });
   const d = await r.json().catch(() => ({}));
-  if (r.status === 401) throw Object.assign(new Error("acceso"), { detalle: d.error });
-  if (!r.ok) throw new Error(r.status);
+  if (r.status === 401 && !cuerpo?.accion?.startsWith("entrar")) throw Object.assign(new Error("acceso"), { detalle: d.error });
+  if (!r.ok) throw Object.assign(new Error(String(r.status)), { detalle: d.error });
   return d;
 };
 const fecha = iso => new Date(iso).toLocaleString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const acceso = document.getElementById("acceso"), msgAcceso = document.getElementById("msgAcceso");
-function pedirAcceso(texto = ""){
+let CONFIG = null;
+async function pedirAcceso(texto = ""){
   try { localStorage.removeItem("vp-sesion"); } catch (e) {}
   SESION = "";
   document.getElementById("panel").hidden = true;
   acceso.hidden = false;
   msgAcceso.textContent = texto;
+  CONFIG ??= await llamar("config").catch(() => ({}));
+  document.getElementById("fClave").hidden = !CONFIG.clave;
+  // Sin Google ni contraseña, el enlace al correo es la única forma de entrar: se muestra abierto
+  document.getElementById("viaEnlace").open = !CONFIG.clave && !CONFIG.google;
+  if (CONFIG.google) botonGoogle(CONFIG.google);
 }
+// Entrar con una sesión recién creada (por Google, contraseña o enlace)
+function guardarSesion(s){ SESION = s; try { localStorage.setItem("vp-sesion", s); } catch (e) {} msgAcceso.textContent = ""; cargar(); }
+function botonGoogle(cliente){
+  const pintar = () => {
+    google.accounts.id.initialize({ client_id: cliente, auto_select: true, callback: async r => {
+      msgAcceso.textContent = "Comprobando con Google…";
+      try { guardarSesion((await llamar(null, { accion: "entrar_google", credencial: r.credential })).sesion); }
+      catch (e) { msgAcceso.textContent = e.detalle || "No se ha podido entrar con Google."; }
+    } });
+    google.accounts.id.renderButton(document.getElementById("gBtn"), { theme: "outline", size: "large", text: "signin_with", shape: "pill", locale: "es" });
+    document.getElementById("viaGoogle").hidden = false;
+  };
+  if (window.google?.accounts) return pintar();
+  const sc = document.createElement("script");
+  sc.src = "https://accounts.google.com/gsi/client"; sc.async = true; sc.onload = pintar;
+  document.head.appendChild(sc);
+}
+document.getElementById("fClave").addEventListener("submit", async e => {
+  e.preventDefault();
+  const b = e.target.querySelector("button"); b.disabled = true; msgAcceso.textContent = "Comprobando…";
+  try { guardarSesion((await llamar(null, { accion: "entrar_clave", clave: document.getElementById("clave").value })).sesion); document.getElementById("clave").value = ""; }
+  catch (er) { msgAcceso.textContent = er.detalle || "No se ha podido entrar."; }
+  b.disabled = false;
+});
+document.getElementById("fNueva").addEventListener("submit", async e => {
+  e.preventDefault();
+  const m = document.getElementById("msgNueva");
+  try { await llamar(null, { accion: "poner_clave", clave: document.getElementById("nueva").value }); m.textContent = "Guardada. Si el navegador te ofrece recordarla, acepta: así no tendrás que acordarte."; CONFIG = null; document.getElementById("estadoClave").textContent = "Ya tienes contraseña. Puedes cambiarla aquí."; }
+  catch (er) { m.textContent = er.detalle || "No se ha podido guardar."; }
+});
 document.getElementById("pedir").addEventListener("click", async e => {
   e.target.disabled = true; msgAcceso.textContent = "Enviando…";
   try {
@@ -578,13 +644,14 @@ async function cargar(){
       <div class="fila"><input type="text" id="nm${t.id}" value="${esc(t.nombre_manual || "")}" placeholder="Nombre nuevo" maxlength="80" aria-label="Nombre para ${esc(t.nombre)}">
       <label><input type="checkbox" id="oc${t.id}" ${t.oculto ? "checked" : ""}> Ocultar</label>
       <button class="boton secundario" type="button" data-tema="${t.id}">Guardar</button></div></div>`).join("") || `<p class="vacio">No hay temas activos.</p>`;
+    llamar("config").then(c => { document.getElementById("estadoClave").textContent = c.clave ? "Ya tienes contraseña. Puedes cambiarla aquí." : "Crea una contraseña para entrar sin esperar al correo. Si el navegador te ofrece guardarla, acepta."; }).catch(() => {});
     document.getElementById("estadoG").textContent = "Actualizado " + new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
   } catch (e) {
-    if (e.message === "acceso") pedirAcceso(SESION ? "Tu acceso ha caducado. Pide un enlace nuevo." : "");
+    if (e.message === "acceso") pedirAcceso(SESION ? "Tu acceso ha caducado. Vuelve a entrar." : "");
     else { acceso.hidden = true; document.getElementById("estadoG").textContent = "No se ha podido cargar. Recarga la página."; }
   }
 }
-document.getElementById("salir").addEventListener("click", async () => { await llamar(null, { accion: "salir" }).catch(() => {}); pedirAcceso("Has salido. Para volver a entrar, pide un enlace."); });
+document.getElementById("salir").addEventListener("click", async () => { await llamar(null, { accion: "salir" }).catch(() => {}); try { window.google?.accounts.id.disableAutoSelect(); } catch (er) {} pedirAcceso("Has salido."); });
 document.addEventListener("change", async e => {
   const id = e.target.dataset.aviso;
   if (!id) return;
@@ -618,8 +685,7 @@ document.addEventListener("click", async e => {
     history.replaceState(null, "", location.pathname);
     try {
       const d = await llamar(null, { accion: "entrar", enlace });
-      SESION = d.sesion;
-      try { localStorage.setItem("vp-sesion", SESION); } catch (e) {}
+      return guardarSesion(d.sesion);
     } catch (e) { return pedirAcceso(e.detalle || "El enlace no vale. Pide otro."); }
   }
   if (SESION) cargar(); else pedirAcceso();

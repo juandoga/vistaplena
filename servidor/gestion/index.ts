@@ -1,8 +1,15 @@
 // Vista Plena — gestión privada: leer los avisos de error de los lectores y corregir temas a mano.
 //
-// Acceso sin clave: la página pide un enlace, que llega por correo a la dirección guardada en ajustes («gestion_correo»).
-// Al abrir el enlace se crea una sesión de 180 días que el navegador guarda. Solo se guardan huellas SHA-256, nunca los valores.
+// Tres formas de entrar, todas acaban en una sesión de 180 días que el navegador guarda (solo se guardan huellas SHA-256):
+//  1. Con Google: el botón de Google da un token firmado; se comprueba con las claves públicas de Google y que el correo
+//     sea el de ajustes («gestion_google»). Necesita el identificador de cliente de Google en ajustes («google_client_id»).
+//  2. Con contraseña: se guarda solo su huella PBKDF2 (ajustes «gestion_clave_pbkdf2»). Como mucho 5 fallos cada 15 minutos.
+//  3. Con un enlace al correo de ajustes («gestion_correo»): sirve también para recuperar el acceso.
 //
+// GET  ?q=config                          qué formas de entrar están activas (sin sesión)
+// POST {accion:"entrar_google", credencial}
+// POST {accion:"entrar_clave", clave}
+// POST {accion:"poner_clave", clave}      (con sesión) crea o cambia la contraseña
 // POST {accion:"pedir_enlace"}            manda el enlace (como mucho 1 cada 2 minutos y 10 al día)
 // POST {accion:"entrar", enlace}          cambia el enlace (30 minutos, un solo uso) por una sesión
 // Con la cabecera x-sesion:
@@ -14,6 +21,7 @@
 // POST {accion:"dudosa", articulo_id, decision:"sacar"|"bien"}
 // POST {accion:"salir"}
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
+import { createRemoteJWKSet, jwtVerify } from "npm:jose@5.9.6";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 const RESEND = Deno.env.get("RESEND_API_KEY") ?? "";
@@ -49,15 +57,56 @@ async function pedirEnlace() {
   return respuesta;
 }
 
+const ajuste = async (nombre: string) => (await db.from("ajustes").select("valor").eq("nombre", nombre).maybeSingle()).data?.valor ?? null;
+async function nuevaSesion(via: string) {
+  const sesion = aleatorio();
+  await db.from("gestion_accesos").insert({ huella: await huella(sesion), tipo: "sesion", via, caduca: new Date(Date.now() + 180 * 864e5).toISOString() });
+  await db.from("gestion_accesos").delete().lt("caduca", new Date(Date.now() - 864e5).toISOString());
+  return json({ ok: true, sesion });
+}
+
+// Contraseña: PBKDF2-SHA256 con sal aleatoria («pbkdf2$iteraciones$sal$huella», en base64)
+const b64 = (u: Uint8Array) => btoa(String.fromCharCode(...u));
+const deB64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+async function pbkdf2(clave: string, sal: Uint8Array, iter: number) {
+  const k = await crypto.subtle.importKey("raw", new TextEncoder().encode(clave), "PBKDF2", false, ["deriveBits"]);
+  return new Uint8Array(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: sal, iterations: iter }, k, 256));
+}
+const iguales = (a: Uint8Array, b: Uint8Array) => a.length === b.length && a.reduce((d, x, i) => d | (x ^ b[i]), 0) === 0;
+
+async function entrarClave(clave: string) {
+  const { count } = await db.from("gestion_accesos").select("id", { count: "exact", head: true }).eq("tipo", "fallo").gt("creado", new Date(Date.now() - 15 * 60e3).toISOString());
+  if ((count ?? 0) >= 5) return json({ error: "Demasiados intentos fallidos. Espera 15 minutos o entra con Google o con el enlace al correo." }, 429);
+  const guardada = await ajuste("gestion_clave_pbkdf2");
+  if (!guardada) return json({ error: "Todavía no hay contraseña. Entra con el enlace al correo y créala dentro." }, 401);
+  const [, iter, sal, h] = guardada.split("$");
+  if (!iguales(await pbkdf2(String(clave ?? ""), deB64(sal), Number(iter)), deB64(h))) {
+    await db.from("gestion_accesos").insert({ huella: "fallo-" + aleatorio(), tipo: "fallo", caduca: new Date(Date.now() + 864e5).toISOString() });
+    return json({ error: "Contraseña incorrecta." }, 401);
+  }
+  return await nuevaSesion("clave");
+}
+
+const GOOGLE_CLAVES = createRemoteJWKSet(new URL("https://www.googleapis.com/oauth2/v3/certs"));
+async function entrarGoogle(credencial: string) {
+  const cliente = await ajuste("google_client_id");
+  if (!cliente) return json({ error: "La entrada con Google todavía no está configurada." }, 400);
+  try {
+    const { payload } = await jwtVerify(String(credencial ?? ""), GOOGLE_CLAVES, { audience: cliente, issuer: ["https://accounts.google.com", "accounts.google.com"] });
+    const permitidos = String(await ajuste("gestion_google") ?? "").toLowerCase().split(/[,\s]+/).filter(Boolean);
+    const correo = String(payload.email ?? "").toLowerCase();
+    if (!payload.email_verified || !permitidos.includes(correo)) return json({ error: `La cuenta ${correo || "de Google"} no tiene acceso a la gestión.` }, 403);
+    return await nuevaSesion("google");
+  } catch (_) {
+    return json({ error: "Google no ha confirmado la identidad. Vuelve a intentarlo." }, 401);
+  }
+}
+
 async function entrar(enlace: string) {
   const { data: fila } = await db.from("gestion_accesos").select("id, caduca, usado").eq("huella", await huella(String(enlace ?? ""))).eq("tipo", "enlace").maybeSingle();
   if (!fila || fila.usado || new Date(fila.caduca) < new Date()) return json({ error: "El enlace no vale: ya se usó o han pasado más de 30 minutos. Pide otro." }, 401);
   await db.from("gestion_accesos").update({ usado: ahora() }).eq("id", fila.id);
-  const sesion = aleatorio();
-  await db.from("gestion_accesos").insert({ huella: await huella(sesion), tipo: "sesion", caduca: new Date(Date.now() + 180 * 864e5).toISOString() });
-  // Limpieza: enlaces y sesiones caducados
-  await db.from("gestion_accesos").delete().lt("caduca", new Date(Date.now() - 864e5).toISOString());
-  return json({ ok: true, sesion });
+  return await nuevaSesion("enlace");
 }
 
 Deno.serve(async (req) => {
@@ -67,6 +116,9 @@ Deno.serve(async (req) => {
     const b = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     if (b.accion === "pedir_enlace") return await pedirEnlace();
     if (b.accion === "entrar") return await entrar(b.enlace);
+    if (b.accion === "entrar_clave") return await entrarClave(b.clave);
+    if (b.accion === "entrar_google") return await entrarGoogle(b.credencial);
+    if (req.method === "GET" && q === "config") return json({ google: await ajuste("google_client_id"), clave: !!(await ajuste("gestion_clave_pbkdf2")) });
 
     // A partir de aquí hace falta una sesión válida
     const h = await huella(req.headers.get("x-sesion") ?? "");
@@ -118,6 +170,14 @@ Deno.serve(async (req) => {
           await db.from("historia_vetos").upsert({ articulo_id: b.articulo_id, historia_id: d.historia_id }, { onConflict: "articulo_id,historia_id", ignoreDuplicates: true });
         }
         await db.from("historias_dudosas").update({ decision: b.decision === "sacar" ? "sacar" : "bien" }).eq("articulo_id", b.articulo_id);
+        return json({ ok: true });
+      }
+      if (b.accion === "poner_clave") {
+        const clave = String(b.clave ?? "");
+        if (clave.length < 10) return json({ error: "La contraseña debe tener al menos 10 caracteres." }, 400);
+        const sal = crypto.getRandomValues(new Uint8Array(16)), iter = 210000;
+        const valor = `pbkdf2$${iter}$${b64(sal)}$${b64(await pbkdf2(clave, sal, iter))}`;
+        await db.from("ajustes").upsert({ nombre: "gestion_clave_pbkdf2", valor }, { onConflict: "nombre" });
         return json({ ok: true });
       }
       if (b.accion === "salir") {
