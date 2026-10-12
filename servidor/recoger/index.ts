@@ -152,9 +152,10 @@ const FUERA = new RegExp(`^https?://[^/]+/(?:(?:es/)?(?:${REGIONES})|(?:es/|espa
 // Método: se buscan los titulares más centrales (núcleo duro, por parecido entre pares) y su vocabulario común.
 // Cada titular se mide por la parte de su peso que es vocabulario del hecho (las palabras raras pesan más).
 // Los que no llegan al umbral salen. ?fase=depurar&probar=1 solo informa; &historia=ID revisa una sola; &dias=N (por defecto 2).
-const UMBRAL_DEP_DEF = 0.5;
+const UMBRAL_DEP_DEF = 0.2, UMBRAL_FIRMA_DEF = 0.35;
 async function depurar(url: URL) {
   const UMBRAL_DEP = Number(url.searchParams.get("umbral") || UMBRAL_DEP_DEF);
+  const UMBRAL_FIRMA = Number(url.searchParams.get("umbral_firma") || UMBRAL_FIRMA_DEF);
   const probar = url.searchParams.get("probar") === "1";
   const unaH = Number(url.searchParams.get("historia") || 0);
   const dias = Math.min(14, Number(url.searchParams.get("dias") || 2));
@@ -209,8 +210,20 @@ async function depurar(url: URL) {
     // Cobertura: qué parte del titular (por peso) es vocabulario del hecho. Un titular de otro hecho trae palabras
     // propias de peso («Barça», «UEFA», «médicos», «paros indefinidos») que el hecho no tiene, y su cobertura baja.
     const media = (i: number) => { let c = 0; for (const w of L[i].w) if (vocab.has(w)) c += peso(w); return Math.round(100 * c / L[i].tot) / 100; };
-    const nucleo = new Set<number>([...duro, ...L.map((_, i) => i).filter((i) => media(i) >= UMBRAL_DEP)]);
-    if (url.searchParams.get("todo") === "1" && unaH) informe.push({ puntuaciones: L.map((a, i) => `${media(i)} · ${a.titulo}`).sort() });
+    // Firma de otro hecho: el titular trae 2 o más palabras raras que no son del hecho y que se repiten juntas
+    // en otros 2 titulares de la historia (p. ej. «médicos», «aplazan», «indefinida»; o «Barça», «UEFA», «Arsenal»).
+    const RARA_D = Math.log((N + 1) / (N / 40 + 1));
+    const firma = (i: number) => {
+      const nuevas = L[i].w.filter((w: string) => !vocab.has(w) && peso(w) >= RARA_D);
+      if (nuevas.length < 2) return false;
+      let otros = 0;
+      for (let j = 0; j < L.length; j++) if (j !== i && nuevas.filter((w: string) => L[j].set.has(w)).length >= 2) otros++;
+      return otros >= 2;
+    };
+    // Sale si casi nada del titular es del hecho, o si es poco y además trae la firma de otro hecho
+    const sale = (i: number) => media(i) < UMBRAL_DEP || (media(i) < UMBRAL_FIRMA && firma(i));
+    const nucleo = new Set<number>([...duro, ...L.map((_, i) => i).filter((i) => !sale(i))]);
+    if (url.searchParams.get("todo") === "1" && unaH) informe.push({ puntuaciones: L.map((a, i) => `${sale(i) ? "SALE" : "queda"} ${media(i)}${firma(i) ? " firma" : ""} · ${a.titulo}`).sort() });
     const fuera = L.filter((_, i) => !nucleo.has(i));
     if (!fuera.length) continue;
     // Titular de la historia: el más central del núcleo
