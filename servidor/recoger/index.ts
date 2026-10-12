@@ -333,6 +333,16 @@ Deno.serve(async (req) => {
   }
   // Una historia solo admite titulares nuevos si se ha movido en las últimas 12 horas
   const VIVA = 12 * 3600e3;
+  // Parecido entre dos titulares: comparten 2 o más palabras, una de ellas poco frecuente, y lo compartido pesa
+  // al menos un 35 % del titular nuevo
+  const porIdA = new Map(arts.map((x) => [x.id, x]));
+  const pareceA = (a: any, b: any) => {
+    if (!b) return false;
+    const sb = new Set(b.palabras);
+    let comp = 0, n = 0, raras = 0, tot = 0;
+    for (const w of a.palabras) { tot += peso(w); if (sb.has(w)) { comp += peso(w); n++; if (peso(w) >= RARA) raras++; } }
+    return n >= 2 && raras >= 1 && comp / (tot || 1) >= 0.35;
+  };
   // Historia de la que salió cada artículo «con novedad»: si nadie más cuenta esa novedad, vuelve a ella
   const deDonde = new Map<number, Grupo>();
   let nuevos = 0, separados = 0;
@@ -352,7 +362,16 @@ Deno.serve(async (req) => {
       const score = comp / total;
       // Además tiene que compartir al menos una palabra poco frecuente (un nombre, un dato, un tema concreto):
       // dos titulares que solo coinciden en «PSOE» o «Gobierno» no tienen por qué hablar de lo mismo.
-      return raras >= 1 && ((n >= 3 && score >= 0.4) || (n >= 2 && score >= 0.6)) ? score : 0;
+      if (!(raras >= 1 && ((n >= 3 && score >= 0.4) || (n >= 2 && score >= 0.6)))) return 0;
+      // Historias pequeñas (2 a 8 titulares): el titular tiene que parecerse a la mitad o más de ellos, no solo a uno.
+      // Sin esto se encadenan hechos distintos: «huelga general en noviembre» → «elecciones del 29 de noviembre»
+      // → «los médicos aplazan su huelga por las elecciones»…
+      if (!antigua && g.ids.length >= 2 && g.ids.length <= 8) {
+        let parecidos = 0;
+        for (const id of g.ids) if (pareceA(a, porIdA.get(id))) parecidos++;
+        if (parecidos * 2 < g.ids.length) return 0;
+      }
+      return score;
     };
     let mejor: Grupo | null = null, mejorScore = 0;
     for (const g of candidatos) {
