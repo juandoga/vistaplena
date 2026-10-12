@@ -532,7 +532,7 @@ async function buscar(q){
     const ids = await pedir(`rpc/buscar?q=${encodeURIComponent(q)}`);
     if (mio !== turno) return;
     if (!ids.length) { res.innerHTML = `<p class="vacia">No hay noticias de los últimos 14 días con «${esc(q)}». Prueba con menos palabras o con otra forma de decirlo.</p>`; return; }
-    const filas = await pedir(`portada_v2?select=${CAMPOS}&id=in.(${ids.map(x => x.id).join(",")})`);
+    const filas = await pedir(`portada_m?select=${CAMPOS}&id=in.(${ids.map(x => x.id).join(",")})`);
     if (mio !== turno) return;
     const orden = new Map(ids.map((x, i) => [x.id, i]));
     const H = filas.map(mapear).sort((a, b) => orden.get(a.id) - orden.get(b.id));

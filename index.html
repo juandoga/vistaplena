@@ -480,6 +480,13 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 const SNAPSHOT = /*SNAPSHOT*/null;
 const NIVELES = [[-2,"Izquierda","var(--izq)"],[-1,"Centroizquierda","var(--izq)"],[0,"Centro","var(--cen)"],[1,"Centroderecha","var(--der)"],[2,"Derecha","var(--der)"]];
 let DATA = SNAPSHOT || { medios: [], historias: [], generado: null };
+// Estado de la carga: «cargando» hasta que llegan los datos, «error» si no llegan
+let CARGA = "cargando", TEMAS_GUARDADOS = [];
+// La última portada que vio este lector (menos de 12 horas): se enseña al instante mientras llega la nueva
+try {
+  const g = JSON.parse(localStorage.getItem("vp-portada") || "null");
+  if (g && g.guardada > Date.now() - 12 * 3600e3 && g.data && g.data.historias && g.data.historias.length) { DATA = g.data; TEMAS_GUARDADOS = g.temas || []; }
+} catch (e) {}
 const PARAM = new URLSearchParams(location.search);
 let vista = ["ciegos","izquierda","derecha"].includes(PARAM.get("vista")) ? PARAM.get("vista") : "portada";
 const fh = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
@@ -545,7 +552,7 @@ const porque = h => `<p class="porque"><b>Lo más contado ahora</b>${info(`Abre 
 // Cabecera de sección: la explicación va en el botón «i»; con visible = true se muestra debajo (para datos, no para explicaciones)
 const cab = (t, p, visible) => `<div class="cab-seccion"><h2>${t}${p && !visible ? info(p, `Qué es «${t}»`) : ""}</h2>${p && visible ? `<p>${p}</p>` : ""}</div>`;
 // Temas: asuntos de varios días que reúnen varias historias (los calcula el servidor cada hora; ver tema.html)
-let TEMAS = new Map();
+let TEMAS = new Map(TEMAS_GUARDADOS.map(t => [t.id, t]));
 let seccion = new URLSearchParams(location.search).get("seccion");
 // Última visita: los temas con novedades desde entonces llevan un punto
 let VISITA_PREVIA = null;
@@ -597,7 +604,11 @@ function render(){
     lista.forEach(h => rej.appendChild(pieza(h)));
     c.appendChild(rej);
   } else if (vista === "portada") {
-    if (!H.length) { c.innerHTML = `<p class="vacia">Todavía no hay noticias agrupadas. La recogida se hace cada hora.</p>`; }
+    if (!H.length) {
+      c.innerHTML = CARGA === "cargando" ? `<p class="vacia">Cargando las noticias…</p>`
+        : CARGA === "error" ? `<p class="vacia">No se han podido cargar las noticias. Puede ser la conexión. <button class="boton secundario" type="button" onclick="location.reload()">Volver a intentarlo</button></p>`
+        : `<p class="vacia">Todavía no hay noticias agrupadas. La recogida se hace cada hora.</p>`;
+    }
     else {
       const P = unaPorTema(H);
       P.forEach((h, i) => h.idx = i);
@@ -646,7 +657,7 @@ function render(){
   document.getElementById("nMedios").textContent = M.length || 21;
   document.getElementById("escala").innerHTML = NIVELES.map(([v, n, col]) =>
     `<div><h4 style="border-color:${col};${Math.abs(v)===1?"border-top-style:dashed":""}">${n}</h4><ul>${M.filter(m => m.o === v).map(m => `<li>${esc(m.n)}</li>`).join("")}</ul></div>`).join("");
-  document.getElementById("estado").textContent = DATA.generado ? `Actualizado ${haceCuanto(DATA.generado)} · ${M.length} medios` : "Sin datos";
+  document.getElementById("estado").textContent = DATA.generado ? `Actualizado ${haceCuanto(DATA.generado)} · ${M.length} medios` : CARGA === "cargando" ? "Cargando…" : "Sin datos";
 }
 const guia = document.getElementById("guia");
 function guiaVisible(v){ guia.hidden = !v; try { localStorage.setItem("contraste-guia", v ? "1" : "0"); } catch(e){} }
@@ -660,16 +671,17 @@ if (vista !== "portada") document.querySelectorAll('.top .navlink').forEach(l =>
 });
 render();
 
-// Datos en directo desde Supabase (funciona cuando la página está en una web propia, como GitHub Pages)
-(async () => {
+// Datos en directo desde Supabase. Se lee portada_m, una copia ya calculada que se renueva cada 5 minutos.
+// Si falla (mala conexión), se reintenta dos veces antes de rendirse.
+(async function cargarPortada(intento = 1){
   try {
     // Los puntos ciegos se piden aparte: por definición los cuentan pocos medios y no entrarían entre las 40 más contadas
     const [hist, ciegos, ultimas, med, temas] = await Promise.all([
       // Orden de la portada: medios que han contado la historia en las últimas 12 horas (lo que está pasando ahora)
-      pedir(`portada_v2?select=${CAMPOS}&order=peso.desc,voces.desc,actualizada.desc&limit=40`),
-      pedir(`portada_v2?select=${CAMPOS}&punto_ciego=not.is.null&order=voces.desc,actualizada.desc&limit=30`),
+      pedir(`portada_m?select=${CAMPOS}&order=peso.desc,voces.desc,actualizada.desc&limit=40`),
+      pedir(`portada_m?select=${CAMPOS}&punto_ciego=not.is.null&order=voces.desc,actualizada.desc&limit=30`),
       // «Lo último»: las historias más recientes, aunque aún las cuenten pocos medios
-      pedir(`portada_v2?select=${CAMPOS}&order=creada.desc&limit=14`),
+      pedir(`portada_m?select=${CAMPOS}&order=creada.desc&limit=14`),
       pedir("medios?select=nombre,orientacion,ultima_lectura&activo=eq.true&order=orientacion,nombre"),
       // Temas activos (asuntos de varios días); si fallan, la portada funciona igual
       pedir("temas_v?select=id,nombre,actualizado,historias,nuevas_48h,sueltos_12h,medios_12h,izq_12h,cen_12h,der_12h&activo=eq.true").catch(() => [])
@@ -688,8 +700,13 @@ render();
     // Hora real de la última lectura de los medios (no la hora a la que se abrió la página)
     const ultima = med.map(m => m.ultima_lectura).filter(Boolean).sort().pop() || null;
     DATA = { generado: ultima, medios: med.map(m => ({ n: m.nombre, o: m.orientacion })), historias: todas.map(mapear), ultimas: ultimas.map(mapear), desarrollo: enDes };
+    CARGA = "ok";
     render();
-  } catch (e) { /* sin conexión: se queda la última edición guardada */ }
+    try { localStorage.setItem("vp-portada", JSON.stringify({ guardada: Date.now(), data: DATA, temas: [...TEMAS.values()] })); } catch (e) {}
+  } catch (e) {
+    if (intento < 3) return setTimeout(() => cargarPortada(intento + 1), intento * 2000);
+    CARGA = "error"; render();
+  }
 })();
 
 // Boletín: alta y mensajes al volver de los enlaces del correo

@@ -713,8 +713,8 @@ function pintar(h){
 async function hilo(h){
   try {
     const [antes, despues] = await Promise.all([
-      h.ant ? pedir(`portada_v2?select=id,titulo,creada&id=eq.${h.ant}`).then(r => r[0] || pedir(`archivo?select=historia_id,titulo,creada&historia_id=eq.${h.ant}`).then(x => x[0] && { id: x[0].historia_id, titulo: x[0].titulo, creada: x[0].creada })) : null,
-      pedir(`portada_v2?select=id,titulo,creada&anterior=eq.${h.id}&order=creada.desc&limit=1`).then(r => r[0])]);
+      h.ant ? pedir(`portada_m?select=id,titulo,creada&id=eq.${h.ant}`).then(r => r[0] || pedir(`archivo?select=historia_id,titulo,creada&historia_id=eq.${h.ant}`).then(x => x[0] && { id: x[0].historia_id, titulo: x[0].titulo, creada: x[0].creada })) : null,
+      pedir(`portada_m?select=id,titulo,creada&anterior=eq.${h.id}&order=creada.desc&limit=1`).then(r => r[0])]);
     const p = document.getElementById("hilo"), dia = x => new Date(x.creada).toLocaleDateString("es-ES", { day: "numeric", month: "short" });
     const partes = [];
     if (antes) partes.push(`<span><b>Antes:</b> <a href="${urlNoticia(antes.id, antes.titulo)}">${esc(antes.titulo)}</a> (${dia(antes)})</span>`);
@@ -728,7 +728,7 @@ async function enTema(h){
   try {
     const [t, otras] = await Promise.all([
       pedir(`temas_v?select=id,nombre,historias,activo&id=eq.${h.tema}`).then(r => r[0]),
-      pedir(`portada_v2?select=id,titulo,creada,total&tema_id=eq.${h.tema}&order=creada.desc&limit=8`)]);
+      pedir(`portada_m?select=id,titulo,creada,total&tema_id=eq.${h.tema}&order=creada.desc&limit=8`)]);
     if (!t) return hilo(h);
     const lista = otras.filter(x => x.id !== h.id).slice(0, 3);
     const dia = x => new Date(x.creada).toLocaleDateString("es-ES", { day: "numeric", month: "short" });
@@ -746,7 +746,7 @@ const VACIAS_R = new Set("para sobre desde contra entre hasta tras como pero por
 const claves = t => new Set(t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").split(/[^a-z0-9]+/).filter(w => w.length >= 5 && !VACIAS_R.has(w)));
 async function relacionadas(h){
   try {
-    const otras = (await pedir(`portada_v2?select=id,titulo,total,pct_izq,pct_cen,pct_der,punto_ciego,actualizada,imagen,imagen_medio&order=total.desc&limit=120`))
+    const otras = (await pedir(`portada_m?select=id,titulo,total,pct_izq,pct_cen,pct_der,punto_ciego,actualizada,imagen,imagen_medio&order=total.desc&limit=120`))
       .filter(x => x.id !== h.id);
     const mias = new Set([...claves(h.t), ...h.a.flatMap(a => [...claves(a.t)])]);
     const lista = otras.map(x => ({ x, n: [...claves(x.titulo)].filter(w => mias.has(w)).length })).filter(o => o.n >= 2)
@@ -765,7 +765,7 @@ async function relacionadas(h){
 (async () => {
   if (!id) return noEncontrada();
   try {
-    const filas = await pedir(`portada_v2?id=eq.${id}&select=${CAMPOS}`);
+    const filas = await pedir(`portada_m?id=eq.${id}&select=${CAMPOS}`);
     if (!filas.length) return document.body.dataset.id ? null : noEncontrada();
     const h = mapear(filas[0]);
     pintar(h);

@@ -668,7 +668,7 @@ Promise.all([fetch("programas.json").then(r => r.json()), fetch("guia.json").the
 const ELECTORAL = /(\b(?:re)?elecci|\b29-?n\b|campaña|candidat|debates? electoral|cara a cara|encuesta|sondeo|listas electorales|frente amplio|voto por correo|junta electoral|mitin|programa electoral|interventores)/i;
 async function campana(){
   try {
-    const filas = await pedir(`portada_v2?select=${CAMPOS},izq,cen,der,peso&actualizada=gte.${new Date(Date.now() - 48 * 3600e3).toISOString()}&order=peso.desc&limit=150`);
+    const filas = await pedir(`portada_m?select=${CAMPOS},izq,cen,der,peso&actualizada=gte.${new Date(Date.now() - 48 * 3600e3).toISOString()}&order=peso.desc&limit=150`);
     const L = filas.map(x => ({ ...mapear(x), izq: x.izq, cen: x.cen, der: x.der }))
       .filter(h => ELECTORAL.test(h.t) || h.a.filter(a => ELECTORAL.test(a.t)).length >= Math.max(2, h.a.length / 3)).slice(0, 8);
     if (!L.length) return;
@@ -688,7 +688,7 @@ campana();
     if (r.ok) { VOT = await r.json(); pintar(); }
   } catch (e) {}
   try {
-    const r = await fetch(`${SUPA.url}/rest/v1/portada_v2?select=id,titulo,total,voces,pct_izq,pct_cen,pct_der,articulos&order=voces.desc&limit=80`, { headers: h });
+    const r = await fetch(`${SUPA.url}/rest/v1/portada_m?select=id,titulo,total,voces,pct_izq,pct_cen,pct_der,articulos&order=voces.desc&limit=80`, { headers: h });
     if (!r.ok) return;
     HIST = (await r.json()).map(x => ({ id: x.id, t: x.titulo, tot: x.total, pi: x.pct_izq, pc: x.pct_cen, pd: x.pct_der, a: (x.articulos || []).map(a => ({ t: a.titulo })) }));
     pintar();

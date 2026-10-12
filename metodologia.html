@@ -635,7 +635,7 @@ const ETI = { "-2": "Izquierda", "-1": "Centroizquierda", "0": "Centro", "1": "C
 const COL = { "-2": "var(--izq)", "-1": "var(--izq)", "0": "var(--cen)", "1": "var(--der)", "2": "var(--der)" };
 const fecha = d => d ? new Date(d + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }) : "";
 document.getElementById("d-medios").href = `${SUPA.url}/rest/v1/estado_medios?select=*&apikey=${SUPA.key}`;
-document.getElementById("d-historias").href = `${SUPA.url}/rest/v1/portada_v2?select=*&order=voces.desc&apikey=${SUPA.key}`;
+document.getElementById("d-historias").href = `${SUPA.url}/rest/v1/portada_m?select=*&order=voces.desc&apikey=${SUPA.key}`;
 document.getElementById("d-archivo").href = `${SUPA.url}/rest/v1/archivo?select=*&fusionada=eq.false&order=creada.desc&apikey=${SUPA.key}`;
 const coma = n => Number(n).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const medicion = m => {

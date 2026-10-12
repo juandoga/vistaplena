@@ -657,7 +657,7 @@ function pintar(t, H, S = []){
   try {
     const [temas, filas, sueltos] = await Promise.all([
       pedir(`temas_v?select=id,nombre,inicio,actualizado,historias,activo&id=eq.${id}`),
-      pedir(`portada_v2?select=${CAMPOS},izq,cen,der&tema_id=eq.${id}&order=creada.desc`),
+      pedir(`portada_m?select=${CAMPOS},izq,cen,der&tema_id=eq.${id}&order=creada.desc`),
       pedir(`articulos?select=titulo,url,publicado,medios(nombre,orientacion)&tema_id=eq.${id}&order=publicado.desc&limit=40`).catch(() => [])]);
     if (!temas.length || !filas.length) return document.body.dataset.id ? null : noEncontrado();
     const H = filas.map(x => ({ ...mapear(x), izq: x.izq, cen: x.cen, der: x.der })).sort((a, b) => new Date(inicio(b)) - new Date(inicio(a)));
