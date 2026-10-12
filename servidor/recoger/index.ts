@@ -144,12 +144,98 @@ const SECCIONES = // opinión: son columnas y editoriales, no noticias
   "empresas-al-dia|patrocinado|contenido-patrocinado|branded|publirreportaje|comprar|compras|ofertas|videojuegos|tecnologia-consumo|curiosidades|virales|horoscopo|loterias?";
 const FUERA = new RegExp(`^https?://[^/]+/(?:(?:es/)?(?:${REGIONES})|(?:es/|espana/)?(?:${SECCIONES}))(?:/|$)`, "i");
 
+
+// ---------- Depuración de historias ----------
+// Una historia debe contar UN hecho. Si a lo largo de las horas se le han ido pegando titulares de otros hechos
+// (p. ej. «la huelga general por la vivienda» acabó con «los médicos aplazan su huelga» o «el Barça pide aplazar
+// un partido»), aquí se detectan y se sacan, para que se reagrupen en su propia historia.
+// Método: parecido entre cada par de titulares (peso de las palabras compartidas, las raras pesan más); se toma
+// el titular más central y se le van sumando los que, de media, más se parecen al grupo central. Los que nunca
+// llegan al umbral salen. ?fase=depurar&probar=1 solo informa; &historia=ID revisa una sola; &dias=N (por defecto 2).
+const UMBRAL_DEP = 0.16;
+async function depurar(url: URL) {
+  const probar = url.searchParams.get("probar") === "1";
+  const unaH = Number(url.searchParams.get("historia") || 0);
+  const dias = Math.min(14, Number(url.searchParams.get("dias") || 2));
+  const desdeD = new Date(Date.now() - dias * 864e5).toISOString();
+  let qh = db.from("historias").select("id, titulo, actualizada");
+  qh = unaH ? qh.eq("id", unaH) : qh.gte("actualizada", desdeD);
+  const { data: hs } = await qh.limit(2000);
+  if (!hs?.length) return { historias: 0 };
+  // Artículos de esas historias
+  const ids = hs.map((h) => h.id);
+  const arts: any[] = [];
+  for (let i = 0; i < ids.length; i += 150) {
+    for (let p = 0; p < 10; p++) {
+      const { data } = await db.from("articulos").select("id, historia_id, medio_id, titulo, resumen, palabras, publicado").in("historia_id", ids.slice(i, i + 150)).order("id").range(p * 1000, p * 1000 + 999);
+      arts.push(...(data ?? []));
+      if (!data || data.length < 1000) break;
+    }
+  }
+  // Frecuencia de cada palabra en los titulares del mismo periodo (para saber cuáles son raras)
+  const minPub = arts.reduce((m, a) => Math.min(m, +new Date(a.publicado)), Date.now());
+  const base: any[] = [];
+  for (let p = 0; p < 25; p++) {
+    const { data } = await db.from("articulos").select("titulo").gte("publicado", new Date(minPub - 864e5).toISOString()).order("id").range(p * 1000, p * 1000 + 999);
+    base.push(...(data ?? []));
+    if (!data || data.length < 1000) break;
+  }
+  const df = new Map<string, number>();
+  for (const b of base) for (const w of palabras(b.titulo)) df.set(w, (df.get(w) ?? 0) + 1);
+  const N = base.length || 1;
+  const peso = (w: string) => Math.log((N + 1) / ((df.get(w) ?? 0) + 1));
+  for (const a of arts) { const t = palabras(a.titulo); a.w = t.length >= 2 ? t : (a.palabras ?? []); a.tot = a.w.reduce((s: number, w: string) => s + peso(w), 0) || 1; a.set = new Set(a.w); }
+  const sim = (a: any, b: any) => { let c = 0; for (const w of a.w) if (b.set.has(w)) c += peso(w); return c / Math.min(a.tot, b.tot); };
+  const porH = new Map<number, any[]>();
+  for (const a of arts) { const l = porH.get(a.historia_id) ?? []; l.push(a); porH.set(a.historia_id, l); }
+  const informe: any[] = [];
+  let sacados = 0, revisadas = 0;
+  for (const h of hs) {
+    const L = porH.get(h.id) ?? [];
+    if (L.length < 4) continue;
+    revisadas++;
+    const S = L.map((a) => L.map((b) => (a === b ? 0 : sim(a, b))));
+    const centralidad = S.map((fila) => fila.reduce((x, y) => x + y, 0) / (L.length - 1));
+    const semilla = centralidad.indexOf(Math.max(...centralidad));
+    const nucleo = new Set<number>([semilla]);
+    // Se añade cada vez el titular que más se parece, de media, al núcleo; se para cuando ninguno llega al umbral
+    for (;;) {
+      let mejor = -1, mejorM = 0;
+      for (let i = 0; i < L.length; i++) {
+        if (nucleo.has(i)) continue;
+        let m = 0; for (const j of nucleo) m += S[i][j];
+        m /= nucleo.size;
+        if (m > mejorM) { mejorM = m; mejor = i; }
+      }
+      if (mejor < 0 || mejorM < UMBRAL_DEP) break;
+      nucleo.add(mejor);
+    }
+    const fuera = L.filter((_, i) => !nucleo.has(i));
+    if (!fuera.length) continue;
+    const media = (i: number) => { let m = 0; for (const j of nucleo) m += S[i][j]; return Math.round(100 * m / nucleo.size) / 100; };
+    // Titular de la historia: el más central del núcleo
+    const centro = [...nucleo].sort((x, y) => centralidad[y] - centralidad[x])[0];
+    informe.push({ historia: h.id, titulo_antes: h.titulo, titulo_despues: L[centro].titulo, quedan: nucleo.size, salen: fuera.length,
+      ejemplos_salen: L.map((a, i) => ({ a, i })).filter((x) => !nucleo.has(x.i)).slice(0, 8).map((x) => `${media(x.i)} · ${x.a.titulo}`) });
+    if (!probar) {
+      // Si se queda con un solo medio, la historia deja de verse (hace falta 2 o más); sus artículos vuelven a quedar sueltos
+      await db.from("articulos").update({ historia_id: null }).in("id", fuera.map((a) => a.id));
+      const top = new Map<string, number>(); for (const i of nucleo) for (const w of L[i].w) top.set(w, (top.get(w) ?? 0) + 1);
+      await db.from("historias").update({ titulo: L[centro].titulo, resumen: L[centro].resumen, palabras: [...top.entries()].sort((x, y) => y[1] - x[1]).slice(0, 40).map((e) => e[0]) }).eq("id", h.id);
+    }
+    sacados += fuera.length;
+  }
+  informe.sort((x, y) => y.salen - x.salen);
+  return { probar, revisadas, con_cambios: informe.length, articulos_que_salen: sacados, umbral: UMBRAL_DEP, detalle: informe.slice(0, unaH ? 1 : 40) };
+}
+
 // ---------- Programa principal ----------
 // El trabajo se hace en dos fases para no superar el límite de cálculo de cada ejecución:
 // ?fase=leer descarga los titulares; ?fase=agrupar los junta en historias.
 Deno.serve(async (req) => {
   if (!(await esInterna(req))) return noInterna();
   const fase = new URL(req.url).searchParams.get("fase") ?? "todo";
+  if (fase === "depurar") return new Response(JSON.stringify(await depurar(new URL(req.url)), null, 1), { headers: { "Content-Type": "application/json" } });
   const informe: Record<string, string | number> = {};
   const { data: medios } = await db.from("medios").select("*").eq("activo", true);
   const desde = Date.now() - VENTANA_H * 3600e3;
