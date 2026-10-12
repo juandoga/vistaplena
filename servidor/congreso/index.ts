@@ -74,7 +74,8 @@ function partidoMixto(nombre: string, formacion: string): string {
 Deno.serve(async (req) => {
   if (!(await esInterna(req))) return noInterna();
   // 1. Días con votaciones (la propia página los lista para su calendario)
-  const portada = await texto(pagina());
+  // Si la portada de datos abiertos no responde, se siguen cargando los días ya apuntados
+  const portada = await texto(pagina()).catch(() => "");
   const dias = (portada.match(/var diasVotaciones\s*=\s*\[([^\]]*)\]/)?.[1] ?? "").split(",").map((s) => s.trim()).filter((s) => /^\d{8}$/.test(s));
   if (dias.length) await db.from("congreso_dias").upsert(dias.map((d) => ({ fecha: `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}` })), { onConflict: "fecha", ignoreDuplicates: true });
   // ?fecha=AAAAMMDD fuerza la carga de un día concreto (por si el calendario de la web tarda en incluirlo)
