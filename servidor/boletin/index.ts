@@ -3,6 +3,17 @@
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+// Solo las tareas programadas pueden ejecutar esta función: traen la cabecera x-interna con la clave interna,
+// cuya huella SHA-256 está en la tabla privada «ajustes» (clave_interna_sha256). La clave pública de la web no basta.
+async function esInterna(req: Request): Promise<boolean> {
+  const v = req.headers.get("x-interna") ?? "";
+  if (!v) return false;
+  const h = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v)))).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const { data } = await db.from("ajustes").select("valor").eq("nombre", "clave_interna_sha256").maybeSingle();
+  return !!data?.valor && data.valor === h;
+}
+const noInterna = () => new Response(JSON.stringify({ error: "Solo para tareas internas" }), { status: 401, headers: { "Content-Type": "application/json" } });
 const RESEND = Deno.env.get("RESEND_API_KEY") ?? "";
 const DE = Deno.env.get("NEWSLETTER_FROM") ?? "Vista Plena <onboarding@resend.dev>";
 const WEB = "https://vistaplena.es/";
@@ -114,6 +125,7 @@ Deno.serve(async (req) => {
     }
 
     if (accion === "enviar") {
+      if (!(await esInterna(req))) return noInterna();
       const prueba = u.searchParams.get("prueba"); // envía solo a un suscriptor confirmado, sin contar como envío del día
       const hoy = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Madrid" });
       const { data: H } = await db.from("portada_v2").select("titulo,total,voces,pct_izq,pct_cen,pct_der,punto_ciego,imagen,articulos,actualizada")

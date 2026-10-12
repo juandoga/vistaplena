@@ -10,6 +10,17 @@
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+// Solo las tareas programadas pueden ejecutar esta función: traen la cabecera x-interna con la clave interna,
+// cuya huella SHA-256 está en la tabla privada «ajustes» (clave_interna_sha256). La clave pública de la web no basta.
+async function esInterna(req: Request): Promise<boolean> {
+  const v = req.headers.get("x-interna") ?? "";
+  if (!v) return false;
+  const h = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v)))).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const { data } = await db.from("ajustes").select("valor").eq("nombre", "clave_interna_sha256").maybeSingle();
+  return !!data?.valor && data.valor === h;
+}
+const noInterna = () => new Response(JSON.stringify({ error: "Solo para tareas internas" }), { status: 401, headers: { "Content-Type": "application/json" } });
 const WEB = "https://vistaplena.es";
 const API = "https://api.x.com/2";
 const K = {
@@ -95,6 +106,7 @@ function texto(h: any, desigual: boolean, tipo: string) {
 }
 
 Deno.serve(async (req) => {
+  if (!(await esInterna(req))) return noInterna();
   const q = new URL(req.url).searchParams;
   const tipo = q.get("tipo") === "tarde" ? "tarde" : "manana";
   const probar = q.get("probar") === "1";

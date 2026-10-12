@@ -13,6 +13,17 @@
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+// Solo las tareas programadas pueden ejecutar esta función: traen la cabecera x-interna con la clave interna,
+// cuya huella SHA-256 está en la tabla privada «ajustes» (clave_interna_sha256). La clave pública de la web no basta.
+async function esInterna(req: Request): Promise<boolean> {
+  const v = req.headers.get("x-interna") ?? "";
+  if (!v) return false;
+  const h = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v)))).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const { data } = await db.from("ajustes").select("valor").eq("nombre", "clave_interna_sha256").maybeSingle();
+  return !!data?.valor && data.valor === h;
+}
+const noInterna = () => new Response(JSON.stringify({ error: "Solo para tareas internas" }), { status: 401, headers: { "Content-Type": "application/json" } });
 const DIAS = 7, H = 3600e3;
 
 // Palabras clave (las mismas reglas que la agrupación de historias)
@@ -53,6 +64,7 @@ const esSigla = (w: string) => /^[A-ZÁÉÍÓÚÑ]{2,6}$/.test(w);
 const esMayus = (w: string) => /^[A-ZÁÉÍÓÚÑ][a-záéíóúñü]+(?:-[A-ZÁÉÍÓÚÑ]?[a-záéíóúñü]+)*$/.test(w) && w.length >= 3;
 
 Deno.serve(async (req) => {
+  if (!(await esInterna(req))) return noInterna();
   const url = new URL(req.url);
   const simular = url.searchParams.get("fase") === "simular";
   const desde = new Date(Date.now() - DIAS * 24 * H).toISOString();
