@@ -157,6 +157,8 @@ async function depurar(url: URL) {
   const UMBRAL_DEP = Number(url.searchParams.get("umbral") || UMBRAL_DEP_DEF);
   const UMBRAL_FIRMA = Number(url.searchParams.get("umbral_firma") || UMBRAL_FIRMA_DEF);
   const probar = url.searchParams.get("probar") === "1";
+  // marcar=1: no saca nada; deja los titulares dudosos en «historias_dudosas» para que se decida en la gestión
+  const marcar = url.searchParams.get("marcar") === "1";
   const unaH = Number(url.searchParams.get("historia") || 0);
   const dias = Math.min(14, Number(url.searchParams.get("dias") || 2));
   const desdeD = new Date(Date.now() - dias * 864e5).toISOString();
@@ -173,6 +175,12 @@ async function depurar(url: URL) {
       arts.push(...(data ?? []));
       if (!data || data.length < 1000) break;
     }
+  }
+  // Titulares que una persona ya dio por buenos en la gestión: no se vuelven a proponer ni a sacar
+  const buenos = new Set<number>();
+  for (let i = 0; i < arts.length; i += 300) {
+    const { data } = await db.from("historias_dudosas").select("articulo_id").eq("decision", "bien").in("articulo_id", arts.slice(i, i + 300).map((a) => a.id));
+    for (const d of data ?? []) buenos.add(d.articulo_id);
   }
   // Frecuencia de cada palabra en los titulares del mismo periodo (para saber cuáles son raras)
   const minPub = arts.reduce((m, a) => Math.min(m, +new Date(a.publicado)), Date.now());
@@ -224,7 +232,8 @@ async function depurar(url: URL) {
     let ancla = "", maxA = 0;
     for (const w of vocab) { const c = L.filter((a) => a.set.has(w)).length; if (c > maxA) { maxA = c; ancla = w; } }
     // Sale si casi nada del titular es del hecho, o si es poco y además trae la firma de otro hecho o no nombra el ancla
-    const sale = (i: number) => media(i) < UMBRAL_DEP || (media(i) < UMBRAL_FIRMA && (firma(i) || (!!ancla && !L[i].set.has(ancla))));
+    const sale = (i: number) => !buenos.has(L[i].id) && (media(i) < UMBRAL_DEP || (media(i) < UMBRAL_FIRMA && (firma(i) || (!!ancla && !L[i].set.has(ancla)))));
+    const motivo = (i: number) => media(i) < UMBRAL_DEP ? "casi nada del titular es del hecho" : firma(i) ? "parece otro hecho que se ha colado" : "no nombra lo principal de la historia";
     const nucleo = new Set<number>([...duro, ...L.map((_, i) => i).filter((i) => !sale(i))]);
     if (url.searchParams.get("todo") === "1" && unaH) informe.push({ puntuaciones: L.map((a, i) => `${sale(i) ? "SALE" : "queda"} ${media(i)}${firma(i) ? " firma" : ""} · ${a.titulo}`).sort() });
     const fuera = L.filter((_, i) => !nucleo.has(i));
@@ -233,16 +242,21 @@ async function depurar(url: URL) {
     const centro = [...nucleo].sort((x, y) => centralidad[y] - centralidad[x])[0];
     informe.push({ historia: h.id, titulo_antes: h.titulo, titulo_despues: L[centro].titulo, quedan: nucleo.size, salen: fuera.length,
       ejemplos_salen: L.map((a, i) => ({ a, i })).filter((x) => !nucleo.has(x.i)).slice(0, 8).map((x) => `${media(x.i)} · ${x.a.titulo}`) });
-    if (!probar) {
+    if (marcar) {
+      const filas = L.map((a, i) => ({ a, i })).filter((x) => !nucleo.has(x.i))
+        .map((x) => ({ articulo_id: x.a.id, historia_id: h.id, puntuacion: media(x.i), motivo: motivo(x.i) }));
+      await db.from("historias_dudosas").upsert(filas, { onConflict: "articulo_id", ignoreDuplicates: true });
+    } else if (!probar) {
       // Si se queda con un solo medio, la historia deja de verse (hace falta 2 o más); sus artículos vuelven a quedar sueltos
       await db.from("articulos").update({ historia_id: null }).in("id", fuera.map((a) => a.id));
+      await db.from("historia_vetos").upsert(fuera.map((a) => ({ articulo_id: a.id, historia_id: h.id })), { onConflict: "articulo_id,historia_id", ignoreDuplicates: true });
       const top = new Map<string, number>(); for (const i of nucleo) for (const w of L[i].w) top.set(w, (top.get(w) ?? 0) + 1);
       await db.from("historias").update({ titulo: L[centro].titulo, resumen: L[centro].resumen, palabras: [...top.entries()].sort((x, y) => y[1] - x[1]).slice(0, 40).map((e) => e[0]) }).eq("id", h.id);
     }
     sacados += fuera.length;
   }
   informe.sort((x, y) => y.salen - x.salen);
-  return { probar, revisadas, con_cambios: informe.length, articulos_que_salen: sacados, umbral: UMBRAL_DEP, detalle: informe.slice(0, unaH ? 1 : 40) };
+  return { probar, marcar, revisadas, con_cambios: informe.length, articulos_que_salen: sacados, umbral: UMBRAL_DEP, detalle: informe.slice(0, unaH ? 1 : 40) };
 }
 
 // ---------- Programa principal ----------
@@ -333,6 +347,12 @@ Deno.serve(async (req) => {
   }
   // Una historia solo admite titulares nuevos si se ha movido en las últimas 12 horas
   const VIVA = 12 * 3600e3;
+  // Titulares sacados a mano de una historia (gestión): nunca vuelven a ella
+  const vetos = new Set<string>();
+  {
+    const { data } = await db.from("historia_vetos").select("articulo_id, historia_id").gte("creado", new Date(Date.now() - 3 * 864e5).toISOString());
+    for (const v of data ?? []) vetos.add(v.articulo_id + "-" + v.historia_id);
+  }
   // Parecido entre dos titulares: comparten 2 o más palabras, una de ellas poco frecuente, y lo compartido pesa
   // al menos un 35 % del titular nuevo
   const porIdA = new Map(arts.map((x) => [x.id, x]));
@@ -376,6 +396,7 @@ Deno.serve(async (req) => {
     let mejor: Grupo | null = null, mejorScore = 0;
     for (const g of candidatos) {
       if (!antigua && t - g.ultimo > VIVA) continue; // historia apagada
+      if (g.id && vetos.has(a.id + "-" + g.id)) continue; // sacado a mano de esa historia: no vuelve
       const s = parecido(g);
       if (s > mejorScore) { mejor = g; mejorScore = s; }
     }

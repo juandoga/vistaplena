@@ -394,6 +394,14 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .info-b:hover,.info-b[aria-expanded="true"]{border-color:var(--tinta);color:var(--tinta)}
 .info-p{position:absolute;z-index:20;top:calc(100% + 8px);left:-10px;width:min(320px,80vw);background:var(--fondo);color:var(--texto);border:1px solid var(--linea);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.14);padding:12px 14px;font-size:.85rem;line-height:1.5;text-align:left}
 .info-p a{color:var(--tinta)}
+.dud-h{border-top:1px solid var(--linea);padding:14px 0}
+.dud-tit{color:var(--tinta);font-weight:700;text-decoration:none;font-family:var(--titular)}
+.dud-h ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:12px}
+.dud-h li{display:grid;gap:4px}
+.dud-h li .m{font-size:var(--t-xs);color:var(--gris)}
+.dud-h li a{color:var(--tinta)}
+.dud-bot{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.dud-bot .boton{padding:6px 14px}
 .g-acceso{margin-top:20px;max-width:560px;display:grid;gap:12px;justify-items:start}
 .g-acceso p{margin:0;line-height:1.5}
 .g-acceso .boton{border:0;cursor:pointer}
@@ -482,6 +490,11 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   </div>
 
   <div id="panel" hidden>
+    <section id="dudosas">
+      <h2>Titulares que quizá no encajan <span class="n" id="nDudosas"></span></h2>
+      <p class="aparte">La revisión automática (cada hora) cree que estos titulares cuentan otro hecho distinto al de su historia. Si es así, pulsa «Sacar» y no volverá a entrar en ella. Si está bien donde está, pulsa «Está bien».</p>
+      <div id="listaDudosas"></div>
+    </section>
     <section id="avisos">
       <h2>Avisos de los lectores <span class="n" id="nAvisos"></span></h2>
       <div id="listaAvisos"></div>
@@ -538,7 +551,18 @@ document.getElementById("pedir").addEventListener("click", async e => {
 
 async function cargar(){
   try {
-    const [avisos, temas] = await Promise.all([llamar("avisos"), llamar("temas")]);
+    const [avisos, temas, dudosas] = await Promise.all([llamar("avisos"), llamar("temas"), llamar("dudosas").catch(() => [])]);
+    // Titulares dudosos, agrupados por historia
+    const porH = new Map();
+    for (const d of dudosas) { const l = porH.get(d.historia_id) || []; l.push(d); porH.set(d.historia_id, l); }
+    document.getElementById("nDudosas").textContent = dudosas.length ? `${dudosas.length} por revisar` : "";
+    document.getElementById("listaDudosas").innerHTML = porH.size ? [...porH].map(([hid, l]) => `<article class="dud-h">
+      <a class="dud-tit" href="historia.html?id=${hid}" target="_blank" rel="noopener">${esc(l[0].historia)}</a>
+      <ul>${l.map(d => `<li id="dud${d.articulo_id}"><span class="m">${esc(d.medio || "")} · ${esc(d.motivo || "")}</span>
+        <a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.titulo)}</a>
+        <span class="dud-bot"><button class="boton secundario" type="button" data-dud="${d.articulo_id}" data-dec="sacar">Sacar</button>
+        <button class="boton secundario" type="button" data-dud="${d.articulo_id}" data-dec="bien">Está bien</button></span></li>`).join("")}</ul></article>`).join("")
+      : `<p class="vacio">Nada que revisar. Todas las historias parecen contar un solo hecho.</p>`;
     acceso.hidden = true;
     document.getElementById("panel").hidden = false;
     const pend = avisos.filter(a => !a.revisado).length;
@@ -568,6 +592,16 @@ document.addEventListener("change", async e => {
   e.target.closest(".aviso-g").classList.toggle("hecho", e.target.checked);
 });
 document.addEventListener("click", async e => {
+  const dud = e.target.dataset.dud;
+  if (dud) {
+    const li = document.getElementById("dud" + dud);
+    li.querySelectorAll("button").forEach(b => b.disabled = true);
+    try {
+      await llamar(null, { accion: "dudosa", articulo_id: Number(dud), decision: e.target.dataset.dec });
+      li.innerHTML = e.target.dataset.dec === "sacar" ? "<span class='m'>Sacado de la historia.</span>" : "<span class='m'>Se queda donde está.</span>";
+    } catch (er) { li.querySelectorAll("button").forEach(b => b.disabled = false); }
+    return;
+  }
   const id = e.target.dataset.tema;
   if (!id) return;
   e.target.disabled = true; e.target.textContent = "Guardando…";

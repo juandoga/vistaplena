@@ -10,6 +10,8 @@
 // GET  ?q=temas            temas activos, con su nombre automático y el manual
 // POST {accion:"revisar", id, revisado}
 // POST {accion:"tema", id, nombre_manual, oculto}
+// GET  ?q=dudosas          titulares que la revisión automática cree que no encajan en su historia
+// POST {accion:"dudosa", articulo_id, decision:"sacar"|"bien"}
 // POST {accion:"salir"}
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
@@ -83,6 +85,17 @@ Deno.serve(async (req) => {
       }
       return json((avisos ?? []).map((a) => ({ ...a, titulo: titulos.get(a.historia_id) ?? null })));
     }
+    if (req.method === "GET" && q === "dudosas") {
+      const { data: ds } = await db.from("historias_dudosas").select("articulo_id, historia_id, puntuacion, motivo, creado")
+        .is("decision", null).gt("creado", new Date(Date.now() - 3 * 864e5).toISOString()).order("historia_id").limit(300);
+      const aIds = (ds ?? []).map((d) => d.articulo_id), hIds = [...new Set((ds ?? []).map((d) => d.historia_id))];
+      const { data: arts } = aIds.length ? await db.from("articulos").select("id, titulo, url, historia_id, medios(nombre)").in("id", aIds) : { data: [] as any[] };
+      const { data: hs } = hIds.length ? await db.from("historias").select("id, titulo").in("id", hIds) : { data: [] as any[] };
+      const A = new Map((arts ?? []).map((a: any) => [a.id, a])), Hm = new Map((hs ?? []).map((h: any) => [h.id, h.titulo]));
+      // Solo los que siguen en esa historia (si ya salieron por otra vía, no se proponen)
+      return json((ds ?? []).filter((d) => A.get(d.articulo_id)?.historia_id === d.historia_id && Hm.has(d.historia_id))
+        .map((d) => ({ ...d, titulo: A.get(d.articulo_id).titulo, url: A.get(d.articulo_id).url, medio: A.get(d.articulo_id).medios?.nombre, historia: Hm.get(d.historia_id) })));
+    }
     if (req.method === "GET" && q === "temas") {
       const { data } = await db.from("temas").select("id, nombre, nombre_manual, oculto, historias, actualizado").eq("activo", true).order("actualizado", { ascending: false });
       return json(data ?? []);
@@ -95,6 +108,16 @@ Deno.serve(async (req) => {
       if (b.accion === "tema") {
         const nombre = String(b.nombre_manual ?? "").trim().slice(0, 80) || null;
         await db.from("temas").update({ nombre_manual: nombre, oculto: !!b.oculto }).eq("id", b.id);
+        return json({ ok: true });
+      }
+      if (b.accion === "dudosa") {
+        const { data: d } = await db.from("historias_dudosas").select("historia_id").eq("articulo_id", b.articulo_id).maybeSingle();
+        if (!d) return json({ error: "No está en la lista" }, 404);
+        if (b.decision === "sacar") {
+          await db.from("articulos").update({ historia_id: null }).eq("id", b.articulo_id).eq("historia_id", d.historia_id);
+          await db.from("historia_vetos").upsert({ articulo_id: b.articulo_id, historia_id: d.historia_id }, { onConflict: "articulo_id,historia_id", ignoreDuplicates: true });
+        }
+        await db.from("historias_dudosas").update({ decision: b.decision === "sacar" ? "sacar" : "bien" }).eq("articulo_id", b.articulo_id);
         return json({ ok: true });
       }
       if (b.accion === "salir") {
