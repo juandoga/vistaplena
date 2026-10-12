@@ -150,10 +150,11 @@ const FUERA = new RegExp(`^https?://[^/]+/(?:(?:es/)?(?:${REGIONES})|(?:es/|espa
 // (p. ej. «la huelga general por la vivienda» acabó con «los médicos aplazan su huelga» o «el Barça pide aplazar
 // un partido»), aquí se detectan y se sacan, para que se reagrupen en su propia historia.
 // Método: parecido entre cada par de titulares (peso de las palabras compartidas, las raras pesan más); se toma
-// el titular más central y se le van sumando los que, de media, más se parecen al grupo central. Los que nunca
+// los titulares más centrales (núcleo duro) y cada titular se compara, de media, con ese núcleo. Los que no
 // llegan al umbral salen. ?fase=depurar&probar=1 solo informa; &historia=ID revisa una sola; &dias=N (por defecto 2).
-const UMBRAL_DEP = 0.16;
+const UMBRAL_DEP_DEF = 0.2;
 async function depurar(url: URL) {
+  const UMBRAL_DEP = Number(url.searchParams.get("umbral") || UMBRAL_DEP_DEF);
   const probar = url.searchParams.get("probar") === "1";
   const unaH = Number(url.searchParams.get("historia") || 0);
   const dias = Math.min(14, Number(url.searchParams.get("dias") || 2));
@@ -196,23 +197,16 @@ async function depurar(url: URL) {
     revisadas++;
     const S = L.map((a) => L.map((b) => (a === b ? 0 : sim(a, b))));
     const centralidad = S.map((fila) => fila.reduce((x, y) => x + y, 0) / (L.length - 1));
-    const semilla = centralidad.indexOf(Math.max(...centralidad));
-    const nucleo = new Set<number>([semilla]);
-    // Se añade cada vez el titular que más se parece, de media, al núcleo; se para cuando ninguno llega al umbral
-    for (;;) {
-      let mejor = -1, mejorM = 0;
-      for (let i = 0; i < L.length; i++) {
-        if (nucleo.has(i)) continue;
-        let m = 0; for (const j of nucleo) m += S[i][j];
-        m /= nucleo.size;
-        if (m > mejorM) { mejorM = m; mejor = i; }
-      }
-      if (mejor < 0 || mejorM < UMBRAL_DEP) break;
-      nucleo.add(mejor);
-    }
+    // Núcleo duro: los titulares más centrales (como mucho 10, y como mucho un tercio de la historia).
+    // Cada titular se compara con ese núcleo duro, no con el grupo entero: así un bloque de titulares de otro hecho
+    // no se apoya en sí mismo para quedarse.
+    const k = Math.max(3, Math.min(10, Math.floor(L.length / 3)));
+    const duro = centralidad.map((c, i) => ({ c, i })).sort((x, y) => y.c - x.c).slice(0, k).map((x) => x.i);
+    const media = (i: number) => { const otros = duro.filter((j) => j !== i); let m = 0; for (const j of otros) m += S[i][j]; return Math.round(100 * m / (otros.length || 1)) / 100; };
+    const nucleo = new Set<number>([...duro, ...L.map((_, i) => i).filter((i) => media(i) >= UMBRAL_DEP)]);
+    if (url.searchParams.get("todo") === "1" && unaH) informe.push({ puntuaciones: L.map((a, i) => `${media(i)} · ${a.titulo}`).sort() });
     const fuera = L.filter((_, i) => !nucleo.has(i));
     if (!fuera.length) continue;
-    const media = (i: number) => { let m = 0; for (const j of nucleo) m += S[i][j]; return Math.round(100 * m / nucleo.size) / 100; };
     // Titular de la historia: el más central del núcleo
     const centro = [...nucleo].sort((x, y) => centralidad[y] - centralidad[x])[0];
     informe.push({ historia: h.id, titulo_antes: h.titulo, titulo_despues: L[centro].titulo, quedan: nucleo.size, salen: fuera.length,
