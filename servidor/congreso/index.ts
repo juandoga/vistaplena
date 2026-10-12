@@ -36,7 +36,19 @@ const grupo = (g: string) => GRUPOS[g] ?? (/bildu/i.test(g) ? "EH Bildu" : /PNV/
 const normal = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
 
 async function formaciones(): Promise<Map<string, string>> {
-  // Lista oficial de diputados (activos y de baja): formación con la que se presentaron
+  // Lista oficial de diputados (activos y de baja): formación con la que se presentaron.
+  // Se guarda una copia en ajustes («congreso_formaciones») por si la web del Congreso falla (desde la disolución da 503 a veces).
+  try {
+    const m = await formacionesWeb();
+    if (m.size > 300) await db.from("ajustes").upsert({ nombre: "congreso_formaciones", valor: JSON.stringify([...m]) }, { onConflict: "nombre" });
+    return m;
+  } catch (e) {
+    const { data } = await db.from("ajustes").select("valor").eq("nombre", "congreso_formaciones").maybeSingle();
+    if (data?.valor) return new Map(JSON.parse(data.valor));
+    throw e;
+  }
+}
+async function formacionesWeb(): Promise<Map<string, string>> {
   const html = await texto(`${WEB}/es/opendata/diputados`);
   const enlaces = [...html.matchAll(/href="(\/webpublica\/opendata\/diputados\/(?:DiputadosActivos|DiputadosDeBaja)__\d+\.json)"/g)].map((m) => WEB + m[1]);
   const mapa = new Map<string, string>();
@@ -65,8 +77,13 @@ Deno.serve(async (req) => {
   const portada = await texto(pagina());
   const dias = (portada.match(/var diasVotaciones\s*=\s*\[([^\]]*)\]/)?.[1] ?? "").split(",").map((s) => s.trim()).filter((s) => /^\d{8}$/.test(s));
   if (dias.length) await db.from("congreso_dias").upsert(dias.map((d) => ({ fecha: `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}` })), { onConflict: "fecha", ignoreDuplicates: true });
+  // ?fecha=AAAAMMDD fuerza la carga de un día concreto (por si el calendario de la web tarda en incluirlo)
+  const forzar = new URL(req.url).searchParams.get("fecha") ?? "";
+  if (/^\d{8}$/.test(forzar)) await db.from("congreso_dias").upsert({ fecha: `${forzar.slice(0, 4)}-${forzar.slice(4, 6)}-${forzar.slice(6, 8)}`, cargado: null }, { onConflict: "fecha" });
+  // Días antiguos que nunca tuvieron votaciones publicadas: se dejan de intentar
+  await db.from("congreso_dias").update({ cargado: new Date().toISOString(), votaciones: 0 }).is("cargado", null).lt("fecha", new Date(Date.now() - 60 * 864e5).toISOString().slice(0, 10));
   const { data: pendientes } = await db.from("congreso_dias").select("fecha").is("cargado", null).order("fecha", { ascending: false }).limit(POR_LLAMADA);
-  if (!pendientes?.length) return new Response(JSON.stringify({ dias: dias.length, pendientes: 0 }), { headers: { "Content-Type": "application/json" } });
+  if (!pendientes?.length) return new Response(JSON.stringify({ dias: dias.length, ultimos: dias.slice(-5), pendientes: 0 }), { headers: { "Content-Type": "application/json" } });
 
   const forms = await formaciones();
   const informe: Record<string, number | string> = {};
@@ -109,5 +126,5 @@ Deno.serve(async (req) => {
     }
   }
   const { count } = await db.from("congreso_dias").select("fecha", { count: "exact", head: true }).is("cargado", null);
-  return new Response(JSON.stringify({ dias: dias.length, cargados: informe, quedan: count }, null, 1), { headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify({ dias: dias.length, ultimos: dias.slice(-5), cargados: informe, quedan: count }, null, 1), { headers: { "Content-Type": "application/json" } });
 });
