@@ -117,7 +117,14 @@ Deno.serve(async (req) => {
           });
         }));
       }
-      if (filas.length) await db.from("votaciones").upsert(filas, { onConflict: "id" });
+      // Dos sesiones el mismo día pueden repetir número de votación: entonces el id lleva también la sesión
+      const vistos = new Map<string, number>();
+      for (const f of filas) vistos.set(f.id, (vistos.get(f.id) ?? 0) + 1);
+      for (const f of filas) if (vistos.get(f.id)! > 1) f.id = `${fecha}-s${f.sesion}-${String(f.numero).padStart(3, "0")}`;
+      if (filas.length) {
+        const { error } = await db.from("votaciones").upsert(filas, { onConflict: "id" });
+        if (error) throw new Error("No se pudieron guardar: " + error.message);
+      }
       // Un día sin enlaces todavía (el Congreso los publica con retraso) se vuelve a intentar en la siguiente llamada
       if (filas.length) await db.from("congreso_dias").update({ cargado: new Date().toISOString(), votaciones: filas.length }).eq("fecha", fecha);
       informe[fecha] = filas.length;
