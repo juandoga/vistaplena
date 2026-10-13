@@ -73,8 +73,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 .subtop{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 16px;padding-block:14px 0;font-size:var(--t-s);color:var(--gris)}
 
 /* Guía */
-.guia{margin-top:24px;background:var(--panel);border-radius:14px;padding:clamp(22px,4vw,40px)}
-.guia-cab{display:flex;justify-content:space-between;align-items:start;gap:20px;flex-wrap:wrap;margin-bottom:28px}
+.guia{margin-top:24px;background:var(--panel);border-radius:14px;padding:clamp(18px,3vw,32px)}
+.guia-cab{display:flex;justify-content:space-between;align-items:start;gap:16px;flex-wrap:wrap}
+.guia-cols:not([hidden]){margin-top:28px}
+.guia-bot{display:flex;gap:8px;flex-wrap:wrap}
+.guia .cerrar.secundario{background:transparent;color:var(--tinta);box-shadow:inset 0 0 0 1.5px var(--tinta)}
+
 .guia h2{margin:6px 0 8px;font-family:var(--ui);font-weight:900;font-size:var(--t-xl);letter-spacing:-.025em;line-height:1.1;color:var(--tinta)}
 .guia .entradilla{margin:0;font-size:var(--t-l);line-height:1.4;max-width:46ch;color:var(--texto)}
 .cerrar{background:var(--tinta);color:var(--fondo);border:0;border-radius:999px;padding:11px 22px;font-weight:700;font-size:var(--t-s)}
@@ -290,6 +294,7 @@ a.tema:hover{border-color:var(--tinta)}
 .secciones-nav + .temas{padding-top:6px}
 .navlink-29n{color:var(--tinta)!important;font-weight:700}
 .cab-seccion p a{color:var(--tinta);font-weight:600;text-underline-offset:3px}
+@media (max-width:600px){.guia{padding:18px}.guia h2{font-size:var(--t-l)}.guia .entradilla{font-size:var(--t-m)}}
 
 /* Cabecera y menú */
 .top .wrap.barra-top{display:flex;align-items:center;gap:18px;flex-wrap:nowrap;padding-block:12px}
@@ -402,9 +407,9 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
         <h2 id="guia-t">Cómo leer Vista Plena</h2>
         <p class="entradilla">Cada medio te cuenta una parte. Aquí ves la noticia contada por todos y lo que tu periódico no te está contando. Sin algoritmos: la misma portada para todo el mundo.</p>
       </div>
-      <button class="cerrar" id="cerrarGuia">Entendido</button>
+      <div class="guia-bot"><button class="cerrar secundario" id="verGuia" aria-expanded="false" aria-controls="guiaCols">Cómo funciona</button><button class="cerrar" id="cerrarGuia">Entendido</button></div>
     </div>
-    <div class="guia-cols">
+    <div class="guia-cols" id="guiaCols" hidden>
       <div>
         <h3>La barra</h3>
         <div class="barra grande" aria-hidden="true"><div class="b-izq" style="flex-grow:40">40 %</div><div class="b-cen" style="flex-grow:30">30 %</div><div class="b-der" style="flex-grow:30">30 %</div></div>
@@ -416,7 +421,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
         <h3>El color que domina</h3>
         <div class="lectura">
           <div><span class="mini" aria-hidden="true"><i style="flex:7;background:var(--izq)"></i><i style="flex:2;background:var(--cen)"></i><i style="flex:1;background:var(--der)"></i></span><span><strong>Sobre todo rojo:</strong> le dan importancia los medios de izquierdas. Si solo lees prensa de derechas, quizá no te ha llegado.</span></div>
-          <div><span class="mini" aria-hidden="true"><i style="flex:3;background:var(--izq)"></i><i style="flex:4;background:var(--cen)"></i><i style="flex:3;background:var(--der)"></i></span><span><strong>Repartida:</strong> la cuenta todo el mundo. Suele ser un suceso, un dato oficial o deporte.</span></div>
+          <div><span class="mini" aria-hidden="true"><i style="flex:3;background:var(--izq)"></i><i style="flex:4;background:var(--cen)"></i><i style="flex:3;background:var(--der)"></i></span><span><strong>Repartida:</strong> la cuenta todo el mundo. Suele ser un suceso o un dato oficial.</span></div>
           <div><span class="mini" aria-hidden="true"><i style="flex:1;background:var(--izq)"></i><i style="flex:2;background:var(--cen)"></i><i style="flex:7;background:var(--der)"></i></span><span><strong>Sobre todo azul:</strong> le dan importancia los medios de derechas. Si solo lees prensa de izquierdas, quizá no te ha llegado.</span></div>
         </div>
       </div>
@@ -477,7 +482,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 </footer>
 
 <script src="temas.js?v=5df45ce8"></script>
-<script src="comun.js?v=329b8de0"></script>
+<script src="comun.js?v=72dd339a"></script>
 <script>
 const SNAPSHOT = /*SNAPSHOT*/null;
 const NIVELES = [[-2,"Izquierda","var(--izq)"],[-1,"Centroizquierda","var(--izq)"],[0,"Centro","var(--cen)"],[1,"Centroderecha","var(--der)"],[2,"Derecha","var(--der)"]];
@@ -509,7 +514,7 @@ function resumenDia(top, tarjetas){
   const medios = new Set(top.flatMap(h => h.a.map(a => a.m))).size;
   return `<section class="resumen-dia" aria-labelledby="rd-t">
     <div><span class="eti">Para ponerte al día</span><h2 id="rd-t">Lo más contado hoy</h2>
-      <p class="cifras">Las <b>${top.length}</b> historias principales reúnen <b>${titulares}</b> titulares de <b>${medios}</b> medios.</p><a class="al-correo" href="#boletin">Recíbelas cada mañana por correo →</a></div>
+      <p class="cifras">Con la de arriba, las <b>${top.length}</b> historias principales reúnen <b>${titulares}</b> titulares de <b>${medios}</b> medios.</p><a class="al-correo" href="#boletin">Recíbelas cada mañana por correo →</a></div>
     <ol>${tarjetas.map(h => `<li><a href="${enlace(h)}">
       <span class="mini-foto">${h.f ? `<img src="${esc(h.f)}" alt="" loading="lazy" referrerpolicy="no-referrer" onload="this.classList.add('ok')" onerror="this.remove()">` : ""}</span>
       <span class="t">${esc(h.t)}</span>${barra(h)}<span class="m">${h.tot} medios${h.ciego ? ` · <b style="color:var(--aviso)">cobertura desigual</b>` : ""}</span></a></li>`).join("")}</ol>
@@ -616,7 +621,7 @@ function render(){
       P.forEach((h, i) => h.idx = i);
       const [lead, ...resto] = P;
       // Cada historia aparece una sola vez: principal, lo más contado hoy, puntos ciegos y, después, el resto
-      const hoy = resto.filter(h => Date.now() - new Date(h.act) < 864e5).slice(0, 4);
+      const hoy = resto.filter(h => Date.now() - new Date(h.act) < 864e5).slice(0, 4).sort((a, b) => b.tot - a.tot);
       const vistas = new Set([lead, ...hoy]);
             c.insertAdjacentHTML("beforeend", `
         <section class="principal" id="h-0">
@@ -629,7 +634,8 @@ function render(){
       const ultimas = (DATA.ultimas || []).filter(h => !yaVistas.has(h.id)).sort((a, b) => new Date(inicio(b)) - new Date(inicio(a))).slice(0, 6);
       ultimas.forEach(h => yaVistas.add(h.id));
       c.insertAdjacentHTML("beforeend", ultimoBloque(ultimas));
-      const ciegos = [...ci, ...cd].filter(h => !yaVistas.has(h.id)).slice(0, 4);
+      // Solo las de los dos últimos días: la sección dice «de hoy» y una de hace cinco días ya no aporta
+      const ciegos = [...ci, ...cd].filter(h => !yaVistas.has(h.id) && Date.now() - new Date(h.act) < 2 * 864e5).slice(0, 4);
       ciegos.forEach(h => yaVistas.add(h.id));
       if (ciegos.length) {
         c.insertAdjacentHTML("beforeend", cab("Cobertura desigual", "Noticias de hoy que publican sobre todo medios de un lado y casi ningún medio del otro."));
@@ -664,8 +670,9 @@ function render(){
 const guia = document.getElementById("guia");
 function guiaVisible(v){ guia.hidden = !v; try { localStorage.setItem("contraste-guia", v ? "1" : "0"); } catch(e){} }
 document.getElementById("cerrarGuia").addEventListener("click", () => guiaVisible(false));
+document.getElementById("verGuia").addEventListener("click", e => { const d = document.getElementById("guiaCols"); d.hidden = !d.hidden; e.target.setAttribute("aria-expanded", !d.hidden); e.target.textContent = d.hidden ? "Cómo funciona" : "Ocultar"; });
 try { if (localStorage.getItem("contraste-guia") === "0") guiaVisible(false); } catch(e){}
-if (PARAM.get("guia")) { guiaVisible(true); setTimeout(() => guia.scrollIntoView(), 100); }
+if (PARAM.get("guia")) { guiaVisible(true); document.getElementById("guiaCols").hidden = false; setTimeout(() => guia.scrollIntoView(), 100); }
 if (vista !== "portada") guia.hidden = true;
 if (vista !== "portada") document.querySelectorAll('.top .navlink').forEach(l => {
   const ciegos = l.getAttribute("href") === "./?vista=ciegos";

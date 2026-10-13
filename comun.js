@@ -49,10 +49,16 @@ function barra(h, grande){
 }
 const pct = h => `<div class="pct"><span class="i">Izquierda <b>${h.pi} %</b></span><span>Centro <b>${h.pc} %</b></span><span class="d">Derecha <b>${h.pd} %</b></span></div>`;
 const meta = h => `<div class="meta"><span title="Dos medios del mismo grupo editorial y del mismo lado cuentan como una voz">${h.tot} medios${h.voces && h.voces < h.tot ? ` · ${h.voces} voces` : ""}</span><span>${haceCuanto(h.act)}</span>${h.port >= 2 ? `<span title="Medios que la llevan ahora entre los 15 primeros titulares de su web">En ${h.port} portadas</span>` : ""}${h.ciego ? `<span class="chip">Poca cobertura en la ${h.ciego}</span>` : ""}</div>`;
-// Un titular por medio, el más reciente; dentro de cada lado, primero lo último que se ha publicado
+// Un titular por medio. Dentro de cada lado, primero los que mejor cuentan el hecho de la noticia (los que comparten
+// más palabras con su título) y, a igualdad, los más recientes. Así arriba sale el hecho y no la última reacción.
+const _norm = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+const _VACIAS = new Set("para pero como sobre entre desde hasta tras ante contra segun esta este estos estas tiene tienen hace porque cuando donde sera seran sido".split(" "));
 function recientes(h){
-  const vistos = new Set();
-  return [...h.a].sort((x, y) => new Date(y.p || 0) - new Date(x.p || 0)).filter(a => !vistos.has(a.m) && vistos.add(a.m));
+  const clave = new Set(_norm(h.t).split(/[^a-z0-9ñ]+/).filter(w => w.length >= 4 && !_VACIAS.has(w)));
+  const nota = a => _norm(a.t).split(/[^a-z0-9ñ]+/).filter(w => clave.has(w)).length;
+  const porMedio = new Map();
+  for (const a of h.a) { const v = porMedio.get(a.m); if (!v || nota(a) > nota(v) || (nota(a) === nota(v) && new Date(a.p || 0) > new Date(v.p || 0))) porMedio.set(a.m, a); }
+  return [...porMedio.values()].sort((x, y) => (nota(y) - nota(x)) || (new Date(y.p || 0) - new Date(x.p || 0)));
 }
 function bloques(h, max = 99){
   const g = { izq: [], cen: [], der: [] };
