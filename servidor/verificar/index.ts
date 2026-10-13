@@ -28,7 +28,7 @@ const ajuste = async (n: string) => (await db.from("ajustes").select("valor").eq
 
 const INSTRUCCIONES = `Eres el verificador de un agregador de noticias. Te doy los titulares que definen una noticia (un hecho concreto) y unos titulares candidatos, marcados con letras.
 Para cada candidato decide:
-- "mismo": informa del MISMO hecho concreto (el mismo suceso, anuncio, decisión o dato), aunque lo cuente con otro enfoque, con otra fase del mismo hecho o con una reacción directa a él.
+- "mismo": informa del MISMO hecho concreto (el mismo suceso, anuncio, decisión o dato), aunque lo cuente con otro enfoque, con otra fase del mismo hecho, con una reacción directa a él o con cifras actualizadas (más muertos, otro recuento): una cifra distinta no hace que sea otro hecho.
 - "otro": informa de un hecho distinto, aunque comparta tema, lugar, personas o palabras (por ejemplo, otra huelga, otro partido, otra sentencia u otro día).
 Responde solo con JSON, una clave por letra: {"A":"mismo","B":"otro"}.`;
 
@@ -44,6 +44,8 @@ async function preguntar(modelo: string, referencia: string[], candidatos: strin
     body: JSON.stringify({ systemInstruction: { parts: [{ text: INSTRUCCIONES }] }, contents: [{ role: "user", parts: [{ text: texto }] }], generationConfig: cfg }),
   });
   let r = await llamada(config);
+  // Gemini a veces responde 503 («mucha demanda»): se reintenta una vez
+  if (r.status === 503 || r.status === 429) { await new Promise((ok) => setTimeout(ok, 3000)); r = await llamada(config); }
   // Si el modelo no admite ese ajuste de «pensar», se repite sin él
   if (r.status === 400 && config.thinkingConfig) { const { thinkingConfig: _, ...sin } = config; r = await llamada(sin); }
   const d = await r.json().catch(() => ({}));
