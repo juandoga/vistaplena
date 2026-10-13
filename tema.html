@@ -415,6 +415,8 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .g-enlace summary{cursor:pointer;color:var(--gris)}
 .g-enlace p{margin:8px 0!important}
 #gBtn{min-height:44px}
+.tema-recien{margin:10px 0 0;font-size:var(--t-s);color:var(--texto)}.tema-recien a{color:var(--tinta);font-weight:600}
+.tema-sueltos summary{cursor:pointer;font-weight:600;color:var(--tinta);padding:6px 0}
 .ia-otro{color:var(--izq);font-weight:700}.ia-mismo{color:var(--gris);font-weight:600}
 .gestion section{padding-top:32px}
 .gestion h2 .n{font-weight:400;font-size:var(--t-s);color:var(--gris);margin-left:8px}
@@ -632,6 +634,9 @@ function pintar(t, H, S = []){
   const acum = { pi, pd, pc: 100 - pi - pd };
   const ciegas = H.filter(h => h.ciego).length;
   const ultima = H[0];
+  // Lo principal: la noticia del tema más contada y más destacada en portadas en las últimas 24 horas
+  const recientes = H.filter(h => Date.now() - new Date(h.act) < 864e5);
+  const principal = (recientes.length ? recientes : H).slice().sort((a, b) => (b.peso - a.peso) || (b.tot - a.tot))[0];
   // Cronología agrupada por día, lo más reciente arriba
   const dias = [];
   for (const h of H) {
@@ -648,22 +653,24 @@ function pintar(t, H, S = []){
     <div class="tema-cuerpo">
       <div>
         <section class="tema-ultimo" aria-labelledby="ul-t">
-          <h2 id="ul-t" class="eti">Lo último</h2>
-          <a class="tema-lead" href="${enlace(ultima)}">${foto(ultima)}<span class="t">${esc(ultima.t)}</span></a>
-          ${barra(ultima)}${pct(ultima)}
-          <p class="aparte">${ultima.tot} medios · empezó ${haceCuanto(inicio(ultima))}${ultima.ciego ? ` · <b>poca cobertura en la ${ultima.ciego}</b>` : ""}</p>
+          <h2 id="ul-t" class="eti">Lo principal ahora${info("La noticia de este tema que más medios cuentan y que más portadas ocupan en las últimas 24 horas.", "Cómo se elige")}</h2>
+          <a class="tema-lead" href="${enlace(principal)}">${foto(principal)}<span class="t">${esc(principal.t)}</span></a>
+          ${barra(principal)}${pct(principal)}
+          <p class="aparte">${principal.tot} medios · empezó ${haceCuanto(inicio(principal))}${principal.ciego ? ` · <b>poca cobertura en la ${principal.ciego}</b>` : ""}</p>
+          ${ultima !== principal ? `<p class="tema-recien">Lo más reciente: <a href="${enlace(ultima)}">${esc(ultima.t)}</a> <span class="gris">· ${haceCuanto(inicio(ultima))}</span></p>` : ""}
         </section>
-        ${S.length ? `<section class="tema-sueltos" aria-labelledby="su-t">
-          <h2 id="su-t">Más titulares de las últimas horas${info("Titulares sobre este tema que no forman una noticia propia, porque cada medio cuenta un aspecto distinto. No entran en los porcentajes.", "Qué son estos titulares")}</h2>
-          <ol>${S.map(a => `<li><time datetime="${a.publicado}">${hora(a.publicado)}</time><div><span class="md"><i style="background:${a.medios.orientacion < 0 ? "var(--izq)" : a.medios.orientacion > 0 ? "var(--der)" : "var(--cen)"}"></i>${esc(a.medios.nombre)} · ${ETIQUETA[a.medios.orientacion]}</span><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.titulo)}</a></div></li>`).join("")}</ol>
-        </section>` : ""}
         <section class="tema-crono" aria-labelledby="cr-t">
-          <h2 id="cr-t">Cronología</h2>
+          <h2 id="cr-t">Todas las noticias del tema, día a día</h2>
           ${dias.map(g => `<div class="tc-dia"><h3>${g.d}</h3><ol>${g.hs.map(h => `<li>
             <time datetime="${inicio(h)}">${hora(inicio(h))}</time>
             <div><a href="${enlace(h)}">${esc(h.t)}</a>${barra(h)}<span class="m">${h.tot} medios${h.ciego ? ` · <b>poca cobertura en la ${h.ciego}</b>` : ""}</span></div>
           </li>`).join("")}</ol></div>`).join("")}
         </section>
+        ${S.length ? `<details class="tema-sueltos">
+          <summary>${S.length === 1 ? "Otro titular suelto sobre el tema" : `Otros ${Math.min(S.length, 15)} titulares sueltos sobre el tema`}</summary>
+          <p class="aparte">Titulares que ningún otro medio ha contado igual, así que no forman una noticia propia ni entran en los porcentajes.</p>
+          <ol>${S.slice(0, 15).map(a => `<li><time datetime="${a.publicado}">${hora(a.publicado)}</time><div><span class="md"><i style="background:${a.medios.orientacion < 0 ? "var(--izq)" : a.medios.orientacion > 0 ? "var(--der)" : "var(--cen)"}"></i>${esc(a.medios.nombre)} · ${ETIQUETA[a.medios.orientacion]}</span><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.titulo)}</a></div></li>`).join("")}</ol>
+        </details>` : ""}
       </div>
       <aside class="tema-lado">
         <h2 class="eti">Cobertura de todo el tema</h2>
@@ -679,10 +686,10 @@ function pintar(t, H, S = []){
   try {
     const [temas, filas, sueltos] = await Promise.all([
       pedir(`temas_v?select=id,nombre,inicio,actualizado,historias,activo&id=eq.${id}`),
-      pedir(`portada_m?select=${CAMPOS},izq,cen,der&tema_id=eq.${id}&order=creada.desc`),
+      pedir(`portada_m?select=${CAMPOS},izq,cen,der,peso&tema_id=eq.${id}&order=creada.desc`),
       pedir(`articulos?select=titulo,url,publicado,medios(nombre,orientacion)&tema_id=eq.${id}&order=publicado.desc&limit=40`).catch(() => [])]);
     if (!temas.length || !filas.length) return document.body.dataset.id ? null : noEncontrado();
-    const H = filas.map(x => ({ ...mapear(x), izq: x.izq, cen: x.cen, der: x.der })).sort((a, b) => new Date(inicio(b)) - new Date(inicio(a)));
+    const H = filas.map(x => ({ ...mapear(x), izq: x.izq, cen: x.cen, der: x.der, peso: x.peso || 0 })).sort((a, b) => new Date(inicio(b)) - new Date(inicio(a)));
     pintar(temas[0], H, sueltos.filter(a => a.medios));
     document.getElementById("estado").textContent = `Actualizado ${haceCuanto(temas[0].actualizado)}`;
   } catch (e) {

@@ -324,7 +324,7 @@ def main():
                         f'{esc(h["titulo"])}</a><span class="m">{h["total"]} medios · izquierda {h["pct_izq"]} %, centro {h["pct_cen"]} %, '
                         f'derecha {h["pct_der"]} %</span></div></li>' for h in hs)
         cuerpo = (f'<header class="hist-cab"><div class="hist-etis"><span class="tema-eti">Tema</span></div><h1>{esc(t["nombre"])}</h1>'
-                  f'<p class="tema-sub">{len(hs)} noticia{"s" if len(hs) != 1 else ""} desde el {fecha(hs[-1]["creada"])}</p></header><section class="tema-crono"><h2>Cronología</h2>'
+                  f'<p class="tema-sub">{len(hs)} noticia{"s" if len(hs) != 1 else ""} desde el {fecha(hs[-1]["creada"])}</p></header><section class="tema-crono"><h2>Todas las noticias del tema, día a día</h2>'
                   f'<div class="tc-dia"><ol>{lista}</ol></div></section>')
         jsonld = {"@context": "https://schema.org", "@graph": [
             {"@type": "CollectionPage", "@id": BASE + url, "url": BASE + url, "name": t["nombre"], "description": desc, "inLanguage": "es-ES",
