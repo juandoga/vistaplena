@@ -32,16 +32,15 @@ Para cada candidato decide:
 - "otro": informa de un hecho distinto, aunque comparta tema, lugar, personas o palabras (por ejemplo, otra huelga, otro partido, otra sentencia u otro día).
 Responde solo con JSON, una clave por letra: {"A":"mismo","B":"otro"}.`;
 
-async function preguntar(modelo: string, referencia: string[], candidatos: string[]) {
-  const letras = candidatos.map((_, i) => String.fromCharCode(65 + i));
-  const texto = `Titulares de la noticia:\n${referencia.map((t) => `- ${t}`).join("\n")}\n\nCandidatos:\n${candidatos.map((t, i) => `${letras[i]}) ${t}`).join("\n")}`;
-  const config: Record<string, unknown> = { temperature: 0, responseMimeType: "application/json", maxOutputTokens: 300 };
-  // Que no «piense» antes de contestar: no hace falta para un sí o no y se cobraría
+// Llamada genérica a Gemini: devuelve el JSON que conteste
+async function gemini(modelo: string, sistema: string, texto: string): Promise<Record<string, string>> {
+  const config: Record<string, unknown> = { temperature: 0, responseMimeType: "application/json", maxOutputTokens: 600 };
+  // Que no «piense» antes de contestar: no hace falta para estas preguntas y se cobraría
   if (modelo.startsWith("gemini-2.5")) config.thinkingConfig = { thinkingBudget: 0 };
   else if (modelo.startsWith("gemini-3")) config.thinkingConfig = { thinkingLevel: "minimal" };
   const llamada = (cfg: Record<string, unknown>) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
     method: "POST", headers: { "x-goog-api-key": CLAVE, "Content-Type": "application/json" }, signal: AbortSignal.timeout(30000),
-    body: JSON.stringify({ systemInstruction: { parts: [{ text: INSTRUCCIONES }] }, contents: [{ role: "user", parts: [{ text: texto }] }], generationConfig: cfg }),
+    body: JSON.stringify({ systemInstruction: { parts: [{ text: sistema }] }, contents: [{ role: "user", parts: [{ text: texto }] }], generationConfig: cfg }),
   });
   let r = await llamada(config);
   // Gemini a veces responde 503 («mucha demanda»): se reintenta una vez
@@ -52,9 +51,26 @@ async function preguntar(modelo: string, referencia: string[], candidatos: strin
   if (!r.ok) throw new Error(`Gemini respondió ${r.status}: ${JSON.stringify(d).slice(0, 300)}`);
   const u = d.usageMetadata ?? {};
   await db.rpc("sumar_ia_uso", { e: u.promptTokenCount ?? 0, s: (u.candidatesTokenCount ?? 0) + (u.thoughtsTokenCount ?? 0) });
-  const salida = JSON.parse(d.candidates?.[0]?.content?.parts?.map((p: any) => p.text ?? "").join("") || "{}");
+  try { return JSON.parse(d.candidates?.[0]?.content?.parts?.map((p: any) => p.text ?? "").join("") || "{}"); } catch { return {}; }
+}
+
+async function preguntar(modelo: string, referencia: string[], candidatos: string[]) {
+  const letras = candidatos.map((_, i) => String.fromCharCode(65 + i));
+  const texto = `Titulares de la noticia:\n${referencia.map((t) => `- ${t}`).join("\n")}\n\nCandidatos:\n${candidatos.map((t, i) => `${letras[i]}) ${t}`).join("\n")}`;
+  const salida = await gemini(modelo, INSTRUCCIONES, texto);
   return letras.map((l) => (salida[l] === "otro" ? "otro" : salida[l] === "mismo" ? "mismo" : "error"));
 }
+
+const REPETIDAS = `Eres el editor de un agregador de noticias. Te doy pares de noticias (cada una con su título). Para cada par decide:
+- "misma": las dos cuentan exactamente el mismo hecho concreto (el mismo anuncio, suceso, decisión o dato), aunque con distintas palabras o cifras actualizadas.
+- "distinta": cuentan hechos distintos, aunque estén relacionados (un hecho y su reacción posterior, una fase siguiente, otro día, otra declaración, otro lugar).
+Responde solo con JSON, una clave por número de par: {"1":"misma","2":"distinta"}.`;
+
+const TIPO = `Eres el editor de una web que compara cómo cuentan los medios los asuntos públicos (política, economía, trabajo, vivienda, sanidad, educación, justicia, sociedad, internacional, ciencia, medio ambiente, catástrofes y sucesos graves con relevancia pública).
+Para cada noticia (por su título) decide:
+- "publica": es un asunto público de ese tipo.
+- "ligera": es deporte, famosos o prensa del corazón, cine, series, música o espectáculos, ocio y planes, horarios o festivos o compras, sorteos, previsión del tiempo corriente, curiosidades, o un suceso sin dimensión pública (un accidente aislado, una detención de un famoso). Si una de estas noticias tiene dimensión política o pública clara (una ley, una decisión de gobierno, un juicio, dinero público), es "publica".
+Responde solo con JSON, una clave por número: {"1":"publica","2":"ligera"}.`;
 
 Deno.serve(async (req) => {
   if (!(await esInterna(req))) return json({ error: "Solo para tareas internas" }, 401);
@@ -82,7 +98,7 @@ Deno.serve(async (req) => {
   let sacados = 0, revisados = 0;
   const inicio = Date.now();
   for (const [hid, pend] of porH) {
-    if (quedan <= 0 || Date.now() - inicio > 100e3) break; // lo que no dé tiempo, en la siguiente hora
+    if (quedan <= 0 || Date.now() - inicio > 80e3) break; // lo que no dé tiempo, en la siguiente hora
     const { data: h } = await db.from("historias").select("titulo").eq("id", hid).maybeSingle();
     const { data: arts } = await db.from("articulos").select("id, titulo, medio_id, ia_revisado, publicado").eq("historia_id", hid).order("publicado").limit(300);
     if (!h || !arts?.length) continue;
@@ -119,5 +135,47 @@ Deno.serve(async (req) => {
       informe.push({ historia: hid, titulo: h.titulo, respuestas: cand.map((a, j) => `${res[j]} · ${a.titulo}`).filter((x) => x.startsWith("otro")) });
     }
   }
-  return json({ ok: true, modelo, automatico: auto, consultas: informe.length, revisados, sacados, detalle: informe.filter((x) => x.respuestas?.length).slice(0, 30) });
+  // Fase 2: noticias repetidas (dos noticias del mismo hecho que no se juntaron). Se juntan en la que tiene más medios.
+  let juntadas = 0;
+  const destino = new Map<number, number>(); // noticia que ya se juntó en otra → la otra
+  const final = (id: number): number => destino.has(id) ? final(destino.get(id)!) : id;
+  const { data: pares } = await db.rpc("pares_parecidos");
+  for (let i = 0; i < (pares ?? []).length && quedan > 0 && Date.now() - inicio < 110e3; i += 15) {
+    const lote = pares!.slice(i, i + 15);
+    quedan--;
+    let res: Record<string, string>;
+    try { res = await gemini(modelo, REPETIDAS, lote.map((p: any, j: number) => `${j + 1}) A: ${p.ta}\n   B: ${p.tb}`).join("\n")); } catch (e) { informe.push({ error: String(e).slice(0, 200) }); break; }
+    for (let j = 0; j < lote.length; j++) {
+      const p = lote[j], misma = res[String(j + 1)] === "misma";
+      await db.from("historias_pares").upsert({ a: p.a, b: p.b, resultado: misma ? "misma" : "distinta" }, { onConflict: "a,b" });
+      if (misma && auto) {
+        const [q0, s0] = p.na >= p.nb ? [p.a, p.b] : [p.b, p.a];
+        const queda = final(q0), sale = final(s0);
+        if (queda === sale) continue;
+        destino.set(sale, queda);
+        await db.from("articulos").update({ historia_id: queda }).eq("historia_id", sale);
+        await db.from("historias").update({ actualizada: new Date().toISOString() }).eq("id", queda);
+        juntadas++;
+        informe.push({ juntadas: `${p.ta}  ⟵  ${p.tb}` });
+      }
+    }
+  }
+  // Fase 3: asuntos públicos o noticias ligeras (deportes, famosos, ocio…). Las ligeras no salen en la web.
+  let ligeras = 0;
+  const { data: vis } = await db.from("portada_m").select("id").gt("actualizada", new Date(Date.now() - 2 * 864e5).toISOString()).limit(1000);
+  const { data: sinTipo } = (vis ?? []).length ? await db.from("historias").select("id, titulo").is("ia_tipo", null).in("id", vis!.map((x) => x.id)) : { data: [] as any[] };
+  for (let i = 0; i < (sinTipo ?? []).length && quedan > 0 && Date.now() - inicio < 120e3; i += 25) {
+    const lote = sinTipo!.slice(i, i + 25);
+    quedan--;
+    let res: Record<string, string>;
+    try { res = await gemini(modelo, TIPO, lote.map((h: any, j: number) => `${j + 1}) ${h.titulo}`).join("\n")); } catch (e) { informe.push({ error: String(e).slice(0, 200) }); break; }
+    for (let j = 0; j < lote.length; j++) {
+      const t = res[String(j + 1)];
+      if (t !== "publica" && t !== "ligera") continue;
+      await db.from("historias").update({ ia_tipo: t }).eq("id", lote[j].id);
+      if (t === "ligera") { ligeras++; informe.push({ ligera: lote[j].titulo }); }
+    }
+  }
+  if (juntadas || ligeras || sacados) await db.rpc("refrescar_portada");
+  return json({ ok: true, modelo, automatico: auto, consultas: informe.length, revisados, sacados, juntadas, ligeras, detalle: informe.filter((x) => !x.respuestas || x.respuestas.length).slice(0, 60) });
 });
