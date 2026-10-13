@@ -4,7 +4,7 @@
 // quizá no encajan. Esta función le pregunta a un modelo de lenguaje, noticia a noticia: «¿estos titulares cuentan el
 // mismo hecho que estos otros?». La IA solo contesta «mismo» u «otro»: nunca escribe nada que se publique.
 //
-//   ajustes.ia_modelo              modelo de Google Gemini (por defecto gemini-2.5-flash-lite)
+//   ajustes.ia_modelo              modelo de Google Gemini (por defecto gemini-3.1-flash-lite)
 //   ajustes.ia_auto                'true' = si dice «otro», el titular sale de la noticia (y no vuelve);
 //                                  'false' = solo apunta su respuesta y la gestión la muestra (periodo de prueba)
 //   ajustes.ia_tope_llamadas_dia   tope de consultas al día (para que un fallo no dispare el gasto)
@@ -36,11 +36,16 @@ async function preguntar(modelo: string, referencia: string[], candidatos: strin
   const letras = candidatos.map((_, i) => String.fromCharCode(65 + i));
   const texto = `Titulares de la noticia:\n${referencia.map((t) => `- ${t}`).join("\n")}\n\nCandidatos:\n${candidatos.map((t, i) => `${letras[i]}) ${t}`).join("\n")}`;
   const config: Record<string, unknown> = { temperature: 0, responseMimeType: "application/json", maxOutputTokens: 300 };
-  if (modelo.startsWith("gemini-2.5")) config.thinkingConfig = { thinkingBudget: 0 }; // sin «pensar»: no hace falta y se cobraría
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+  // Que no «piense» antes de contestar: no hace falta para un sí o no y se cobraría
+  if (modelo.startsWith("gemini-2.5")) config.thinkingConfig = { thinkingBudget: 0 };
+  else if (modelo.startsWith("gemini-3")) config.thinkingConfig = { thinkingLevel: "minimal" };
+  const llamada = (cfg: Record<string, unknown>) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
     method: "POST", headers: { "x-goog-api-key": CLAVE, "Content-Type": "application/json" }, signal: AbortSignal.timeout(30000),
-    body: JSON.stringify({ systemInstruction: { parts: [{ text: INSTRUCCIONES }] }, contents: [{ role: "user", parts: [{ text: texto }] }], generationConfig: config }),
+    body: JSON.stringify({ systemInstruction: { parts: [{ text: INSTRUCCIONES }] }, contents: [{ role: "user", parts: [{ text: texto }] }], generationConfig: cfg }),
   });
+  let r = await llamada(config);
+  // Si el modelo no admite ese ajuste de «pensar», se repite sin él
+  if (r.status === 400 && config.thinkingConfig) { const { thinkingConfig: _, ...sin } = config; r = await llamada(sin); }
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(`Gemini respondió ${r.status}: ${JSON.stringify(d).slice(0, 300)}`);
   const u = d.usageMetadata ?? {};
@@ -52,7 +57,7 @@ async function preguntar(modelo: string, referencia: string[], candidatos: strin
 Deno.serve(async (req) => {
   if (!(await esInterna(req))) return json({ error: "Solo para tareas internas" }, 401);
   if (!CLAVE) return json({ ok: true, hecho: 0, motivo: "Falta el secreto GEMINI_API_KEY" });
-  const modelo = (await ajuste("ia_modelo")) || "gemini-2.5-flash-lite";
+  const modelo = (await ajuste("ia_modelo")) || "gemini-3.1-flash-lite";
   const auto = (await ajuste("ia_auto")) === "true";
   const tope = Number(await ajuste("ia_tope_llamadas_dia")) || 300;
   const { data: uso } = await db.from("ia_uso").select("llamadas").eq("dia", new Date().toISOString().slice(0, 10)).maybeSingle();
