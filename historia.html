@@ -415,6 +415,8 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .g-enlace summary{cursor:pointer;color:var(--gris)}
 .g-enlace p{margin:8px 0!important}
 #gBtn{min-height:44px}
+.mas-lado{margin-top:4px}.mas-lado summary,.otro-enfoque summary{cursor:pointer;font-size:var(--t-s);font-weight:600;color:var(--tinta);padding:8px 0}
+.mas-lado[open] summary{color:var(--gris)}
 .tema-recien{margin:10px 0 0;font-size:var(--t-s);color:var(--texto)}.tema-recien a{color:var(--tinta);font-weight:600}
 .tema-sueltos summary{cursor:pointer;font-weight:600;color:var(--tinta);padding:6px 0}
 .ia-otro{color:var(--izq);font-weight:700}.ia-mismo{color:var(--gris);font-weight:600}
@@ -654,9 +656,14 @@ function fuentes(h){
   // Titulares de este lado que hablan de lo mismo con otro enfoque: no entran en el porcentaje, pero se muestran
   const otros = k => (h.tb || []).filter(a => lado(a.o) === k);
   const li = a => `<li><span class="medio">${esc(a.m)} <span class="ficha">${ETIQUETA[a.o]}${a.g && a.g !== a.m ? ` · Grupo ${esc(a.g)}` : ""}${a.p ? ` · ${hora(a.p)}` : ""}</span></span><a href="${esc(a.u)}" target="_blank" rel="noopener">${esc(a.t)}</a></li>`;
-  const col = k => `<div class="bloque"><div class="lado eti"><i style="background:${COLOR[k]}"></i>${k === "cen" ? "Centro" : LADO[k][0].toUpperCase() + LADO[k].slice(1)} · ${g[k].length}</div>
-    ${g[k].length ? `<ul>${g[k].map(li).join("")}</ul>` : `<p class="vacio">Ningún medio de este lado ha publicado este mismo hecho.</p>`}
-    ${otros(k).length ? `<div class="otro-enfoque"><p class="eti">Con otro enfoque${info("Medios de este lado que hablan de lo mismo, pero su titular cuenta otro aspecto. No entran en el porcentaje, pero sí cuentan para no marcar la noticia como de cobertura desigual.", "Qué es «con otro enfoque»")}</p><ul>${otros(k).map(li).join("")}</ul></div>` : ""}</div>`;
+  // Se ven 3 titulares por lado; el resto, plegado (si no, en el ordenador la columna de titulares es mucho más larga que la otra)
+  const VISIBLES = 3;
+  const nombre = k => k === "cen" ? "Centro" : LADO[k][0].toUpperCase() + LADO[k].slice(1);
+  const del = k => k === "cen" ? "del centro" : `de la ${LADO[k]}`;
+  const col = k => `<div class="bloque"><div class="lado eti"><i style="background:${COLOR[k]}"></i>${nombre(k)} · ${g[k].length}</div>
+    ${g[k].length ? `<ul>${g[k].slice(0, VISIBLES).map(li).join("")}</ul>` : `<p class="vacio">Ningún medio de este lado ha publicado este mismo hecho.</p>`}
+    ${g[k].length > VISIBLES ? `<details class="mas-lado"><summary>Ver ${g[k].length - VISIBLES === 1 ? "1 titular más" : `${g[k].length - VISIBLES} titulares más`} ${del(k)}</summary><ul>${g[k].slice(VISIBLES).map(li).join("")}</ul></details>` : ""}
+    ${otros(k).length ? `<details class="otro-enfoque"><summary class="eti">Con otro enfoque · ${otros(k).length}</summary><p class="aparte">Medios de este lado que hablan de lo mismo, pero su titular cuenta otro aspecto. No entran en el porcentaje, pero sí cuentan para no marcar la noticia como de cobertura desigual.</p><ul>${otros(k).map(li).join("")}</ul></details>` : ""}</div>`;
   return col("izq") + col("cen") + col("der");
 }
 
