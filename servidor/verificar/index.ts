@@ -1,4 +1,4 @@
-// Vista Plena — verificar: una IA barata decide si los titulares dudosos cuentan el mismo hecho que su noticia.
+// Vista Plena — verificar: una IA barata decide si cada titular nuevo (y cada dudoso) cuenta el mismo hecho que su noticia.
 //
 // La revisión por palabras (recoger?fase=depurar&marcar=1, cada hora) deja en «historias_dudosas» los titulares que
 // quizá no encajan. Esta función le pregunta a un modelo de lenguaje, noticia a noticia: «¿estos titulares cuentan el
@@ -64,38 +64,58 @@ Deno.serve(async (req) => {
   let quedan = tope - (uso?.llamadas ?? 0);
   if (quedan <= 0) return json({ ok: true, hecho: 0, motivo: `Tope diario alcanzado (${tope} consultas)` });
 
-  // Dudosos sin respuesta de la IA ni decisión humana, de los últimos 3 días
-  const { data: ds } = await db.from("historias_dudosas").select("articulo_id, historia_id")
-    .is("ia", null).is("decision", null).gt("creado", new Date(Date.now() - 3 * 864e5).toISOString()).order("creado", { ascending: false }).limit(1000);
-  const porH = new Map<number, number[]>();
-  for (const d of ds ?? []) porH.set(d.historia_id, [...(porH.get(d.historia_id) ?? []), d.articulo_id]);
-  const informe: any[] = [];
-  let sacados = 0;
-  for (const [hid, dudosos] of porH) {
-    if (quedan-- <= 0) break;
-    const { data: h } = await db.from("historias").select("titulo").eq("id", hid).maybeSingle();
-    const { data: arts } = await db.from("articulos").select("id, titulo, medio_id").eq("historia_id", hid).order("publicado", { ascending: false }).limit(200);
-    if (!h || !arts?.length) continue;
-    const dud = new Set(dudosos);
-    const cand = arts.filter((a) => dud.has(a.id)).slice(0, 12); // como mucho 12 por consulta
-    if (!cand.length) continue;
-    // Referencia: el título de la noticia y hasta 5 titulares que no están en duda, de medios distintos
-    const ref = [h.titulo], vistos = new Set<number>();
-    for (const a of arts) if (!dud.has(a.id) && !vistos.has(a.medio_id) && a.titulo !== h.titulo && ref.length < 6) { ref.push(a.titulo); vistos.add(a.medio_id); }
-    if (ref.length < 3) continue; // sin referencia suficiente, mejor no preguntar
-    let res: string[];
-    try { res = await preguntar(modelo, ref, cand.map((a) => a.titulo)); }
-    catch (e) { informe.push({ historia: hid, error: String(e).slice(0, 200) }); break; }
-    for (let i = 0; i < cand.length; i++) {
-      await db.from("historias_dudosas").update({ ia: res[i], ia_modelo: modelo, ia_fecha: new Date().toISOString() }).eq("articulo_id", cand[i].id);
-      if (auto && res[i] === "otro") {
-        await db.from("articulos").update({ historia_id: null }).eq("id", cand[i].id).eq("historia_id", hid);
-        await db.from("historia_vetos").upsert({ articulo_id: cand[i].id, historia_id: hid }, { onConflict: "articulo_id,historia_id", ignoreDuplicates: true });
-        await db.from("historias_dudosas").update({ decision: "sacar" }).eq("articulo_id", cand[i].id);
-        sacados++;
-      }
-    }
-    informe.push({ historia: hid, titulo: h.titulo, respuestas: cand.map((a, i) => `${res[i]} · ${a.titulo}`) });
+  // Qué revisar, noticia a noticia:
+  //  - los titulares dudosos (marcados por la revisión por palabras) sin respuesta de la IA ni decisión humana;
+  //  - los titulares que han entrado en una noticia de 4 o más y la IA aún no ha mirado (articulos.ia_revisado).
+  const desde = new Date(Date.now() - 3 * 864e5).toISOString();
+  const { data: ds } = await db.from("historias_dudosas").select("articulo_id, historia_id").is("ia", null).is("decision", null).gt("creado", desde).limit(1000);
+  const { data: nuevos } = await db.from("articulos").select("id, historia_id").is("ia_revisado", null).not("historia_id", "is", null).gt("publicado", new Date(Date.now() - 864e5).toISOString()).limit(3000);
+  const porH = new Map<number, Set<number>>();
+  for (const d of [...(ds ?? []).map((x) => ({ id: x.articulo_id, h: x.historia_id })), ...(nuevos ?? []).map((x) => ({ id: x.id, h: x.historia_id }))]) {
+    if (!porH.has(d.h)) porH.set(d.h, new Set());
+    porH.get(d.h)!.add(d.id);
   }
-  return json({ ok: true, modelo, automatico: auto, historias: informe.length, sacados, detalle: informe.slice(0, 30) });
+  const dudosoSet = new Set((ds ?? []).map((x) => x.articulo_id));
+  const informe: any[] = [];
+  let sacados = 0, revisados = 0;
+  const inicio = Date.now();
+  for (const [hid, pend] of porH) {
+    if (quedan <= 0 || Date.now() - inicio > 100e3) break; // lo que no dé tiempo, en la siguiente hora
+    const { data: h } = await db.from("historias").select("titulo").eq("id", hid).maybeSingle();
+    const { data: arts } = await db.from("articulos").select("id, titulo, medio_id, ia_revisado, publicado").eq("historia_id", hid).order("publicado").limit(300);
+    if (!h || !arts?.length) continue;
+    const marcarVistos = async (ids: number[]) => { if (ids.length) await db.from("articulos").update({ ia_revisado: true }).in("id", ids); };
+    // Noticias pequeñas: no se pregunta (con 2 o 3 titulares el agrupador ya exige que se parezcan mucho)
+    if (arts.length < 4) { await marcarVistos(arts.filter((a) => pend.has(a.id) && !dudosoSet.has(a.id)).map((a) => a.id)); continue; }
+    // Referencia: el título de la noticia y hasta 5 titulares ya revisados (o, en una noticia nueva, los primeros), de medios distintos
+    const enDuda = (a: any) => pend.has(a.id);
+    let base = arts.filter((a) => !enDuda(a) && a.ia_revisado);
+    if (base.length < 2) base = arts.filter((a) => !dudosoSet.has(a.id)).slice(0, 3); // noticia nueva: los primeros titulares definen el hecho
+    const ref = [h.titulo], refIds: number[] = [], vistos = new Set<number>();
+    for (const a of base) if (!vistos.has(a.medio_id) && a.titulo !== h.titulo && ref.length < 6) { ref.push(a.titulo); refIds.push(a.id); vistos.add(a.medio_id); }
+    if (ref.length < 3) continue;
+    await marcarVistos(refIds.filter((id) => pend.has(id)));
+    const cola = arts.filter((a) => enDuda(a) && !refIds.includes(a.id));
+    for (let i = 0; i < cola.length && quedan > 0; i += 12) {
+      const cand = cola.slice(i, i + 12);
+      quedan--;
+      let res: string[];
+      try { res = await preguntar(modelo, ref, cand.map((a) => a.titulo)); }
+      catch (e) { informe.push({ historia: hid, error: String(e).slice(0, 200) }); return json({ ok: false, modelo, informe }); }
+      for (let j = 0; j < cand.length; j++) {
+        const a = cand[j], otro = res[j] === "otro";
+        revisados++;
+        if (dudosoSet.has(a.id)) await db.from("historias_dudosas").update({ ia: res[j], ia_modelo: modelo, ia_fecha: new Date().toISOString() }).eq("articulo_id", a.id);
+        else if (otro) await db.from("historias_dudosas").upsert({ articulo_id: a.id, historia_id: hid, motivo: "la IA cree que cuenta otro hecho", ia: "otro", ia_modelo: modelo, ia_fecha: new Date().toISOString() }, { onConflict: "articulo_id" });
+        if (auto && otro) {
+          await db.from("articulos").update({ historia_id: null, ia_revisado: true }).eq("id", a.id).eq("historia_id", hid);
+          await db.from("historia_vetos").upsert({ articulo_id: a.id, historia_id: hid }, { onConflict: "articulo_id,historia_id", ignoreDuplicates: true });
+          await db.from("historias_dudosas").update({ decision: "sacar" }).eq("articulo_id", a.id);
+          sacados++;
+        } else if (res[j] !== "error") await marcarVistos([a.id]);
+      }
+      informe.push({ historia: hid, titulo: h.titulo, respuestas: cand.map((a, j) => `${res[j]} · ${a.titulo}`).filter((x) => x.startsWith("otro")) });
+    }
+  }
+  return json({ ok: true, modelo, automatico: auto, consultas: informe.length, revisados, sacados, detalle: informe.filter((x) => x.respuestas?.length).slice(0, 30) });
 });
