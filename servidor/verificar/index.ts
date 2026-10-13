@@ -33,7 +33,12 @@ Para cada candidato decide:
 Responde solo con JSON, una clave por letra: {"A":"mismo","B":"otro"}.`;
 
 // Llamada genérica a Gemini: devuelve el JSON que conteste
+// La versión gratuita de Gemini admite unas 15 consultas por minuto: se deja al menos 4,2 s entre una y otra
+let ultimaLlamada = 0;
 async function gemini(modelo: string, sistema: string, texto: string): Promise<Record<string, string>> {
+  const espera = ultimaLlamada + 4200 - Date.now();
+  if (espera > 0) await new Promise((ok) => setTimeout(ok, espera));
+  ultimaLlamada = Date.now();
   const config: Record<string, unknown> = { temperature: 0, responseMimeType: "application/json", maxOutputTokens: 600 };
   // Que no «piense» antes de contestar: no hace falta para estas preguntas y se cobraría
   if (modelo.startsWith("gemini-2.5")) config.thinkingConfig = { thinkingBudget: 0 };
@@ -44,7 +49,7 @@ async function gemini(modelo: string, sistema: string, texto: string): Promise<R
   });
   let r = await llamada(config);
   // Gemini a veces responde 503 («mucha demanda»): se reintenta una vez
-  if (r.status === 503 || r.status === 429) { await new Promise((ok) => setTimeout(ok, 3000)); r = await llamada(config); }
+  if (r.status === 503) { await new Promise((ok) => setTimeout(ok, 3000)); r = await llamada(config); }
   // Si el modelo no admite ese ajuste de «pensar», se repite sin él
   if (r.status === 400 && config.thinkingConfig) { const { thinkingConfig: _, ...sin } = config; r = await llamada(sin); }
   const d = await r.json().catch(() => ({}));
@@ -98,7 +103,7 @@ Deno.serve(async (req) => {
   let sacados = 0, revisados = 0;
   const inicio = Date.now();
   for (const [hid, pend] of porH) {
-    if (quedan <= 0 || Date.now() - inicio > 80e3) break; // lo que no dé tiempo, en la siguiente hora
+    if (quedan <= 0 || Date.now() - inicio > 60e3) break; // lo que no dé tiempo, en la siguiente hora
     const { data: h } = await db.from("historias").select("titulo").eq("id", hid).maybeSingle();
     const { data: arts } = await db.from("articulos").select("id, titulo, medio_id, ia_revisado, publicado").eq("historia_id", hid).order("publicado").limit(300);
     if (!h || !arts?.length) continue;
@@ -119,7 +124,7 @@ Deno.serve(async (req) => {
       quedan--;
       let res: string[];
       try { res = await preguntar(modelo, ref, cand.map((a) => a.titulo)); }
-      catch (e) { informe.push({ historia: hid, error: String(e).slice(0, 200) }); return json({ ok: false, modelo, informe }); }
+      catch (e) { informe.push({ historia: hid, error: String(e).slice(0, 200) }); quedan = 0; break; }
       for (let j = 0; j < cand.length; j++) {
         const a = cand[j], otro = res[j] === "otro";
         revisados++;
@@ -140,7 +145,7 @@ Deno.serve(async (req) => {
   const destino = new Map<number, number>(); // noticia que ya se juntó en otra → la otra
   const final = (id: number): number => destino.has(id) ? final(destino.get(id)!) : id;
   const { data: pares } = await db.rpc("pares_parecidos");
-  for (let i = 0; i < (pares ?? []).length && quedan > 0 && Date.now() - inicio < 110e3; i += 15) {
+  for (let i = 0; i < (pares ?? []).length && quedan > 0 && Date.now() - inicio < 85e3; i += 15) {
     const lote = pares!.slice(i, i + 15);
     quedan--;
     let res: Record<string, string>;
@@ -164,7 +169,7 @@ Deno.serve(async (req) => {
   let ligeras = 0;
   const { data: vis } = await db.from("portada_m").select("id").gt("actualizada", new Date(Date.now() - 2 * 864e5).toISOString()).limit(1000);
   const { data: sinTipo } = (vis ?? []).length ? await db.from("historias").select("id, titulo").is("ia_tipo", null).in("id", vis!.map((x) => x.id)) : { data: [] as any[] };
-  for (let i = 0; i < (sinTipo ?? []).length && quedan > 0 && Date.now() - inicio < 120e3; i += 25) {
+  for (let i = 0; i < (sinTipo ?? []).length && quedan > 0 && Date.now() - inicio < 118e3; i += 25) {
     const lote = sinTipo!.slice(i, i + 25);
     quedan--;
     let res: Record<string, string>;
