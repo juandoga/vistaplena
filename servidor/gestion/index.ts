@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
       return json((avisos ?? []).map((a) => ({ ...a, titulo: titulos.get(a.historia_id) ?? null })));
     }
     if (req.method === "GET" && q === "dudosas") {
-      const { data: ds } = await db.from("historias_dudosas").select("articulo_id, historia_id, puntuacion, motivo, creado")
+      const { data: ds } = await db.from("historias_dudosas").select("articulo_id, historia_id, puntuacion, motivo, creado, ia")
         .is("decision", null).gt("creado", new Date(Date.now() - 3 * 864e5).toISOString()).order("historia_id").limit(300);
       const aIds = (ds ?? []).map((d) => d.articulo_id), hIds = [...new Set((ds ?? []).map((d) => d.historia_id))];
       const { data: arts } = aIds.length ? await db.from("articulos").select("id, titulo, url, historia_id, medios(nombre)").in("id", aIds) : { data: [] as any[] };

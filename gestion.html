@@ -415,6 +415,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .g-enlace summary{cursor:pointer;color:var(--gris)}
 .g-enlace p{margin:8px 0!important}
 #gBtn{min-height:44px}
+.ia-otro{color:var(--izq);font-weight:700}.ia-mismo{color:var(--gris);font-weight:600}
 .gestion section{padding-top:32px}
 .gestion h2 .n{font-weight:400;font-size:var(--t-s);color:var(--gris);margin-left:8px}
 .aviso-g{border-top:1px solid var(--linea);padding:14px 0;display:grid;gap:6px}
@@ -511,7 +512,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   <div id="panel" hidden>
     <section id="dudosas">
       <h2>Titulares que quizá no encajan <span class="n" id="nDudosas"></span></h2>
-      <p class="aparte">La revisión automática (cada hora) cree que estos titulares cuentan otro hecho distinto al de su historia. Si es así, pulsa «Sacar» y no volverá a entrar en ella. Si está bien donde está, pulsa «Está bien».</p>
+      <p class="aparte">La revisión automática (cada hora) cree que estos titulares cuentan otro hecho distinto al de su historia. Una IA da también su opinión, en prueba: tus decisiones sirven para medir cuánto acierta. Si es así, pulsa «Sacar» y no volverá a entrar en ella. Si está bien donde está, pulsa «Está bien».</p>
       <div id="listaDudosas"></div>
     </section>
     <section id="avisos">
@@ -624,7 +625,7 @@ async function cargar(){
     document.getElementById("nDudosas").textContent = dudosas.length ? `${dudosas.length} por revisar` : "";
     document.getElementById("listaDudosas").innerHTML = porH.size ? [...porH].map(([hid, l]) => `<article class="dud-h">
       <a class="dud-tit" href="historia.html?id=${hid}" target="_blank" rel="noopener">${esc(l[0].historia)}</a>
-      <ul>${l.map(d => `<li id="dud${d.articulo_id}"><span class="m">${esc(d.medio || "")} · ${esc(d.motivo || "")}</span>
+      <ul>${l.map(d => `<li id="dud${d.articulo_id}"><span class="m">${esc(d.medio || "")} · ${esc(d.motivo || "")}${d.ia === "otro" ? ` · <b class="ia-otro">La IA dice: otro hecho</b>` : d.ia === "mismo" ? ` · <b class="ia-mismo">La IA dice: mismo hecho</b>` : ""}</span>
         <a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.titulo)}</a>
         <span class="dud-bot"><button class="boton secundario" type="button" data-dud="${d.articulo_id}" data-dec="sacar">Sacar</button>
         <button class="boton secundario" type="button" data-dud="${d.articulo_id}" data-dec="bien">Está bien</button></span></li>`).join("")}</ul></article>`).join("")
