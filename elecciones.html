@@ -496,6 +496,21 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .g-dato .f{margin-top:auto;font-size:var(--t-xs);color:var(--gris)}
 .g-dato .f a{color:var(--gris)}
 .g-vacio{font-size:var(--t-s);color:var(--gris);border:1px dashed var(--linea);border-radius:8px;padding:12px 14px;margin:0!important}
+.pp-intro{margin:0 0 12px!important}
+.pp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px;margin-bottom:12px}
+.pp-card{border:1px solid var(--linea);border-radius:10px;padding:14px 16px;background:var(--fondo)}
+.pp-card h4{margin:0 0 8px;font-size:var(--t-m);color:var(--tinta)}
+.pp-card ul{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.pp-card li p{margin:0 0 6px!important;font-size:var(--t-s);line-height:1.5;color:var(--tinta)}
+.pp-como{display:inline-block;font-size:var(--t-xs);font-weight:700;border-radius:999px;padding:2px 9px;margin-right:6px}
+.pp-como.si{color:#1d7f46;background:color-mix(in srgb,#1d7f46 12%,transparent)}
+.pp-como.parcial{color:var(--aviso);background:color-mix(in srgb,var(--aviso) 14%,transparent)}
+.pp-como.no{color:var(--texto);border:1.5px dashed var(--gris)}
+.pp-nota{display:block;margin-top:5px;font-size:var(--t-xs);color:var(--texto);line-height:1.45}
+.pp-f{display:block;margin-top:4px;font-size:var(--t-xs);color:var(--gris)}
+.pp-f a{color:var(--gris)}
+.pp-pnota{margin:10px 0 0!important;font-size:var(--t-xs);color:var(--gris);border-top:1px solid var(--linea);padding-top:8px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pp-como.si{color:#4cbf7c}}
 .vc-lista{display:grid;gap:12px}
 .vc{--si:#1d7f46;--no:#b8402f;border:1px solid var(--linea);border-radius:10px;padding:14px 16px;background:var(--fondo)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .vc,:root:not([data-theme="light"]) .vc-guia{--si:#4cbf7c;--no:#e0776a;--sobre:#111213}}
@@ -644,7 +659,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 <script>
 const fechaLarga = d => new Date(d + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
 const fechaCorta = d => new Date(d + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" });
-let PROG = null, GUIA = null, HIST = [], VOT = null;
+let PROG = null, GUIA = null, HIST = [], VOT = null, POST = null;
 // Partidos en la tabla de votaciones (los del Grupo Mixto, por separado)
 const PARTIDOS_V = ["PSOE", "PP", "Vox", "Sumar", "ERC", "Junts", "EH Bildu", "PNV", "Podemos", "BNG", "CC", "UPN"];
 // Nombre completo de cada partido (en las fichas se usa el corto)
@@ -700,6 +715,25 @@ function votaciones(id){
     (L.length > 4 ? `<details class="vot-mas"><summary>${L.length === 5 ? "Ver 1 votación más" : `Ver las otras ${L.length - 4} votaciones`}</summary><div class="vc-lista" style="margin-top:12px">${L.slice(4).map(fichaVot).join("")}</div></details>` : "");
 }
 
+// Qué propone cada partido mientras no hay programas: lo dicho en público, con fuente, fecha y si explica cómo
+const COMO = { si: ["si", "Explica cómo y cómo lo pagaría"], parcial: ["parcial", "Explica cómo, pero no cómo lo pagaría"], no: ["no", "No explica cómo"] };
+function posturas(tema){
+  if (!POST) return `<p class="g-vacio">Ningún partido ha publicado todavía su programa para el 29N.</p>`;
+  const T = POST.temas[tema] || {};
+  const tarjeta = p => {
+    const L = T[p.id] || [];
+    return `<div class="pp-card"><h4>${esc(p.nombre)}</h4>${L.length ? `<ul>${L.map(x => {
+      const f = POST.fuentes[x.f] || {}, c = COMO[x.como] || COMO.no;
+      const fecha = f.fecha ? new Date(f.fecha + "T12:00:00").toLocaleDateString("es-ES", { month: "short", year: "numeric" }) : "";
+      return `<li><p>${esc(x.t)}</p><span class="pp-como ${c[0]}">${c[1]}</span>${x.nota ? `<span class="pp-nota">${esc(x.nota)}</span>` : ""}
+        <span class="pp-f">${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.nombre)}</a>` : `<a href="#${tema}-votos">${esc(f.nombre)}</a>`}${fecha ? ` · ${fecha}` : ""}</span></li>`;
+    }).join("")}</ul>` : `<p class="pend">No hemos encontrado propuestas públicas de este partido sobre este tema.</p>`}${p.nota ? `<p class="pp-pnota">${esc(p.nota)}</p>` : ""}</div>`;
+  };
+  return `<p class="aparte pp-intro">Los partidos aún no han publicado sus programas para el 29N. Esto es lo que han propuesto en público, con su fuente y su fecha.</p>
+    <div class="pp-grid">${POST.partidos.map(tarjeta).join("")}</div>
+    <p class="aparte">Los partidos que solo se presentan en una comunidad (ERC, Junts, PNV, EH Bildu, BNG, Coalición Canaria) aparecerán cuando publiquen sus programas. Sus votos en el Congreso están más abajo.</p>`;
+}
+
 function pintar(){
   const T = GUIA ? GUIA.temas : [];
   const S = window.SECCIONES || [];
@@ -721,19 +755,19 @@ function pintar(){
         <div class="g-datos">${t.datos.map(d => `<div class="g-dato"><span class="c">${esc(d.cifra)}</span><span class="q">${esc(d.que)}</span><span class="f">${esc(d.fuente)} · ${esc(d.periodo)} · <a href="${esc(d.url)}" target="_blank" rel="noopener">fuente</a></span></div>`).join("")}</div></div>
       <div class="g-parte"><h3><span class="n">2</span>Las visiones</h3>
         ${(t.visiones || []).length ? "" : `<p class="g-vacio">Se completará cuando los partidos publiquen sus programas: agruparemos a los que proponen cosas parecidas, describiendo cada visión solo con sus citas.</p>`}</div>
-      <div class="g-parte"><h3><span class="n">3</span>Qué propone cada partido</h3>
+      <div class="g-parte"><h3><span class="n">3</span>Qué propone cada partido${POST ? info(esc(POST.criterio), "De dónde sale") : ""}</h3>
       ${P.some(p => p.programa) ? `<div class="partidos-grid">${P.filter(p => p.programa).map(p => {
         const lista = (p.propuestas || {})[t.id] || [];
         return `<div class="p-card"><h3>${esc(p.nombre)}</h3>${lista.length
           ? `<ul>${lista.map(x => `<li>«${esc(x.texto)}» <a href="${esc(x.url || p.programa.url)}" target="_blank" rel="noopener">pág. ${esc(x.pagina)}</a></li>`).join("")}</ul>`
           : `<p class="pend">Su programa no incluye propuestas sobre este tema.</p>`}</div>`;
       }).join("")}</div>` : ""}
-      ${!P.some(p => p.programa) ? `<p class="g-vacio">Ningún partido ha publicado todavía su programa para el 29N. Mientras tanto, abajo tienes lo que ha votado cada uno.</p>`
+      ${!P.some(p => p.programa) ? posturas(t.id)
         : P.some(p => !p.programa) ? `<p class="pendientes"><span class="eti">Programa pendiente</span>${P.filter(p => !p.programa).map(p => `<span class="chip-p">${esc(p.nombre)}</span>`).join("")}</p>` : ""}</div>
-      <div class="g-parte"><h3><span class="n">4</span>Qué ha votado cada partido${info(`Leyes, decretos y proposiciones de ley votados en el Pleno del Congreso en esta legislatura, de lo más reciente a lo más antiguo. Mostramos lo que votó la mayoría de los diputados de cada partido. Las elegimos por las palabras de su título, así que puede colarse alguna de otro tema: si la ves, <a href="https://github.com/juandoga/vistaplena/issues/new" target="_blank" rel="noopener">avísanos</a>.`, "Qué votaciones salen")}</h3>
+      <div class="g-parte" id="${t.id}-votos"><h3><span class="n">4</span>Qué ha votado cada partido${info(`Leyes, decretos y proposiciones de ley votados en el Pleno del Congreso en esta legislatura, de lo más reciente a lo más antiguo. Mostramos lo que votó la mayoría de los diputados de cada partido. Las elegimos por las palabras de su título, así que puede colarse alguna de otro tema: si la ves, <a href="https://github.com/juandoga/vistaplena/issues/new" target="_blank" rel="noopener">avísanos</a>.`, "Qué votaciones salen")}</h3>
 
         ${votaciones(t.id)}</div>
-      ${hoy.length ? `<div class="hoy"><span class="eti">Hoy en los medios</span>${hoy.map(h => `<a class="hoy-item" href="${enlace(h)}">${esc(h.t)}${barra(h)}<span class="m">${h.tot} medios</span></a>`).join("")}<a class="mas-sec" href="./?seccion=${s.id}">Más noticias de ${esc(t.nombre.toLowerCase())} →</a></div>` : ""}
+      ${hoy.length ? `<div class="hoy"><span class="eti">Noticias de estos días sobre ${esc(t.nombre.toLowerCase())}</span>${hoy.map(h => `<a class="hoy-item" href="${enlace(h)}">${esc(h.t)}${barra(h)}<span class="m">${h.tot} medios</span></a>`).join("")}<a class="mas-sec" href="./?seccion=${s.id}">Más noticias de ${esc(t.nombre.toLowerCase())} →</a></div>` : ""}
     </section>`;
   }).join("");
   document.getElementById("filasPartidos").innerHTML = P.map(p => `<tr><td><strong>${esc(p.nombre)}</strong></td>
@@ -743,8 +777,8 @@ function pintar(){
 // Cuenta atrás
 (() => { const d = Math.ceil((new Date("2026-11-29T09:00:00+01:00") - Date.now()) / 864e5); document.getElementById("dias").textContent = d > 0 ? d : "Hoy"; })();
 pintar();
-Promise.all([fetch("programas.json").then(r => r.json()), fetch("guia.json").then(r => r.json())])
-  .then(([p, g]) => { PROG = p; GUIA = g; pintar(); if (location.hash) document.querySelector(location.hash)?.scrollIntoView(); }).catch(() => {});
+Promise.all([fetch("programas.json").then(r => r.json()), fetch("guia.json").then(r => r.json()), fetch("posturas.json").then(r => r.json()).catch(() => null)])
+  .then(([p, g, q]) => { PROG = p; GUIA = g; POST = q; pintar(); if (location.hash) document.querySelector(location.hash)?.scrollIntoView(); }).catch(() => {});
 // La campaña hoy: noticias electorales de las últimas 48 horas, ordenadas como la portada, y su cobertura sumada
 const ELECTORAL = /(\b(?:re)?elecci|\b29-?n\b|campaña|candidat|debates? electoral|cara a cara|encuesta|sondeo|listas electorales|frente amplio|voto por correo|junta electoral|mitin|programa electoral|interventores)/i;
 // …y que sea de la política española (si no, entran mítines de Trump o el Brexit)
