@@ -321,7 +321,7 @@ def archivo(historias, tpl_h, tpl_t, temas):
         filas = json.load(open(os.environ["VP_DATOS"])).get("archivo", [])
     else:
         filas = todo(f"archivo?select=historia_id,titulo,creada,actualizada,total,voces,pct_izq,pct_cen,pct_der,punto_ciego,titulares"
-                     f"&total=gte.{MIN_ARCHIVO}&fusionada=is.false&ligera=is.not.true&titulares=not.is.null&order=creada.desc")
+                     f"&total=gte.{MIN_ARCHIVO}&fusionada=is.false&ligera=not.is.true&titulares=not.is.null&order=creada.desc")
     recientes = {h["id"] for h in historias}
     mapa, todas = [], []
     for f in filas:
