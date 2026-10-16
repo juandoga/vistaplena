@@ -268,7 +268,9 @@ async function depurar(url: URL) {
 const LIGERA_URL = /\/(deportes?|futbol|baloncesto|tenis|motor|formula-?1|motogp|ciclismo|laotraliga|golf|toros|gente|famosos|corazon|cool|chic|lifestyle|estilo|moda|belleza|vanitatis|television|tv|series|cine-y-series|el-?tiempo|tiempo|meteorologia|loterias?|horoscopo|viajes|gastronomia|recetas|videojuegos|gadgets|moviles)(\/|$)/i;
 const LIGERA_TIT = /(loter[ií]a|sorteo|bonoloto|euromillones|la primitiva|super ?once|triplex|cup[oó]n (diario|de la once)|cuponazo|eurojackpot|quiniela|hor[oó]scopo|el tiempo (hoy|de este|para|en)|previsi[oó]n del tiempo)/i;
 const PUBLICO = /(gobierno|ministr|congreso|senado|parlament|psoe|\bpp\b|\bvox\b|sumar|podemos|s[aá]nchez|feij[oó]o|abascal|\bley\b|decreto|tribunal|\bjuez|jueza|fiscal|huelga|protest|manifestaci|sindicat|elecciones|ayuntamiento|alcald|generalitat|xunta|junta de|israel|gaza|ucrania|rusia|inmigra|migrant|vivienda|impuesto|hacienda|corrupci|imputad|investigad|\bdana\b|racism|machis|violencia de g[eé]nero|casa real|\brey\b|monarqu)/i;
-const esLigera = (titulo: string, url: string) => (LIGERA_URL.test(url) || LIGERA_TIT.test(titulo)) && !PUBLICO.test(titulo);
+// Opinión (columnas, tribunas, editoriales, blogs): no es información sobre un hecho, así que no se agrupa ni se compara
+const OPINION_URL = /\/(opinion|opini%c3%b3n|tribunas?|editoriales?|columnas?|columnistas|blogs?|firmas|cartas-al-director|el-?subjetivo|analisis-de-opinion)(\/|$)/i;
+const esLigera = (titulo: string, url: string) => OPINION_URL.test(url) || ((LIGERA_URL.test(url) || LIGERA_TIT.test(titulo)) && !PUBLICO.test(titulo));
 
 // ---------- Programa principal ----------
 // El trabajo se hace en dos fases para no superar el límite de cálculo de cada ejecución:
