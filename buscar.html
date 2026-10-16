@@ -35,7 +35,7 @@
 
 /* Layout: barra superior fija con logo y secciones; guía en panel gris; noticia principal a dos columnas (titular grande | titulares por lado); franja de puntos ciegos; rejilla de 3 columnas */
 :root{
-  --fondo:#ffffff; --panel:#f4f4f2; --tinta:#111213; --texto:#3d4047; --gris:#7a7e86; --linea:#e6e6e3;
+  --fondo:#ffffff; --panel:#f4f4f2; --tinta:#111213; --texto:#3d4047; --gris:#5f636b; --linea:#e6e6e3;
   --izq:#c0392b; --cen:#b3b5b9; --der:#2c5aa0; --aviso:#b26b00;
   --logo:"Roboto",system-ui,sans-serif;
   --titular:"Newsreader",Georgia,serif;
@@ -54,7 +54,7 @@
 body{background:var(--fondo);color:var(--texto);font-family:var(--ui);font-size:var(--t-m);line-height:1.55;-webkit-font-smoothing:antialiased}
 a{color:inherit}
 button{font:inherit;color:inherit;cursor:pointer}
-:focus-visible{outline:2px solid var(--der);outline-offset:3px;border-radius:2px}
+:focus-visible{outline:2px solid var(--tinta);outline-offset:3px;border-radius:2px}
 .wrap{max-width:1200px;margin:0 auto;padding-inline:20px}
 .eti{font-family:var(--ui);font-size:var(--t-xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
 
@@ -239,7 +239,7 @@ a.tema:hover{border-color:var(--tinta)}
 .resumen-dia .barra{height:6px}
 .resumen-dia .m{font-size:var(--t-xs);color:var(--gris)}
 .destacar{animation:destello 1.6s ease}
-@keyframes destello{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--der) 40%,transparent)}100%{box-shadow:0 0 0 18px transparent}}
+@keyframes destello{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--tinta) 30%,transparent)}100%{box-shadow:0 0 0 18px transparent}}
 
 /* Lo último */
 .porque{margin:10px 0 0;font-size:var(--t-s);color:var(--texto);line-height:1.45}
@@ -294,6 +294,7 @@ a.tema:hover{border-color:var(--tinta)}
 .navlink-29n{color:var(--tinta)!important;font-weight:700}
 .cab-seccion p a{color:var(--tinta);font-weight:600;text-underline-offset:3px}
 @media (max-width:600px){.guia{padding:18px}.guia h2{font-size:var(--t-l)}.guia .entradilla{font-size:var(--t-m)}}
+.por-bloque{margin:8px 0 0;font-size:var(--t-s);color:var(--texto)}.por-bloque:empty{display:none}
 
 /* Cabecera y menú */
 .top .wrap.barra-top{display:flex;align-items:center;gap:18px;flex-wrap:nowrap;padding-block:12px}
@@ -424,7 +425,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .mas-lado[open] summary{color:var(--gris)}
 .tema-recien{margin:10px 0 0;font-size:var(--t-s);color:var(--texto)}.tema-recien a{color:var(--tinta);font-weight:600}
 .tema-sueltos summary{cursor:pointer;font-weight:600;color:var(--tinta);padding:6px 0}
-.ia-otro{color:var(--izq);font-weight:700}.ia-mismo{color:var(--gris);font-weight:600}
+.ia-otro{color:var(--aviso);font-weight:700}.ia-mismo{color:var(--gris);font-weight:600}
 .gestion section{padding-top:32px}
 .gestion h2 .n{font-weight:400;font-size:var(--t-s);color:var(--gris);margin-left:8px}
 .aviso-g{border-top:1px solid var(--linea);padding:14px 0;display:grid;gap:6px}
@@ -474,7 +475,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 <body>
 <header class="top">
   <div class="wrap barra-top">
-    <button class="hamb" id="abrirMenu" aria-expanded="false" aria-controls="menu"><i aria-hidden="true"></i><span class="hamb-txt">Menú</span></button>
+    <button class="hamb" id="abrirMenu" aria-expanded="false" aria-controls="menu" aria-label="Menú"><i aria-hidden="true"></i><span class="hamb-txt">Menú</span></button>
     <a class="logo" href="./" aria-label="Vista Plena, ir a la portada"><svg class="logo-ic" viewBox="0 0 64 64" aria-hidden="true"><path d="M6 40V58H24" style="fill:none;stroke:var(--izq);stroke-width:7;stroke-linecap:square"/><path d="M40 6H58V24" style="fill:none;stroke:var(--der);stroke-width:7;stroke-linecap:square"/><circle cx="32" cy="32" r="10" fill="currentColor"/></svg>Vista Plena</a>
     <nav class="nav" aria-label="Principal">
       <a class="navlink" href="./">Portada</a>
@@ -537,7 +538,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   </div>
   <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
-<script src="comun.js?v=72dd339a"></script>
+<script src="comun.js?v=72d389c4"></script>
 <script>
 // Buscador: noticias de los últimos 14 días (las que tienen página) y temas con ese nombre.
 // La búsqueda se hace en la base de datos (función buscar): sin acentos ni mayúsculas y por principio de palabra.

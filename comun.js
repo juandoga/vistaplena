@@ -120,3 +120,20 @@ document.addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
   document.querySelectorAll(".info-b[aria-expanded='true']").forEach(x => { x.setAttribute("aria-expanded", "false"); document.getElementById(x.getAttribute("aria-controls")).hidden = true; x.focus(); });
 });
+
+// Cuántos medios leemos de cada lado (para decir «9 de los 13 medios de izquierda»). Se guarda un día en el navegador.
+async function totalesMedios(){
+  try { const c = JSON.parse(localStorage.getItem("vp-totales") || "null"); if (c && Date.now() - c.t < 864e5) return c.v; } catch (e) {}
+  const m = await pedir("medios?select=orientacion&activo=eq.true");
+  const v = { izq: 0, cen: 0, der: 0 };
+  for (const x of m) v[lado(x.orientacion)]++;
+  try { localStorage.setItem("vp-totales", JSON.stringify({ t: Date.now(), v })); } catch (e) {}
+  return v;
+}
+// «La publican 9 de los 13 medios de izquierda, 3 de los 11 de centro y 12 de los 14 de derecha que leemos»
+function frasePorBloque(h, T){
+  const n = { izq: new Set(), cen: new Set(), der: new Set() };
+  for (const a of h.a) n[lado(a.o)].add(a.m);
+  const t = k => `<b>${n[k].size}</b> de los ${T[k]}`;
+  return `La publican ${t("izq")} medios de izquierda, ${t("cen")} de centro y ${t("der")} de derecha que leemos.`;
+}
