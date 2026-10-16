@@ -553,7 +553,8 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <h2>Correcciones</h2>
     <p>Si ves un error (una noticia mal agrupada, un medio mal etiquetado, un dato equivocado en la guía electoral), escríbenos a <a href="mailto:contacto@vistaplena.es">contacto@vistaplena.es</a> o abre una propuesta en <a href="https://github.com/juandoga/vistaplena/issues/new">GitHub</a>. Revisamos cada aviso y, si tienes razón, lo corregimos y lo anotamos aquí con su fecha.</p>
     <h3>Registro de correcciones</h3>
-    <p class="aparte">Todavía no hay correcciones publicadas.</p>
+    <p class="aparte">Cada vez que corregimos una noticia mal agrupada, una repetida o un dato, queda anotado aquí automáticamente. Las etiquetas de los medios tienen su propio registro en la ficha de cada medio (<a href="/medio/">ver los medios</a>).</p>
+    <ol class="registro" id="registro"><li class="aparte">Cargando…</li></ol>
   </section>
 </div>
 
@@ -568,6 +569,17 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
 <script src="comun.js?v=b5f6c127"></script>
+<script>
+(async () => {
+  const el = document.getElementById("registro");
+  try {
+    const C = await pedir("correcciones?select=fecha,tipo,historia_id,titulo,que&order=fecha.desc&limit=100");
+    const f = iso => new Date(iso).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+    el.innerHTML = C.length ? C.map(c => `<li><time datetime="${c.fecha}">${f(c.fecha)}</time> · <b>${esc(c.tipo)}</b>${c.titulo ? `: ${c.historia_id ? `<a href="${urlNoticia(c.historia_id, c.titulo)}">${esc(c.titulo)}</a>` : esc(c.titulo)}` : ""}. ${esc(c.que)}</li>`).join("")
+      : `<li class="aparte">Todavía no hay correcciones publicadas.</li>`;
+  } catch (e) { el.innerHTML = `<li class="aparte">No se ha podido cargar el registro ahora mismo.</li>`; }
+})();
+</script>
 
 </body>
 </html>

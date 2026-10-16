@@ -548,6 +548,19 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
       <p class="aparte">Cambia el nombre de un tema o ocúltalo de la web. Si el tema desaparece y se vuelve a formar con otro número, la corrección no se conserva.</p>
       <div id="filasTemas"></div>
     </section>
+    <section id="correccionesG">
+      <h2>Registro público de correcciones</h2>
+      <p class="aparte">Lo que anotes aquí sale en <a href="quienes-somos.html#correcciones" target="_blank">Quiénes somos</a>. Al sacar un titular mal agrupado se anota solo.</p>
+      <form id="fCorr" class="g-clave">
+        <label for="cTipo">Qué se ha corregido</label>
+        <div class="fila"><select id="cTipo"><option>Historia repetida</option><option>Titular mal agrupado</option><option>Etiqueta de un medio</option><option>Dato de la guía electoral</option><option>Otra corrección</option></select>
+        <input id="cHist" type="number" inputmode="numeric" placeholder="Nº de historia (opcional)" style="max-width:200px"></div>
+        <label for="cQue">Explicación en una frase</label>
+        <div class="fila"><input id="cQue" type="text" maxlength="600" required placeholder="Unimos las dos historias sobre…"><button class="boton secundario" type="submit">Anotar</button></div>
+        <p class="aparte" id="msgCorr" role="status"></p>
+      </form>
+      <ul id="listaCorr"></ul>
+    </section>
     <section id="miAcceso">
       <h2>Tu acceso</h2>
       <p class="aparte" id="estadoClave"></p>
@@ -640,9 +653,27 @@ document.getElementById("pedir").addEventListener("click", async e => {
   setTimeout(() => { e.target.disabled = false; }, 120000);
 });
 
+async function pintarCorr(){
+  const C = await llamar("correcciones").catch(() => []);
+  document.getElementById("listaCorr").innerHTML = C.map(c => `<li>${fecha(c.fecha)} · <b>${esc(c.tipo)}</b>${c.titulo ? ` · ${esc(c.titulo)}` : ""}: ${esc(c.que)} <button class="boton secundario" type="button" data-corr="${c.id}">Quitar</button></li>`).join("");
+}
+document.getElementById("fCorr").addEventListener("submit", async e => {
+  e.preventDefault();
+  const msg = document.getElementById("msgCorr");
+  try {
+    await llamar(null, { accion: "correccion", tipo: document.getElementById("cTipo").value, historia_id: document.getElementById("cHist").value, que: document.getElementById("cQue").value });
+    msg.textContent = "Anotada."; e.target.reset(); pintarCorr();
+  } catch (err) { msg.textContent = err.detalle || "No se ha podido anotar."; }
+});
+document.getElementById("listaCorr").addEventListener("click", async e => {
+  const b = e.target.closest("[data-corr]"); if (!b) return;
+  await llamar(null, { accion: "borrar_correccion", id: Number(b.dataset.corr) }).catch(() => {});
+  pintarCorr();
+});
 async function cargar(){
   try {
     const [avisos, temas, dudosas] = await Promise.all([llamar("avisos"), llamar("temas"), llamar("dudosas").catch(() => [])]);
+    pintarCorr();
     // Titulares dudosos, agrupados por historia
     const porH = new Map();
     for (const d of dudosas) { const l = porH.get(d.historia_id) || []; l.push(d); porH.set(d.historia_id, l); }

@@ -680,7 +680,7 @@ function render(){
   const M = DATA.medios || [];
   document.getElementById("nMedios").textContent = M.length || 21;
   document.getElementById("escala").innerHTML = NIVELES.map(([v, n, col]) =>
-    `<div><h4 style="border-color:${col};${Math.abs(v)===1?"border-top-style:dashed":""}">${n}</h4><ul>${M.filter(m => m.o === v).map(m => `<li>${esc(m.n)}</li>`).join("")}</ul></div>`).join("");
+    `<div><h4 style="border-color:${col};${Math.abs(v)===1?"border-top-style:dashed":""}">${n}</h4><ul>${M.filter(m => m.o === v).map(m => `<li><a href="/medio/${slug(m.n)}/">${esc(m.n)}</a></li>`).join("")}</ul></div>`).join("");
   document.getElementById("estado").textContent = DATA.generado ? `Actualizado ${haceCuanto(DATA.generado)} · ${M.length} medios` : CARGA === "cargando" ? "Cargando…" : "Sin datos";
 }
 const guia = document.getElementById("guia");

@@ -7,7 +7,10 @@ Telegram no ejecutan código, así que al compartir una noticia solo verían el 
 - /noticia/<titulo>-<id>/   una página por noticia de los últimos 14 días, con el contenido ya escrito, su título,
                             su descripción, su imagen para redes y sus datos estructurados (schema.org)
 - /tema/<nombre>-<id>/      lo mismo para cada tema
-- /og/<id>.png              la imagen para redes de cada noticia reciente: titular + reparto izquierda/centro/derecha
+- /og/<id>.png              la imagen para redes de cada noticia reciente: titular, un titular de cada lado y el reparto
+- /archivo/                 las historias de 10 o más medios se quedan para siempre (las demás caducan a los 14 días)
+- /medio/<nombre>/          una ficha por medio: etiqueta, de dónde sale, grado de confianza, cambios y qué ha publicado
+Las noticias de menos de 6 medios tienen página, pero con «noindex»: son demasiado pequeñas para que Google las muestre.
 - /sitemap.xml y /robots.txt
 - /estilos/*.css            los estilos, en un archivo aparte para que cada página pese poco
 
@@ -30,6 +33,8 @@ KEY = "sb_publishable_1As_Elit5MJVUOZFOLeDjA_YMVv6jjF"  # clave pública de solo
 BASE = "https://vistaplena.es"
 DIAS = 14          # noticias con página propia
 OG_HORAS = 72      # noticias con imagen propia para redes (las demás usan la genérica)
+MIN_INDEXAR = 6    # por debajo de estos medios, la página lleva noindex y no va al mapa del sitio
+MIN_ARCHIVO = 10   # desde estos medios, la historia se guarda para siempre en /archivo/
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SALIDA = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else "_site")
 NO_COPIAR = {".git", ".github", "seo", "servidor", "README.md", "_site"}
@@ -96,7 +101,7 @@ def plantilla(nombre):
     return t.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n<base href="/">', 1)
 
 
-def montar(t, *, titulo, desc, url, imagen, tipo, jsonld, id_, cuerpo):
+def montar(t, *, titulo, desc, url, imagen, tipo, jsonld, id_, cuerpo, indexar=True):
     meta = lambda prop, valor: f'<meta property="{prop}" content="{esc(valor)}">'
     # (las sustituciones van con lambda para que una barra invertida en un titular no se interprete)
     t = re.sub(r"<title>.*?</title>", lambda _: f"<title>{esc(titulo)}</title>", t, count=1)
@@ -104,6 +109,7 @@ def montar(t, *, titulo, desc, url, imagen, tipo, jsonld, id_, cuerpo):
     for prop, valor in (("og:type", tipo), ("og:title", titulo), ("og:description", desc), ("og:url", BASE + url), ("og:image", imagen)):
         t = re.sub(rf'<meta property="{prop}" content="[^"]*">', lambda _: meta(prop, valor), t, count=1)
     t = t.replace('<meta name="robots" content="noindex,follow">',
+                  ('' if indexar else '<meta name="robots" content="noindex,follow">\n') +
                   f'<link rel="canonical" href="{BASE}{url}">\n'
                   f'<meta name="twitter:title" content="{esc(titulo)}">\n<meta name="twitter:description" content="{esc(desc)}">\n'
                   f'<meta name="twitter:image" content="{esc(imagen)}">\n'
@@ -150,7 +156,7 @@ def descripcion(h):
     return base[:300]
 
 
-def cuerpo_noticia(h, tema):
+def cuerpo_noticia(h, tema, archivada=False):
     m = por_medio(h)
     n = {k: sum(1 for a in m if lado(a["orientacion"]) == k) for k in ("izq", "cen", "der")}
     nombres = {"izq": "Izquierda", "cen": "Centro", "der": "Derecha"}
@@ -165,8 +171,10 @@ def cuerpo_noticia(h, tema):
     ent = (f'<section class="hist-que"><h2>Qué ha pasado</h2><blockquote>{esc(h["entradilla"])}</blockquote>'
            f'<p class="aparte">Entradilla de {esc(h["entradilla_medio"])}.</p></section>') if h.get("entradilla") else ""
     tema_html = (f'<p class="hilo"><span><b>Tema:</b> <a href="{url_tema(tema["id"], tema["nombre"])}">{esc(tema["nombre"])}</a></span></p>') if tema else ""
+    aviso = (f'<p class="hilo"><span><b>Archivo:</b> historia del {fecha(h["creada"])}. Se guarda porque la contaron {h["total"]} medios. '
+             f'<a href="/archivo/">Ver todo el archivo</a></span></p>') if archivada else ""
     return (f'<header class="hist-cab"><h1>{esc(h["titulo"])}</h1>'
-            f'<div class="meta"><span>{h["total"]} medios · {h["voces"]} voces</span></div>{tema_html}</header>'
+            f'<div class="meta"><span>{h["total"]} medios · {h["voces"]} voces</span></div>{tema_html}{aviso}</header>'
             f'<div class="hist-cuerpo"><div class="hist-izq">{ent}'
             f'<section class="hist-cob"><h2>Quién la cuenta</h2><p class="resumen">{esc(lectura(h))}</p>'
             f'<p class="cuenta">La publican <b>{h["total"]} medios</b>: {n["izq"]} de izquierda o centroizquierda, {n["cen"]} de centro '
@@ -228,8 +236,8 @@ def imagen_og(h, ruta):
     d.ellipse([x0 + s / 2 - r, y0 + s / 2 - r, x0 + s / 2 + r, y0 + s / 2 + r], fill=TINTA)
     d.text((x0 + s + 16, y0 + s / 2), "Vista Plena", font=ImageFont.truetype(F["negra"], 34), fill=TINTA, anchor="lm")
     d.text((W - 64, y0 + s / 2), "vistaplena.es", font=ImageFont.truetype(F["media"], 28), fill=TINTA, anchor="rm")
-    # Titular en serif, en hasta 4 líneas, bajando el tamaño si hace falta
-    for tam in (66, 60, 54, 48, 44):
+    # Titular en serif, en hasta 3 líneas, bajando el tamaño si hace falta
+    for tam in (58, 52, 48, 44, 40):
         fuente = ImageFont.truetype(F["titular"], tam)
         try:
             fuente.set_variation_by_axes([600, 48])  # peso y tamaño óptico de Newsreader
@@ -244,17 +252,34 @@ def imagen_og(h, ruta):
                 lineas.append(actual)
                 actual = palabra
         lineas.append(actual)
-        if len(lineas) <= 4:
+        if len(lineas) <= 3:
             break
-    if len(lineas) > 4:
-        lineas = lineas[:4]
+    if len(lineas) > 3:
+        lineas = lineas[:3]
         lineas[-1] = lineas[-1].rstrip(".,;:") + "…"
-    y = 150
+    y = 130
     for l in lineas:
         d.text((64, y), l, font=fuente, fill=TINTA)
         y += int(tam * 1.12)
+    # Un titular de cada lado (el que mejor cuenta el hecho), en una línea cada uno
+    y = max(y + 18, 330)
+    chico = ImageFont.truetype(F["media"], 24)
+    vistos = {}
+    for a in por_medio(h):
+        vistos.setdefault(lado(a["orientacion"]), a)
+    for k, col, nom in (("izq", IZQ, "Izquierda"), ("cen", (110, 114, 122), "Centro"), ("der", DER, "Derecha")):
+        a = vistos.get(k)
+        texto = f'{a["medio"]}: «{a["titulo"]}»' if a else "Ningún medio de este lado la ha publicado"
+        d.rounded_rectangle([64, y + 4, 70, y + 28], radius=2, fill=col)
+        ancho = W - 128 - 22
+        if d.textlength(texto, font=chico) > ancho:
+            while texto and d.textlength(texto + "…»", font=chico) > ancho:
+                texto = texto[:-1]
+            texto = texto.rstrip(" ,.;:«") + "…»"
+        d.text((86, y), texto, font=chico, fill=TINTA if a else GRIS)
+        y += 36
     # Barra de cobertura
-    yb, hb = H - 150, 52
+    yb, hb = H - 118, 40
     total = max(1, h["pct_izq"] + h["pct_cen"] + h["pct_der"])
     x = 64
     num = ImageFont.truetype(F["num"], 26)
@@ -266,12 +291,109 @@ def imagen_og(h, ruta):
                 d.text((x + 16, yb + hb / 2), f"{pct} %", font=num, fill=txt, anchor="lm")
         x += ancho
     pie = ImageFont.truetype(F["media"], 26)
-    d.text((64, yb + hb + 24), "Izquierda", font=pie, fill=IZQ)
-    d.text((W / 2, yb + hb + 24), "Centro", font=pie, fill=GRIS, anchor="ma")
-    d.text((W - 64, yb + hb + 24), "Derecha", font=pie, fill=DER, anchor="ra")
+    d.text((64, yb + hb + 14), "Izquierda", font=pie, fill=IZQ)
+    d.text((W / 2, yb + hb + 14), "Centro", font=pie, fill=GRIS, anchor="ma")
+    d.text((W - 64, yb + hb + 14), "Derecha", font=pie, fill=DER, anchor="ra")
     resumen = f"La cuentan {h['total']} medios" + (f" · poca cobertura en la {h['punto_ciego']}" if h["punto_ciego"] else "")
-    d.text((64, yb - 22), resumen, font=pie, fill=TINTA, anchor="ls")
+    d.text((W - 64, yb - 14), resumen, font=ImageFont.truetype(F["media"], 22), fill=GRIS, anchor="rs")
     im.save(ruta, optimize=True)
+
+
+# ---------- Archivo permanente ----------
+def lista_html(hs):
+    return "".join(f'<li><time datetime="{h["creada"]}">{fecha(h["creada"])}</time><div><a href="{url_noticia(h["id"], h["titulo"])}">'
+                   f'{esc(h["titulo"])}</a><span class="m">{h["total"]} medios · izquierda {h["pct_izq"]} %, centro {h["pct_cen"]} %, '
+                   f'derecha {h["pct_der"]} %</span></div></li>' for h in hs)
+
+
+def pagina_lista(tpl, *, url, titulo, h1, sub, cuerpo_extra, desc, items):
+    cuerpo = (f'<header class="hist-cab"><h1>{esc(h1)}</h1><p class="tema-sub">{sub}</p></header>{cuerpo_extra}'
+              + (f'<section class="tema-crono"><div class="tc-dia"><ol>{items}</ol></div></section>' if items else ""))
+    jsonld = {"@context": "https://schema.org", "@type": "CollectionPage", "@id": BASE + url, "url": BASE + url, "name": h1,
+              "description": desc, "inLanguage": "es-ES", "isPartOf": {"@id": BASE + "/#web"}}
+    # id 0: la página no pide datos al abrirse y se queda con este contenido
+    escribir(url, montar(tpl, titulo=titulo, desc=desc, url=url, imagen=BASE + "/og.png", tipo="website", jsonld=jsonld, id_=0, cuerpo=cuerpo))
+
+
+def archivo(historias, tpl_h, tpl_t, temas):
+    """Historias de 10 o más medios: página para siempre. Las recientes ya tienen la suya; aquí se rehacen las antiguas."""
+    if os.environ.get("VP_DATOS"):
+        filas = json.load(open(os.environ["VP_DATOS"])).get("archivo", [])
+    else:
+        filas = todo(f"archivo?select=historia_id,titulo,creada,actualizada,total,voces,pct_izq,pct_cen,pct_der,punto_ciego,titulares"
+                     f"&total=gte.{MIN_ARCHIVO}&fusionada=is.false&ligera=is.not.true&titulares=not.is.null&order=creada.desc")
+    recientes = {h["id"] for h in historias}
+    mapa, todas = [], []
+    for f in filas:
+        h = {"id": f["historia_id"], "titulo": f["titulo"], "creada": f["creada"], "actualizada": f["actualizada"], "total": f["total"],
+             "voces": f["voces"] or f["total"], "pct_izq": f["pct_izq"], "pct_cen": f["pct_cen"], "pct_der": f["pct_der"],
+             "punto_ciego": f["punto_ciego"], "articulos": f["titulares"] or [], "entradilla": None}
+        todas.append(h)
+        if h["id"] in recientes:
+            continue
+        url = url_noticia(h["id"], h["titulo"])
+        escribir(url, montar(tpl_h, titulo=f"{h['titulo']} · Archivo · Vista Plena", desc=descripcion(h), url=url, imagen=BASE + "/og.png",
+                             tipo="article", jsonld=jsonld_noticia(h, url, BASE + "/og.png", None), id_=h["id"],
+                             cuerpo=cuerpo_noticia(h, None, archivada=True)))
+        mapa.append((url, h["actualizada"]))
+    pagina_lista(tpl_t, url="/archivo/", titulo="Archivo: las historias que más medios contaron · Vista Plena", h1="Archivo",
+                 sub=f"{len(todas)} historias que contaron {MIN_ARCHIVO} medios o más. Se guardan para siempre, con el titular de cada medio.",
+                 cuerpo_extra="", desc="Las historias que más medios contaron en España, con quién las contó y cómo las tituló cada lado.",
+                 items=lista_html(todas))
+    return mapa
+
+
+# ---------- Fichas de medios ----------
+CONFIANZA = {"alta": "Alta: dos mediciones independientes coinciden.",
+             "media": "Media: hay una medición, o las dos no coinciden del todo y decide una tercera fuente.",
+             "baja": "Baja: no hay mediciones de su audiencia; la etiqueta se basa en su línea editorial y en clasificaciones externas."}
+
+
+def fichas_medios(historias, tpl_t):
+    if os.environ.get("VP_DATOS"):
+        d = json.load(open(os.environ["VP_DATOS"]))
+        medios, cambios = d.get("medios", []), d.get("cambios", [])
+    else:
+        medios = pedir("medios?select=nombre,web,orientacion,grupo,revisado,nota_etiqueta,medicion_cis,medicion_twitter,confianza,activo&activo=eq.true&order=orientacion,nombre")
+        cambios = pedir("medios_cambios?select=fecha,medio,antes,despues,motivo&order=fecha.desc")
+    grandes = sorted(historias, key=lambda h: -(h.get("total") or 0))[:30]
+    mapa, filas_indice = [], []
+    num = lambda v: str(v).replace(".", ",")
+    for m in medios:
+        url = f"/medio/{slug(m['nombre'])}/"
+        suyas = [h for h in historias if any(a["medio"] == m["nombre"] for a in (h.get("articulos") or []))]
+        suyas.sort(key=lambda h: h["creada"], reverse=True)
+        en_grandes = sum(1 for h in grandes if h in suyas)
+        faltan = [h for h in grandes if h not in suyas][:5]
+        mediciones = []
+        if m.get("medicion_cis") is not None:
+            mediciones.append(f"Barómetro del CIS (ideología media de su audiencia, de 1 izquierda a 10 derecha): <b>{num(m['medicion_cis'])}</b>")
+        if m.get("medicion_twitter") is not None:
+            mediciones.append(f"Estudio de sus seguidores en Twitter (misma escala): <b>{num(m['medicion_twitter'])}</b>")
+        hist = [c for c in cambios if c["medio"] == m["nombre"]]
+        bloque = (f'<section class="hist-cob"><h2>Su etiqueta</h2><p class="resumen"><b>{ETIQUETA[m["orientacion"]]}</b>'
+                  f'{" · grupo " + esc(m["grupo"]) if m.get("grupo") and m["grupo"] != m["nombre"] else ""}</p>'
+                  + (f'<ul>{"".join(f"<li>{x}</li>" for x in mediciones)}</ul>' if mediciones else "<p>No hay mediciones de su audiencia.</p>")
+                  + (f'<p>{esc(m["nota_etiqueta"])}</p>' if m.get("nota_etiqueta") else "")
+                  + (f'<p><b>Confianza en la etiqueta:</b> {CONFIANZA.get(m.get("confianza") or "baja")}</p>')
+                  + f'<p class="aparte">Revisada el {fecha(m["revisado"]) if m.get("revisado") else "—"}. '
+                    f'<a href="/metodologia.html">Cómo etiquetamos</a> · <a href="{esc(m["web"])}" rel="noopener" target="_blank">Web del medio</a></p></section>'
+                  + (f'<section class="hist-cob"><h2>Cambios de etiqueta</h2><ul>{"".join(f"<li>{fecha(c['fecha'])}: de {ETIQUETA[c['antes']].lower()} a {ETIQUETA[c['despues']].lower()}. {esc(c['motivo'])}</li>" for c in hist)}</ul></section>' if hist else "")
+                  + f'<section class="hist-cob"><h2>Qué publica</h2><p>En los últimos {DIAS} días aparece en <b>{len(suyas)}</b> historias. '
+                    f'De las 30 historias que más medios contaron, ha publicado <b>{en_grandes}</b>.</p>'
+                  + (f'<p>Grandes historias que no ha publicado: {"; ".join(f"<a href='{url_noticia(h["id"], h["titulo"])}'>{esc(h["titulo"])}</a>" for h in faltan)}.</p>' if faltan else "")
+                  + "</section>")
+        pagina_lista(tpl_t, url=url, titulo=f"{m['nombre']}: etiqueta y cobertura · Vista Plena", h1=m["nombre"],
+                     sub=f"{ETIQUETA[m['orientacion']]} · {len(suyas)} historias en los últimos {DIAS} días",
+                     cuerpo_extra=bloque + "<h2 style='margin-top:32px'>Sus historias más recientes</h2>",
+                     desc=f"Etiqueta de {m['nombre']} ({ETIQUETA[m['orientacion']].lower()}), de dónde sale y qué historias publica y cuáles no.",
+                     items=lista_html(suyas[:20]))
+        mapa.append((url, None))
+        filas_indice.append(f'<li><div><a href="{url}">{esc(m["nombre"])}</a><span class="m">{ETIQUETA[m["orientacion"]]} · confianza {m.get("confianza") or "baja"}</span></div></li>')
+    pagina_lista(tpl_t, url="/medio/", titulo="Los medios que leemos · Vista Plena", h1="Los medios que leemos",
+                 sub=f"{len(medios)} medios, de izquierda a derecha. Cada ficha explica su etiqueta y qué publica.", cuerpo_extra="",
+                 desc="Ficha de cada medio que compara Vista Plena: etiqueta, mediciones, confianza y cambios.", items="".join(filas_indice))
+    return mapa
 
 
 # ---------- Programa principal ----------
@@ -307,9 +429,12 @@ def main():
                 con_og += 1
             except Exception as e:
                 print("Sin imagen para", h["id"], e)
+        indexar = (h.get("total") or 0) >= MIN_INDEXAR
         escribir(url, montar(tpl_h, titulo=f"{h['titulo']} · Vista Plena", desc=descripcion(h), url=url, imagen=imagen,
-                             tipo="article", jsonld=jsonld_noticia(h, url, imagen, tema), id_=h["id"], cuerpo=cuerpo_noticia(h, tema)))
-        mapa.append((url, h["actualizada"]))
+                             tipo="article", jsonld=jsonld_noticia(h, url, imagen, tema), id_=h["id"], cuerpo=cuerpo_noticia(h, tema),
+                             indexar=indexar))
+        if indexar:
+            mapa.append((url, h["actualizada"]))
     # Temas
     por_tema = {}
     for h in historias:
@@ -337,9 +462,18 @@ def main():
         escribir(url, montar(tpl_t, titulo=f"{t['nombre']}: todas las noticias, en orden · Vista Plena", desc=desc, url=url,
                              imagen=BASE + "/og.png", tipo="website", jsonld=jsonld, id_=tid, cuerpo=cuerpo))
         mapa.append((url, t["actualizado"]))
+    # Archivo permanente y fichas de medios (si fallan, el resto de la web se publica igual)
+    try:
+        mapa += archivo(historias, tpl_h, tpl_t, temas)
+    except Exception as e:
+        print("Archivo sin generar:", e)
+    try:
+        mapa += fichas_medios(historias, tpl_t)
+    except Exception as e:
+        print("Fichas de medios sin generar:", e)
     # Mapa del sitio y robots.txt
     fijas = [("/", ahora.isoformat()), ("/metodologia.html", None), ("/elecciones.html", None), ("/quienes-somos.html", None),
-             ("/?vista=ciegos", ahora.isoformat())]
+             ("/?vista=ciegos", ahora.isoformat()), ("/medio/", None), ("/archivo/", None)]
     xml = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for url, mod in fijas + mapa:
         xml.append(f"<url><loc>{esc(BASE + url)}</loc>" + (f"<lastmod>{mod[:19]}+00:00</lastmod>" if mod else "") + "</url>")

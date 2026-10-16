@@ -148,6 +148,10 @@ Deno.serve(async (req) => {
       return json((ds ?? []).filter((d) => A.get(d.articulo_id)?.historia_id === d.historia_id && Hm.has(d.historia_id))
         .map((d) => ({ ...d, titulo: A.get(d.articulo_id).titulo, url: A.get(d.articulo_id).url, medio: A.get(d.articulo_id).medios?.nombre, historia: Hm.get(d.historia_id) })));
     }
+    if (req.method === "GET" && q === "correcciones") {
+      const { data } = await db.from("correcciones").select("*").eq("publica", true).order("fecha", { ascending: false }).limit(50);
+      return json(data ?? []);
+    }
     if (req.method === "GET" && q === "temas") {
       const { data } = await db.from("temas").select("id, nombre, nombre_manual, oculto, historias, actualizado").eq("activo", true).order("actualizado", { ascending: false });
       return json(data ?? []);
@@ -168,8 +172,29 @@ Deno.serve(async (req) => {
         if (b.decision === "sacar") {
           await db.from("articulos").update({ historia_id: null }).eq("id", b.articulo_id).eq("historia_id", d.historia_id);
           await db.from("historia_vetos").upsert({ articulo_id: b.articulo_id, historia_id: d.historia_id }, { onConflict: "articulo_id,historia_id", ignoreDuplicates: true });
+          // Queda anotado en el registro público de correcciones (Quiénes somos)
+          const { data: art } = await db.from("articulos").select("titulo, medios(nombre)").eq("id", b.articulo_id).maybeSingle();
+          const { data: his } = await db.from("historias").select("titulo").eq("id", d.historia_id).maybeSingle();
+          await db.from("correcciones").insert({ tipo: "Titular mal agrupado", historia_id: d.historia_id, titulo: his?.titulo ?? null,
+            que: `Sacamos el titular de ${(art as any)?.medios?.nombre ?? "un medio"} «${String(art?.titulo ?? "").slice(0, 160)}» porque contaba otro hecho.` });
         }
         await db.from("historias_dudosas").update({ decision: b.decision === "sacar" ? "sacar" : "bien" }).eq("articulo_id", b.articulo_id);
+        return json({ ok: true });
+      }
+      if (b.accion === "correccion") {
+        const que = String(b.que ?? "").trim().slice(0, 600), tipo = String(b.tipo ?? "").trim().slice(0, 60) || "Corrección";
+        if (que.length < 10) return json({ error: "Explica la corrección en una frase." }, 400);
+        const hid = Number(b.historia_id) || null;
+        let titulo: string | null = null;
+        if (hid) {
+          const { data: x } = await db.from("historias").select("titulo").eq("id", hid).maybeSingle();
+          titulo = x?.titulo ?? (await db.from("archivo").select("titulo").eq("historia_id", hid).maybeSingle()).data?.titulo ?? null;
+        }
+        await db.from("correcciones").insert({ tipo, historia_id: hid, titulo, que });
+        return json({ ok: true });
+      }
+      if (b.accion === "borrar_correccion") {
+        await db.from("correcciones").update({ publica: false }).eq("id", b.id);
         return json({ ok: true });
       }
       if (b.accion === "poner_clave") {

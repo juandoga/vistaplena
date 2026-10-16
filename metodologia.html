@@ -571,6 +571,13 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <p>Si un medio aparece en las dos, usamos la media de las dos etiquetas. Si empatan, decide una clasificación internacional independiente: <a href="https://www.eurotopics.net/en/149427/spain-digitalisation-diversification-politicisation" target="_blank" rel="noopener">eurotopics</a> (Agencia Federal de Educación Cívica de Alemania) o <a href="https://mediabiasfactcheck.com/" target="_blank" rel="noopener">Media Bias/Fact Check</a>. Si solo aparece en una, manda esa.</p>
     <p>Los medios que no salen en ninguna medición están marcados como <strong>«sin medición»</strong>. Su etiqueta se basa en su propiedad, su línea editorial declarada y esas clasificaciones. Los que caen justo en la frontera entre dos etiquetas están marcados como <strong>«al límite»</strong>. Verás las cifras y la nota de cada medio en la <a href="#medios">tabla de medios</a>.</p>
     <p class="aviso">Ninguna medición es perfecta. En la del CIS también opina quien no lee el medio, y eso acerca al centro a los medios pequeños. La de Twitter es de 2020 y solo mide a quien usa esa red. Por eso combinamos las dos. Revisamos las etiquetas cada vez que el CIS u otro estudio publica datos nuevos, y anotamos aquí cada cambio con su fecha.</p>
+    <h3>Grado de confianza de cada etiqueta</h3>
+    <ul class="lista">
+      <li><strong>Alta:</strong> las dos mediciones existen y coinciden.</li>
+      <li><strong>Media:</strong> solo hay una medición, o las dos no coinciden del todo y decide una tercera fuente.</li>
+      <li><strong>Baja:</strong> no hay mediciones de su audiencia; la etiqueta sale de su línea editorial y de clasificaciones externas. Son las que antes revisaremos si aparece un dato nuevo.</li>
+    </ul>
+    <p>Cada medio tiene su <a href="/medio/">ficha</a> con su etiqueta, sus cifras, su grado de confianza, sus cambios de etiqueta y qué grandes historias ha publicado y cuáles no.</p>
     <h3>Cambios</h3>
     <ul class="lista">
       <li><strong>9 de octubre de 2026.</strong> Lo que llamábamos «punto ciego» pasa a llamarse «cobertura desigual» o «poca cobertura en la izquierda / en la derecha»: describe mejor lo que medimos.</li>
@@ -703,7 +710,7 @@ const hace = iso => { if (!iso) return "—"; const m = Math.round((Date.now() -
     if (!r.ok) throw new Error(r.status);
     const M = await r.json();
     tb.innerHTML = M.map(m => `<tr>
-      <td><a href="${esc(m.web)}" target="_blank" rel="noopener">${esc(m.nombre)}</a></td>
+      <td><a href="/medio/${slug(m.nombre)}/">${esc(m.nombre)}</a></td>
       <td><span class="pill"><i style="background:${COL[m.orientacion]};${Math.abs(m.orientacion) === 1 ? "opacity:.6" : ""}"></i>${ETI[m.orientacion]}</span></td>
       <td class="med">${medicion(m)}</td>
       <td>${m.grupo && m.grupo !== m.nombre ? esc(m.grupo) : '<span class="gris">Grupo propio</span>'}</td>
