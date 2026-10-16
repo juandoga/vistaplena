@@ -84,6 +84,20 @@ button{font:inherit;color:inherit;cursor:pointer}
 .cerrar{background:var(--tinta);color:var(--fondo);border:0;border-radius:999px;padding:11px 22px;font-weight:700;font-size:var(--t-s)}
 .guia-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:32px}
 .guia-cols > div{min-width:0}
+@media (max-width:620px){
+  .guia{padding:14px 16px;margin-top:16px}
+  .guia .eti,.guia h2{display:none}
+  .guia .entradilla{font-size:var(--t-s);line-height:1.45}
+  .guia .entradilla .resto{display:none}
+  .guia .proceso{display:none}
+  .guia-cab{gap:10px}
+  .guia .cerrar{padding:8px 14px;font-size:var(--t-s)}
+  /* «Más noticias» como lista: sin foto ni detalle, toca para ver la historia */
+  .rejilla .pieza{gap:8px;padding-top:14px}
+  .rejilla .pieza .foto,.rejilla .pieza .pct,.rejilla .pieza .nota,.rejilla .pieza .ver,.rejilla .pieza .ver + div{display:none}
+  .rejilla .pieza h3{font-size:var(--t-m)}
+  .rejilla{gap:18px}
+}
 .guia h3{margin:0 0 12px;font-size:var(--t-m);font-weight:700;color:var(--tinta)}
 .guia p{margin:0 0 10px;font-size:.95rem}
 .guia .aparte{color:var(--gris);font-size:var(--t-s)}
@@ -392,7 +406,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
         <a href="metodologia.html">Metodología</a>
         <a href="metodologia.html#datos">Datos abiertos</a>
         <a href="quienes-somos.html#correcciones">Correcciones</a>
-        <a href="./#boletin">Boletín diario</a>
+        <a href="./#boletin">Boletín semanal</a>
       </div>
     </div>
   </div>
@@ -406,7 +420,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
       <div>
         <span class="eti">Antes de empezar</span>
         <h2 id="guia-t">Cómo leer Vista Plena</h2>
-        <p class="entradilla">Cada medio te cuenta una parte. Aquí ves la noticia contada por todos y lo que tu periódico no te está contando. Sin algoritmos: la misma portada para todo el mundo.</p>
+        <p class="entradilla"><b>Cada medio te cuenta una parte.</b> Aquí ves cada noticia contada por todos<span class="resto"> y lo que tu periódico no te está contando. Sin algoritmos: la misma portada para todo el mundo</span>.</p>
       </div>
       <div class="guia-bot"><button class="cerrar secundario" id="verGuia" aria-expanded="false" aria-controls="guiaCols">Cómo funciona</button><button class="cerrar" id="cerrarGuia">Entendido</button></div>
     </div>
@@ -449,8 +463,8 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   <section class="boletin" id="boletin" aria-labelledby="bol-t">
     <div>
       <span class="eti">Boletín gratuito</span>
-      <h2 id="bol-t">El resumen del día, cada mañana en tu correo</h2>
-      <p>A las 8:00, las cinco historias que más medios contaron, cómo las tituló cada lado y cuáles tuvieron cobertura desigual. Dos minutos de lectura.</p>
+      <h2 id="bol-t">La semana en Vista Plena, cada viernes en tu correo</h2>
+      <p>Los viernes a las 8:00, las siete historias que más medios contaron en la semana, cómo las tituló cada lado y cuáles contó casi solo un lado. Cinco minutos de lectura.</p>
     </div>
     <form id="formBoletin" novalidate>
       <label for="correo" class="eti">Tu correo</label>
@@ -483,7 +497,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 </footer>
 
 <script src="temas.js?v=5df45ce8"></script>
-<script src="comun.js?v=72d389c4"></script>
+<script src="comun.js?v=b5f6c127"></script>
 <script>
 const SNAPSHOT = /*SNAPSHOT*/null;
 const NIVELES = [[-2,"Izquierda","var(--izq)"],[-1,"Centroizquierda","var(--izq)"],[0,"Centro","var(--cen)"],[1,"Centroderecha","var(--der)"],[2,"Derecha","var(--der)"]];
@@ -515,7 +529,7 @@ function resumenDia(top, tarjetas){
   const medios = new Set(top.flatMap(h => h.a.map(a => a.m))).size;
   return `<section class="resumen-dia" aria-labelledby="rd-t">
     <div><span class="eti">Para ponerte al día</span><h2 id="rd-t">Lo más contado hoy</h2>
-      <p class="cifras">Con la de arriba, las <b>${top.length}</b> historias principales reúnen <b>${titulares}</b> titulares de <b>${medios}</b> medios.</p><a class="al-correo" href="#boletin">Recíbelas cada mañana por correo →</a></div>
+      <p class="cifras">Con la de arriba, las <b>${top.length}</b> historias principales reúnen <b>${titulares}</b> titulares de <b>${medios}</b> medios.</p><a class="al-correo" href="#boletin">Recibe cada viernes el resumen de la semana →</a></div>
     <ol>${tarjetas.map(h => `<li><a href="${enlace(h)}">
       <span class="mini-foto">${h.f ? `<img src="${esc(h.f)}" alt="" loading="lazy" referrerpolicy="no-referrer" onload="this.classList.add('ok')" onerror="this.remove()">` : ""}</span>
       <span class="t">${esc(h.t)}</span>${barra(h)}<span class="m">${h.tot} medios${h.ciego ? ` · <b style="color:var(--aviso)">cobertura desigual</b>` : ""}</span></a></li>`).join("")}</ol>
@@ -536,7 +550,7 @@ function ultimoBloque(lista){
 // (titulares sueltos que no llegan a formar una historia de 3 medios; los asigna el servidor de temas)
 const COL_LADO = { izq: "var(--izq)", cen: "var(--cen)", der: "var(--der)" };
 function desarrolloBloque(){
-  const T = (DATA.desarrollo || []).filter(t => (t.titulares || []).length >= 2);
+  const T = (DATA.desarrollo || []).filter(t => (t.titulares || []).length >= 2).slice(0, 3);
   if (!T.length) return "";
   const mueve = t => {
     const n = t.izq_12h + t.cen_12h + t.der_12h || 1;
@@ -622,7 +636,7 @@ function render(){
       P.forEach((h, i) => h.idx = i);
       const [lead, ...resto] = P;
       // Cada historia aparece una sola vez: principal, lo más contado hoy, puntos ciegos y, después, el resto
-      const hoy = resto.filter(h => Date.now() - new Date(h.act) < 864e5).slice(0, 4).sort((a, b) => b.tot - a.tot);
+      const hoy = resto.filter(h => Date.now() - new Date(h.act) < 864e5).slice(0, 5).sort((a, b) => b.tot - a.tot);
       const vistas = new Set([lead, ...hoy]);
             c.insertAdjacentHTML("beforeend", `
         <section class="principal" id="h-0">
@@ -630,13 +644,8 @@ function render(){
           <div class="asi"><h3>Así la titula cada lado</h3>${bloques(lead, 2)}<a class="ver-todos" href="${enlace(lead)}">Ver los ${lead.tot} titulares →</a></div>
         </section>`);
       totalesMedios().then(T => { const el = document.getElementById("leadBloques"); if (el) el.innerHTML = frasePorBloque(lead, T); }).catch(() => {});
-      c.insertAdjacentHTML("beforeend", resumenDia([lead, ...hoy], hoy));
-      c.insertAdjacentHTML("beforeend", desarrolloBloque());
       const yaVistas = new Set([...vistas].map(h => h.id));
-      const ultimas = (DATA.ultimas || []).filter(h => !yaVistas.has(h.id)).sort((a, b) => new Date(inicio(b)) - new Date(inicio(a))).slice(0, 6);
-      ultimas.forEach(h => yaVistas.add(h.id));
-      c.insertAdjacentHTML("beforeend", ultimoBloque(ultimas));
-      // Solo las de los dos últimos días: la sección dice «de hoy» y una de hace cinco días ya no aporta
+      // Cobertura desigual justo debajo de la principal: es lo que no se ve en otros sitios
       const ciegos = [...ci, ...cd].filter(h => !yaVistas.has(h.id) && Date.now() - new Date(h.act) < 2 * 864e5).slice(0, 4);
       ciegos.forEach(h => yaVistas.add(h.id));
       if (ciegos.length) {
@@ -645,6 +654,11 @@ function render(){
         grid.innerHTML = ciegos.map(h => `<article class="ciego">${foto(h)}<span class="chip" style="align-self:flex-start">Poca cobertura en la ${h.ciego}</span><h3><a href="${enlace(h)}">${esc(h.t)}</a></h3>${barra(h)}<p>${h.tot} medios · ${haceCuanto(h.act)}</p></article>`).join("");
         c.appendChild(grid);
       }
+      c.insertAdjacentHTML("beforeend", resumenDia([lead, ...hoy], hoy));
+      c.insertAdjacentHTML("beforeend", desarrolloBloque());
+      const ultimas = (DATA.ultimas || []).filter(h => !yaVistas.has(h.id)).sort((a, b) => new Date(inicio(b)) - new Date(inicio(a))).slice(0, 6);
+      ultimas.forEach(h => yaVistas.add(h.id));
+      c.insertAdjacentHTML("beforeend", ultimoBloque(ultimas));
       c.insertAdjacentHTML("beforeend", cab("Más noticias", "Ordenadas por cuántos medios las han contado en las últimas 12 horas y en cuántas portadas están ahora."));
       const rej = document.createElement("div"); rej.className = "rejilla";
       resto.filter(h => !yaVistas.has(h.id)).forEach(h => rej.appendChild(pieza(h)));
@@ -724,7 +738,7 @@ render();
 const BOLETIN = `${SUPA.url}/functions/v1/boletin`;
 (() => {
   const f = document.getElementById("formBoletin"), msg = document.getElementById("msgBoletin"), btn = document.getElementById("btnBoletin");
-  const MENSAJES = { confirmado: "Suscripción confirmada. Mañana a las 8:00 recibirás tu primer resumen.", baja: "Te has dado de baja. No volverás a recibir el boletín.", error: "El enlace no es válido o ha caducado. Vuelve a suscribirte." };
+  const MENSAJES = { confirmado: "Suscripción confirmada. El viernes a las 8:00 recibirás tu primer resumen semanal.", baja: "Te has dado de baja. No volverás a recibir el boletín.", error: "El enlace no es válido o ha caducado. Vuelve a suscribirte." };
   const estado = new URLSearchParams(location.search).get("boletin");
   if (estado && MENSAJES[estado]) { msg.textContent = MENSAJES[estado]; setTimeout(() => document.getElementById("boletin").scrollIntoView(), 300); }
   f.addEventListener("submit", async e => {
@@ -733,13 +747,8 @@ const BOLETIN = `${SUPA.url}/functions/v1/boletin`;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo)) { msg.textContent = "Escribe un correo válido, por ejemplo nombre@ejemplo.com."; return; }
     btn.disabled = true; msg.textContent = "Enviando…";
     try {
-      const r = await fetch(`${BOLETIN}?accion=alta`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: correo }) });
-      const d = await r.json();
-      if (!d.ok) throw new Error(d.error || "error");
-      msg.textContent = d.estado === "ya" ? "Ya estabas suscrito. ¡Gracias!" : "Revisa tu correo y pulsa «Confirmar suscripción». Si no lo ves, mira en spam.";
-      f.reset();
-    } catch (err) {
-      msg.textContent = "No hemos podido apuntarte ahora mismo. Inténtalo de nuevo en unos minutos.";
+      msg.textContent = await apuntarBoletin(correo);
+      if (/Revisa|Ya estabas/.test(msg.textContent)) f.reset();
     } finally { btn.disabled = false; }
   });
 })();

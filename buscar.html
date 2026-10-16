@@ -83,6 +83,20 @@ button{font:inherit;color:inherit;cursor:pointer}
 .cerrar{background:var(--tinta);color:var(--fondo);border:0;border-radius:999px;padding:11px 22px;font-weight:700;font-size:var(--t-s)}
 .guia-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:32px}
 .guia-cols > div{min-width:0}
+@media (max-width:620px){
+  .guia{padding:14px 16px;margin-top:16px}
+  .guia .eti,.guia h2{display:none}
+  .guia .entradilla{font-size:var(--t-s);line-height:1.45}
+  .guia .entradilla .resto{display:none}
+  .guia .proceso{display:none}
+  .guia-cab{gap:10px}
+  .guia .cerrar{padding:8px 14px;font-size:var(--t-s)}
+  /* «Más noticias» como lista: sin foto ni detalle, toca para ver la historia */
+  .rejilla .pieza{gap:8px;padding-top:14px}
+  .rejilla .pieza .foto,.rejilla .pieza .pct,.rejilla .pieza .nota,.rejilla .pieza .ver,.rejilla .pieza .ver + div{display:none}
+  .rejilla .pieza h3{font-size:var(--t-m)}
+  .rejilla{gap:18px}
+}
 .guia h3{margin:0 0 12px;font-size:var(--t-m);font-weight:700;color:var(--tinta)}
 .guia p{margin:0 0 10px;font-size:.95rem}
 .guia .aparte{color:var(--gris);font-size:var(--t-s)}
@@ -508,7 +522,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
         <a href="metodologia.html">Metodología</a>
         <a href="metodologia.html#datos">Datos abiertos</a>
         <a href="quienes-somos.html#correcciones">Correcciones</a>
-        <a href="./#boletin">Boletín diario</a>
+        <a href="./#boletin">Boletín semanal</a>
       </div>
     </div>
   </div>
@@ -538,7 +552,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   </div>
   <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
-<script src="comun.js?v=72d389c4"></script>
+<script src="comun.js?v=b5f6c127"></script>
 <script>
 // Buscador: noticias de los últimos 14 días (las que tienen página) y temas con ese nombre.
 // La búsqueda se hace en la base de datos (función buscar): sin acentos ni mayúsculas y por principio de palabra.
@@ -555,6 +569,7 @@ async function buscar(q){
   document.title = q ? `${q} · Buscar · Vista Plena` : "Buscar noticias · Vista Plena";
   if (norm(q).replace(/[^a-z0-9ñç]/g, "").length < 2) { res.innerHTML = ""; resT.innerHTML = ""; return; }
   res.innerHTML = `<p class="vacia">Buscando…</p>`;
+  if (!window._evBusca) { window._evBusca = 1; evento("busca"); } // una vez por visita, no por cada letra
   try {
     // Temas activos cuyo nombre contiene todas las palabras
     TEMAS ??= await pedir("temas_v?select=id,nombre,historias&activo=eq.true&order=actualizado.desc").catch(() => []);

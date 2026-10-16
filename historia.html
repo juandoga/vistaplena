@@ -83,6 +83,20 @@ button{font:inherit;color:inherit;cursor:pointer}
 .cerrar{background:var(--tinta);color:var(--fondo);border:0;border-radius:999px;padding:11px 22px;font-weight:700;font-size:var(--t-s)}
 .guia-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:32px}
 .guia-cols > div{min-width:0}
+@media (max-width:620px){
+  .guia{padding:14px 16px;margin-top:16px}
+  .guia .eti,.guia h2{display:none}
+  .guia .entradilla{font-size:var(--t-s);line-height:1.45}
+  .guia .entradilla .resto{display:none}
+  .guia .proceso{display:none}
+  .guia-cab{gap:10px}
+  .guia .cerrar{padding:8px 14px;font-size:var(--t-s)}
+  /* «Más noticias» como lista: sin foto ni detalle, toca para ver la historia */
+  .rejilla .pieza{gap:8px;padding-top:14px}
+  .rejilla .pieza .foto,.rejilla .pieza .pct,.rejilla .pieza .nota,.rejilla .pieza .ver,.rejilla .pieza .ver + div{display:none}
+  .rejilla .pieza h3{font-size:var(--t-m)}
+  .rejilla{gap:18px}
+}
 .guia h3{margin:0 0 12px;font-size:var(--t-m);font-weight:700;color:var(--tinta)}
 .guia p{margin:0 0 10px;font-size:.95rem}
 .guia .aparte{color:var(--gris);font-size:var(--t-s)}
@@ -517,6 +531,15 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .avisar .boton{justify-self:start;border:0;cursor:pointer}
 .avisar .gracias{margin:12px 0 0}
 .hist-rel{margin-top:56px;padding-top:28px;border-top:3px solid var(--tinta)}
+.bol-corto{margin:48px 0 0;padding:20px;border-radius:14px;background:var(--panel)}
+.bol-corto label{display:block;font-size:var(--t-m);line-height:1.45;color:var(--texto);margin-bottom:12px}
+.bol-corto label b{color:var(--tinta)}
+.bol-corto .fila{display:flex;gap:8px;flex-wrap:wrap}
+.bol-corto input{flex:1 1 220px;min-width:0;font:inherit;padding:11px 14px;border-radius:999px;border:1px solid var(--linea);background:var(--fondo);color:var(--tinta)}
+.bol-corto button{font:inherit;font-weight:700;font-size:var(--t-s);padding:11px 20px;border-radius:999px;border:0;background:var(--tinta);color:var(--fondo);cursor:pointer}
+.bol-corto button:disabled{opacity:.6;cursor:wait}
+.bol-corto .msg{min-height:1.2em;margin:8px 0 0;font-size:var(--t-s);font-weight:500}
+.bol-corto .legal{margin:4px 0 0;font-size:var(--t-xs);color:var(--gris)}
 .rel-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
 @media (max-width:900px){.rel-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:480px){.rel-grid{grid-template-columns:1fr}}
@@ -567,7 +590,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
         <a href="metodologia.html">Metodología</a>
         <a href="metodologia.html#datos">Datos abiertos</a>
         <a href="quienes-somos.html#correcciones">Correcciones</a>
-        <a href="./#boletin">Boletín diario</a>
+        <a href="./#boletin">Boletín semanal</a>
       </div>
     </div>
   </div>
@@ -577,6 +600,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   <div class="subtop"><a href="./" class="volver">← Volver a la portada</a><span id="estado"></span></div>
   <article id="art" aria-live="polite"><p class="vacia">Cargando la historia…</p></article>
   <section id="relacionadas" class="hist-rel" hidden aria-labelledby="rel-t"></section>
+  <div class="bol-corto"></div>
 </div>
 
 <footer class="pie">
@@ -590,7 +614,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
 <script src="temas.js?v=5df45ce8"></script>
-<script src="comun.js?v=72d389c4"></script>
+<script src="comun.js?v=b5f6c127"></script>
 <script>
 const id = Number(new URLSearchParams(location.search).get("id") || document.body.dataset.id);
 const art = document.getElementById("art");

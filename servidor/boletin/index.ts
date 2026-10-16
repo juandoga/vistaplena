@@ -1,5 +1,5 @@
-// Vista Plena — boletín diario por correo con Resend.
-// Rutas (?accion=): alta (formulario de la web), confirmar y baja (enlaces del correo), enviar (programado cada mañana).
+// Vista Plena — boletín semanal por correo con Resend (los viernes a las 8:00).
+// Rutas (?accion=): alta (formulario de la web), confirmar y baja (enlaces del correo), enviar (programado el viernes).
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
@@ -68,13 +68,13 @@ function pieza(h: any, n: number) {
     ${porLado(h)}
   </td></tr>`;
 }
-function correoDiario(top: any[], ciegos: any[], fecha: string, baja: string) {
+function correoSemanal(top: any[], ciegos: any[], fecha: string, baja: string) {
   return `<!doctype html><html lang="es"><body style="margin:0;background:#f4f4f2">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f2"><tr><td align="center" style="padding:24px 12px">
   <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:12px"><tr><td style="padding:28px 28px 8px">
     <img src="${WEB}logo-correo.png" width="190" height="36" alt="Vista Plena" style="display:block;border:0;height:36px;width:190px">
-    <div style="font:13px Arial,sans-serif;color:#888;margin-top:4px">Resumen del ${esc(fecha)}</div>
-    <p style="font:15px/1.5 Arial,sans-serif;color:#3d4047;margin:16px 0 0">Las ${top.length} historias que más medios contaron ayer, con quién las contó y cómo las tituló cada lado.</p>
+    <div style="font:13px Arial,sans-serif;color:#888;margin-top:4px">La semana en Vista Plena · ${esc(fecha)}</div>
+    <p style="font:15px/1.5 Arial,sans-serif;color:#3d4047;margin:16px 0 0">Las ${top.length} historias que más medios contaron esta semana, con quién las contó y cómo las tituló cada lado. Al final, las que casi solo contó un lado.</p>
   </td></tr>
   <tr><td style="padding:0 28px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${top.map((h, i) => pieza(h, i + 1)).join("")}</table></td></tr>
   ${ciegos.length ? `<tr><td style="padding:8px 28px 0"><div style="font:900 18px Arial,sans-serif;color:#111;border-top:3px solid #111;padding-top:16px">Cobertura desigual</div>
@@ -88,7 +88,7 @@ const correoConfirmar = (enlace: string) => `<!doctype html><html lang="es"><bod
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
   <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:12px"><tr><td style="padding:28px">
     <img src="${WEB}logo-correo.png" width="170" height="32" alt="Vista Plena" style="display:block;border:0;height:32px;width:170px">
-    <p style="font:16px/1.5 Arial,sans-serif;color:#3d4047">Confirma que quieres recibir cada mañana el resumen del día: las historias que más medios cuentan, quién las cuenta y qué noticias tienen cobertura desigual.</p>
+    <p style="font:16px/1.5 Arial,sans-serif;color:#3d4047">Confirma que quieres recibir cada viernes el resumen de la semana: las historias que más medios contaron, quién las contó y qué noticias tuvieron cobertura desigual.</p>
     <p style="margin:24px 0"><a href="${enlace}" style="display:inline-block;background:#111;color:#fff;text-decoration:none;font:bold 15px Arial,sans-serif;padding:13px 24px;border-radius:999px">Confirmar suscripción</a></p>
     <p style="font:13px/1.5 Arial,sans-serif;color:#888">Si no has sido tú, ignora este correo y no volveremos a escribirte.</p>
   </td></tr></table></td></tr></table></body></html>`;
@@ -129,24 +129,24 @@ Deno.serve(async (req) => {
       const prueba = u.searchParams.get("prueba"); // envía solo a un suscriptor confirmado, sin contar como envío del día
       const hoy = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Madrid" });
       const { data: H } = await db.from("portada_v2").select("titulo,total,voces,pct_izq,pct_cen,pct_der,punto_ciego,imagen,articulos,actualizada")
-        .gte("actualizada", new Date(Date.now() - 26 * 3600e3).toISOString()).order("voces", { ascending: false }).limit(40);
-      const top = (H ?? []).slice(0, 5);
-      const ciegos = (H ?? []).filter((h) => h.punto_ciego && !top.includes(h)).slice(0, 3);
+        .gte("actualizada", new Date(Date.now() - 7 * 864e5).toISOString()).order("voces", { ascending: false }).limit(80);
+      const top = (H ?? []).slice(0, 7);
+      const ciegos = (H ?? []).filter((h) => h.punto_ciego && (h.voces ?? 0) >= 5 && !top.includes(h)).slice(0, 4);
       if (top.length < 3) return json({ ok: false, error: "No hay suficientes historias para el resumen" });
-      const fecha = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", timeZone: "Europe/Madrid" });
-      const asunto = `Vista Plena · ${top[0].titulo.slice(0, 80)}`;
+      const fecha = new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", timeZone: "Europe/Madrid" });
+      const asunto = `La semana en Vista Plena · ${top[0].titulo.slice(0, 70)}`;
 
       let q = db.from("suscriptores").select("email,token").eq("confirmado", true).is("baja_en", null);
       if (prueba) q = q.eq("email", prueba.toLowerCase());
       else {
-        // Una sola vez al día, aunque alguien vuelva a llamar a la función
+        // Una sola vez por fecha, aunque alguien vuelva a llamar a la función
         const { data: hecho } = await db.from("envios").insert({ fecha: hoy }).select("fecha");
         if (!hecho?.length) return json({ ok: true, estado: "ya enviado hoy" });
       }
       const { data: subs } = await q;
       const lista = (subs ?? []).map((s) => {
         const baja = `${FUNC}?accion=baja&token=${s.token}`;
-        return { to: s.email, subject: asunto, html: correoDiario(top, ciegos, fecha, baja), baja };
+        return { to: s.email, subject: asunto, html: correoSemanal(top, ciegos, fecha, baja), baja };
       });
       const n = lista.length ? await enviarCorreos(lista) : 0;
       if (!prueba) await db.from("envios").update({ enviados: n }).eq("fecha", hoy);

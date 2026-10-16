@@ -137,3 +137,38 @@ function frasePorBloque(h, T){
   const t = k => `<b>${n[k].size}</b> de los ${T[k]}`;
   return `La publican ${t("izq")} medios de izquierda, ${t("cen")} de centro y ${t("der")} de derecha que leemos.`;
 }
+
+// Cinco eventos anónimos en GoatCounter (sin cookies): sirven para saber si la gente compara, abre fuentes, comparte, se suscribe y busca.
+function evento(nombre){
+  try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: "ev/" + nombre, title: nombre, event: true }); } catch (e) {}
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("a,button"); if (!t) return;
+  if (t.matches(".ver,.mas,.ver-todos,.mas-lado,[data-ev='compara']")) evento("compara");
+  else if (t.matches(".c-btn")) evento("compartir");
+  else if (t.matches("a[target='_blank']") && t.closest(".bloque,.fuentes,.hist-fuentes,li") && !/wa\.me|x\.com|t\.me/.test(t.href)) evento("fuente");
+}, true);
+
+// Boletín: formulario corto que se puede poner al final de cualquier página (<div class="bol-corto"></div>)
+const BOLETIN_URL = `${SUPA.url}/functions/v1/boletin`;
+async function apuntarBoletin(correo){
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo)) return "Escribe un correo válido, por ejemplo nombre@ejemplo.com.";
+  try {
+    const r = await fetch(`${BOLETIN_URL}?accion=alta`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: correo }) });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || "error");
+    evento("boletin");
+    return d.estado === "ya" ? "Ya estabas suscrito. ¡Gracias!" : "Revisa tu correo y pulsa «Confirmar suscripción». Si no lo ves, mira en spam.";
+  } catch (err) { return "No hemos podido apuntarte ahora mismo. Inténtalo de nuevo en unos minutos."; }
+}
+document.querySelectorAll(".bol-corto").forEach((caja, i) => {
+  caja.innerHTML = `<form novalidate><label for="bolc${i}"><b>La semana en Vista Plena.</b> Cada viernes, las historias que más medios contaron y las que solo contó un lado.</label>
+    <div class="fila"><input id="bolc${i}" type="email" autocomplete="email" placeholder="nombre@ejemplo.com" required><button type="submit">Suscribirme</button></div>
+    <p class="msg" role="status" aria-live="polite"></p><p class="legal">Gratis. Te pediremos confirmarlo por correo y puedes darte de baja con un clic. <a href="/privacidad.html">Privacidad</a>.</p></form>`;
+  const f = caja.querySelector("form"), msg = caja.querySelector(".msg"), btn = caja.querySelector("button");
+  f.addEventListener("submit", async e => {
+    e.preventDefault(); btn.disabled = true; msg.textContent = "Enviando…";
+    msg.textContent = await apuntarBoletin(caja.querySelector("input").value.trim());
+    btn.disabled = false;
+  });
+});
