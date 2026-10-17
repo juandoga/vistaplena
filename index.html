@@ -342,6 +342,7 @@ a.tema:hover{border-color:var(--tinta)}
 }
 .desarrollo .cab-seccion,.ultimo .cab-seccion{margin-top:36px}
 .resumen-dia .mini-foto::before{display:none!important}
+@media (max-width:620px){.resumen-dia{margin-top:20px}}
 .filtro{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 24px}
 .filtro button{border:1px solid var(--linea);background:var(--fondo);color:var(--tinta);border-radius:999px;padding:8px 14px;font-size:var(--t-s);font-weight:600}
 .filtro button span{color:var(--gris);font-weight:500;margin-left:4px}
@@ -570,7 +571,7 @@ function resumenDia(top, tarjetas){
   const titulares = top.reduce((s, h) => s + h.a.length, 0);
   const medios = new Set(top.flatMap(h => h.a.map(a => a.m))).size;
   return `<section class="resumen-dia" aria-labelledby="rd-t">
-    <div><h2 id="rd-t">Lo más contado hoy</h2>
+    <div><h2 id="rd-t">También lo más contado hoy</h2>
       <a class="al-correo" href="#boletin">Recibe cada viernes el resumen de la semana →</a></div>
     <ol>${tarjetas.map(h => `<li><a href="${enlace(h)}">
       <span class="mini-foto">${h.f ? `<img src="${esc(h.f)}" alt="" loading="lazy" referrerpolicy="no-referrer" onload="this.classList.add('ok')" onerror="this.remove()">` : ""}</span>
@@ -687,7 +688,9 @@ function render(){
         </section>`);
       totalesMedios().then(T => { const el = document.getElementById("leadPct"); if (el) el.innerHTML = pctCuentas(lead, T); }).catch(() => {});
       const yaVistas = new Set([...vistas].map(h => h.id));
-      // Cobertura desigual justo debajo de la principal: es lo que no se ve en otros sitios
+      // Lo más contado, todo junto: la principal y justo debajo las siguientes. Después, los puntos ciegos
+      c.insertAdjacentHTML("beforeend", resumenDia([lead, ...hoy], hoy));
+      const rd = c.querySelector(".resumen-dia"); if (rd) rd.id = "s-hoy";
       const reciente = h => !yaVistas.has(h.id) && Date.now() - new Date(h.act) < 2 * 864e5;
       // Alternando lados: si hay de los dos, nunca salen solo los de un lado
       const ciI = ci.filter(reciente), ciD = cd.filter(reciente), ciegos = [];
@@ -701,8 +704,6 @@ function render(){
       }
       c.firstElementChild.id = "s-principal";
       if (ciegos.length) c.querySelector(".ciegos").previousElementSibling.id = "s-ciegos";
-      c.insertAdjacentHTML("beforeend", resumenDia([lead, ...hoy], hoy));
-      const rd = c.querySelector(".resumen-dia"); if (rd) rd.id = "s-hoy";
       // Los temas, como bloque propio debajo de lo más contado (arriba parecían pestañas)
       const temas = document.getElementById("temas");
       if (temas && temas.children.length > 1) { const cajaT = document.createElement("section"); cajaT.className = "temas-caja"; cajaT.id = "s-temas"; cajaT.innerHTML = `<div class="cab-seccion"><h2>Temas del momento</h2></div>`; cajaT.appendChild(temas); c.appendChild(cajaT); }
@@ -736,7 +737,7 @@ function render(){
     }));
   }
   const S = document.getElementById("saltos");
-  const destinos = [["s-ciegos", "Puntos ciegos"], ["s-hoy", "Lo más contado hoy"], ["s-temas", "Temas"], ["s-ultimo", "Lo último"], ["s-mas", "Todas las noticias"]]
+  const destinos = [["s-hoy", "Lo más contado hoy"], ["s-ciegos", "Puntos ciegos"], ["s-temas", "Temas"], ["s-ultimo", "Lo último"], ["s-mas", "Todas las noticias"]]
     .filter(([id]) => document.getElementById(id));
   S.hidden = vista !== "portada" || !!seccion || !destinos.length;
   S.innerHTML = destinos.map(([id, t]) => `<a href="#${id}">${t}${id === "s-ciegos" ? `<b>${document.querySelectorAll(".ciego").length}</b>` : ""}</a>`).join("");
