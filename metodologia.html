@@ -69,6 +69,16 @@ button{font:inherit;color:inherit;cursor:pointer}
 .navlink{padding:6px 0;font-size:var(--t-s);font-weight:500;color:var(--gris);text-decoration:none;border-bottom:2px solid transparent}
 .nav button[aria-selected="true"]{color:var(--tinta);border-bottom-color:var(--tinta)}
 .nav .n{font-family:var(--num);font-size:var(--t-xs);margin-left:5px;color:var(--gris)}
+.edicion{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0 12px;border-bottom:1px solid var(--linea);font-size:var(--t-xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+.edicion .vivo{display:inline-flex;align-items:center;gap:7px;font-variant-numeric:tabular-nums}
+.edicion .vivo::before{content:"";width:7px;height:7px;border-radius:50%;background:#2e9d5b;box-shadow:0 0 0 3px color-mix(in srgb,#2e9d5b 25%,transparent)}
+/* Saltos dentro de la portada: llevan a cada bloque, no a otra página */
+.saltos{display:flex;gap:18px;overflow-x:auto;scrollbar-width:none;padding:12px 0;border-bottom:1px solid var(--linea);font-size:var(--t-s);font-weight:600;white-space:nowrap}
+.saltos::-webkit-scrollbar{display:none}
+.saltos a{color:var(--gris);text-decoration:none}
+.saltos a:hover,.saltos a:focus-visible{color:var(--tinta)}
+.saltos a b{color:var(--aviso);font-weight:700;margin-left:4px}
+[id^="s-"]{scroll-margin-top:80px}
 .subtop{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 16px;padding-block:14px 0;font-size:var(--t-s);color:var(--gris)}
 
 /* Guía */
@@ -136,7 +146,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .principal{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:48px;margin-top:40px;padding-bottom:48px;border-bottom:1px solid var(--linea)}
 @media (max-width:880px){.principal{grid-template-columns:1fr;gap:28px}}
 .principal h1{margin:12px 0 24px;font-family:var(--titular);font-weight:600;font-size:var(--t-xxl);line-height:1.06;letter-spacing:-.02em;color:var(--tinta);text-wrap:balance}
-.principal .resumen{margin:20px 0 0;font-size:var(--t-l);line-height:1.45;color:var(--texto);max-width:40ch}
+.principal .resumen{margin:16px 0 0;font-size:var(--t-m);line-height:1.45;color:var(--texto);max-width:40ch}
 .principal .resumen strong{color:var(--tinta);font-weight:700}
 .asi h3{margin:0 0 16px;font-size:var(--t-m);font-weight:700;color:var(--tinta)}
 .bloque{padding:14px 0;border-top:1px solid var(--linea)}
@@ -218,7 +228,9 @@ a.tema:hover{border-color:var(--tinta)}
 .mas-tema b{color:var(--tinta);font-weight:600}
 .mas-tema:hover b{text-decoration:underline;text-underline-offset:3px}
 .temas .eti{align-self:center;white-space:nowrap;margin-right:4px}
-.tema.fijo{border-color:var(--tinta);font-weight:700}
+.tema.fijo{font-weight:700}
+.temas-caja .temas{padding-top:0;flex-wrap:wrap;-webkit-mask-image:none;overflow:visible}
+.temas-caja .eti{display:none}
 .temas a.tema::after{content:"›";margin-left:6px;opacity:.55;font-weight:700}
 .tema{flex:none;border:1px solid var(--linea);background:var(--fondo);border-radius:999px;padding:7px 14px;font-size:var(--t-s);font-weight:500;color:var(--tinta);white-space:nowrap}
 .tema:hover{border-color:var(--tinta)}
@@ -248,7 +260,7 @@ a.tema:hover{border-color:var(--tinta)}
 .resumen-dia .mini-foto img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .4s,transform .6s}
 .resumen-dia .mini-foto img.ok{opacity:1}
 .resumen-dia a:hover img{transform:scale(1.05)}
-.resumen-dia .mini-foto::before{content:counter(r);position:absolute;left:8px;top:8px;z-index:1;width:24px;height:24px;border-radius:50%;background:var(--tinta);color:var(--fondo);display:grid;place-items:center;font-size:var(--t-xs);font-weight:700}
+.resumen-dia .mini-foto::before{display:none;content:counter(r);position:absolute;left:8px;top:8px;z-index:1;width:24px;height:24px;border-radius:50%;background:var(--tinta);color:var(--fondo);display:grid;place-items:center;font-size:var(--t-xs);font-weight:700}
 .resumen-dia .t{font-family:var(--titular);font-weight:600;font-size:1rem;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .resumen-dia a:hover .t{text-decoration:underline;text-underline-offset:3px}
 .resumen-dia .barra{height:6px}
@@ -257,6 +269,12 @@ a.tema:hover{border-color:var(--tinta)}
 @keyframes destello{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--tinta) 30%,transparent)}100%{box-shadow:0 0 0 18px transparent}}
 
 /* Lo último */
+.antetitulo{margin:0 0 6px!important;font-size:var(--t-xs)!important;letter-spacing:.08em;text-transform:uppercase}
+.antetitulo b{color:inherit!important;font-weight:800!important}
+.sobre .antetitulo{color:#fff}
+.sobre .antetitulo .info-b{color:#fff;border-color:rgba(255,255,255,.6)}
+.pct.cuentas > span{display:flex;flex-direction:column;gap:1px}.pct.cuentas > span:nth-child(2){align-items:center}.pct.cuentas > span:last-child{align-items:flex-end}
+.pct.cuentas small{font-size:var(--t-xs);color:var(--gris);font-weight:500}
 .porque{margin:10px 0 0;font-size:var(--t-s);color:var(--texto);line-height:1.45}
 .porque b{color:var(--tinta);font-weight:600}
 .porque a{color:var(--gris)}
@@ -310,6 +328,18 @@ a.tema:hover{border-color:var(--tinta)}
 .cab-seccion p a{color:var(--tinta);font-weight:600;text-underline-offset:3px}
 @media (max-width:600px){.guia{padding:18px}.guia h2{font-size:var(--t-l)}.guia .entradilla{font-size:var(--t-m)}}
 .por-bloque{margin:8px 0 0;font-size:var(--t-s);color:var(--texto)}.por-bloque:empty{display:none}
+/* Ajustes finales de la portada en el móvil (van al final para mandar sobre lo anterior) */
+.asi .ver-todos{text-decoration:none;border:1.5px solid var(--tinta);border-radius:999px;padding:9px 16px;color:var(--tinta)}
+@media (max-width:620px){
+  .cab-seccion{margin:36px 0 14px}
+  .cab-seccion h2{font-size:1.6rem}
+  .cab-seccion p{font-size:var(--t-s)}
+  .principal{margin-top:20px;padding-bottom:28px;gap:20px}
+  .resumen-dia h2{font-size:1.6rem}
+  .ciego{padding:16px;gap:10px}
+}
+.desarrollo .cab-seccion,.ultimo .cab-seccion{margin-top:36px}
+.resumen-dia .mini-foto::before{display:none!important}
 
 /* Cabecera y menú */
 .top .wrap.barra-top{display:flex;align-items:center;gap:18px;flex-wrap:nowrap;padding-block:12px}
@@ -476,7 +506,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <a class="logo" href="./" aria-label="Vista Plena, ir a la portada"><svg class="logo-ic" viewBox="0 0 64 64" aria-hidden="true"><path d="M6 40V58H24" style="fill:none;stroke:var(--izq);stroke-width:7;stroke-linecap:square"/><path d="M40 6H58V24" style="fill:none;stroke:var(--der);stroke-width:7;stroke-linecap:square"/><circle cx="32" cy="32" r="10" fill="currentColor"/></svg>Vista Plena</a>
     <nav class="nav" aria-label="Principal">
       <a class="navlink" href="./">Portada</a>
-      <a class="navlink" href="./?vista=ciegos">Cobertura desigual</a>
+      <a class="navlink" href="./?vista=ciegos">Puntos ciegos</a>
       <a class="navlink navlink-29n" href="elecciones.html">Elecciones 29N</a>
       <a class="navlink" href="metodologia.html" aria-current="page">Cómo lo hacemos</a>
       <a class="navlink" href="quienes-somos.html">Quiénes somos</a>
@@ -488,7 +518,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <div class="wrap menu-cols">
       <div><span class="eti">Noticias</span>
         <a class="fuerte" href="./">Portada</a>
-        <a class="fuerte" href="./?vista=ciegos">Cobertura desigual</a>
+        <a class="fuerte" href="./?vista=ciegos">Puntos ciegos</a>
         <a class="fuerte" href="buscar.html">Buscar noticias</a>
         <a href="./?vista=izquierda">Poca cobertura en la izquierda</a>
         <a href="./?vista=derecha">Poca cobertura en la derecha</a>
@@ -684,13 +714,13 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   <div class="wrap pie-cols">
     <div><a class="logo" href="./" aria-label="Vista Plena"><svg class="logo-ic" viewBox="0 0 64 64" aria-hidden="true"><path d="M6 40V58H24" style="fill:none;stroke:var(--izq);stroke-width:7;stroke-linecap:square"/><path d="M40 6H58V24" style="fill:none;stroke:var(--der);stroke-width:7;stroke-linecap:square"/><circle cx="32" cy="32" r="10" fill="currentColor"/></svg>Vista Plena</a>
       <p>Cada noticia, contada por todos los lados. Sin opinión y sin algoritmo: la misma portada para todo el mundo.</p></div>
-    <nav aria-label="Noticias"><span class="eti">Noticias</span><a href="./">Portada</a><a href="./?vista=ciegos">Cobertura desigual</a><a href="elecciones.html">Elecciones 29N</a><a href="./#boletin">Boletín</a></nav>
+    <nav aria-label="Noticias"><span class="eti">Noticias</span><a href="./">Portada</a><a href="./?vista=ciegos">Puntos ciegos</a><a href="elecciones.html">Elecciones 29N</a><a href="./#boletin">Boletín</a></nav>
     <nav aria-label="Proyecto"><span class="eti">Proyecto</span><a href="quienes-somos.html">Quiénes somos</a><a href="metodologia.html">Metodología</a><a href="metodologia.html#datos">Datos abiertos</a><a href="/medio/">Los medios, uno a uno</a><a href="/archivo/">Archivo</a><a href="quienes-somos.html#correcciones">Correcciones</a></nav>
     <nav aria-label="Legal"><span class="eti">Legal</span><a href="aviso-legal.html">Aviso legal</a><a href="privacidad.html">Privacidad</a><a href="https://github.com/juandoga/vistaplena" target="_blank" rel="noopener">Código en GitHub</a></nav>
   </div>
   <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
-<script src="comun.js?v=b5f6c127"></script>
+<script src="comun.js?v=d1ec811a"></script>
 <script>
 const ETI = { "-2": "Izquierda", "-1": "Centroizquierda", "0": "Centro", "1": "Centroderecha", "2": "Derecha" };
 const COL = { "-2": "var(--izq)", "-1": "var(--izq)", "0": "var(--cen)", "1": "var(--der)", "2": "var(--der)" };

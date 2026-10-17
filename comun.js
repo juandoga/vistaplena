@@ -172,3 +172,10 @@ document.querySelectorAll(".bol-corto").forEach((caja, i) => {
     btn.disabled = false;
   });
 });
+// Fila de porcentajes con cuántos medios de cada lado la publican, en pequeño debajo («7 de 13 medios»)
+function pctCuentas(h, T){
+  const n = { izq: new Set(), cen: new Set(), der: new Set() };
+  for (const a of h.a) n[lado(a.o)].add(a.m);
+  const c = (k, cls, nom, v) => `<span${cls ? ` class="${cls}"` : ""}><span>${nom} <b>${v} %</b></span><small>${n[k].size} de ${T[k]} medios</small></span>`;
+  return `<div class="pct cuentas">${c("izq", "i", "Izquierda", h.pi)}${c("cen", "", "Centro", h.pc)}${c("der", "d", "Derecha", h.pd)}</div>`;
+}

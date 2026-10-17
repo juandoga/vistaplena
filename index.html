@@ -70,6 +70,16 @@ button{font:inherit;color:inherit;cursor:pointer}
 .navlink{padding:6px 0;font-size:var(--t-s);font-weight:500;color:var(--gris);text-decoration:none;border-bottom:2px solid transparent}
 .nav button[aria-selected="true"]{color:var(--tinta);border-bottom-color:var(--tinta)}
 .nav .n{font-family:var(--num);font-size:var(--t-xs);margin-left:5px;color:var(--gris)}
+.edicion{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0 12px;border-bottom:1px solid var(--linea);font-size:var(--t-xs);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+.edicion .vivo{display:inline-flex;align-items:center;gap:7px;font-variant-numeric:tabular-nums}
+.edicion .vivo::before{content:"";width:7px;height:7px;border-radius:50%;background:#2e9d5b;box-shadow:0 0 0 3px color-mix(in srgb,#2e9d5b 25%,transparent)}
+/* Saltos dentro de la portada: llevan a cada bloque, no a otra página */
+.saltos{display:flex;gap:18px;overflow-x:auto;scrollbar-width:none;padding:12px 0;border-bottom:1px solid var(--linea);font-size:var(--t-s);font-weight:600;white-space:nowrap}
+.saltos::-webkit-scrollbar{display:none}
+.saltos a{color:var(--gris);text-decoration:none}
+.saltos a:hover,.saltos a:focus-visible{color:var(--tinta)}
+.saltos a b{color:var(--aviso);font-weight:700;margin-left:4px}
+[id^="s-"]{scroll-margin-top:80px}
 .subtop{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 16px;padding-block:14px 0;font-size:var(--t-s);color:var(--gris)}
 
 /* Guía */
@@ -137,7 +147,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .principal{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:48px;margin-top:40px;padding-bottom:48px;border-bottom:1px solid var(--linea)}
 @media (max-width:880px){.principal{grid-template-columns:1fr;gap:28px}}
 .principal h1{margin:12px 0 24px;font-family:var(--titular);font-weight:600;font-size:var(--t-xxl);line-height:1.06;letter-spacing:-.02em;color:var(--tinta);text-wrap:balance}
-.principal .resumen{margin:20px 0 0;font-size:var(--t-l);line-height:1.45;color:var(--texto);max-width:40ch}
+.principal .resumen{margin:16px 0 0;font-size:var(--t-m);line-height:1.45;color:var(--texto);max-width:40ch}
 .principal .resumen strong{color:var(--tinta);font-weight:700}
 .asi h3{margin:0 0 16px;font-size:var(--t-m);font-weight:700;color:var(--tinta)}
 .bloque{padding:14px 0;border-top:1px solid var(--linea)}
@@ -219,7 +229,9 @@ a.tema:hover{border-color:var(--tinta)}
 .mas-tema b{color:var(--tinta);font-weight:600}
 .mas-tema:hover b{text-decoration:underline;text-underline-offset:3px}
 .temas .eti{align-self:center;white-space:nowrap;margin-right:4px}
-.tema.fijo{border-color:var(--tinta);font-weight:700}
+.tema.fijo{font-weight:700}
+.temas-caja .temas{padding-top:0;flex-wrap:wrap;-webkit-mask-image:none;overflow:visible}
+.temas-caja .eti{display:none}
 .temas a.tema::after{content:"›";margin-left:6px;opacity:.55;font-weight:700}
 .tema{flex:none;border:1px solid var(--linea);background:var(--fondo);border-radius:999px;padding:7px 14px;font-size:var(--t-s);font-weight:500;color:var(--tinta);white-space:nowrap}
 .tema:hover{border-color:var(--tinta)}
@@ -249,7 +261,7 @@ a.tema:hover{border-color:var(--tinta)}
 .resumen-dia .mini-foto img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .4s,transform .6s}
 .resumen-dia .mini-foto img.ok{opacity:1}
 .resumen-dia a:hover img{transform:scale(1.05)}
-.resumen-dia .mini-foto::before{content:counter(r);position:absolute;left:8px;top:8px;z-index:1;width:24px;height:24px;border-radius:50%;background:var(--tinta);color:var(--fondo);display:grid;place-items:center;font-size:var(--t-xs);font-weight:700}
+.resumen-dia .mini-foto::before{display:none;content:counter(r);position:absolute;left:8px;top:8px;z-index:1;width:24px;height:24px;border-radius:50%;background:var(--tinta);color:var(--fondo);display:grid;place-items:center;font-size:var(--t-xs);font-weight:700}
 .resumen-dia .t{font-family:var(--titular);font-weight:600;font-size:1rem;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .resumen-dia a:hover .t{text-decoration:underline;text-underline-offset:3px}
 .resumen-dia .barra{height:6px}
@@ -258,6 +270,12 @@ a.tema:hover{border-color:var(--tinta)}
 @keyframes destello{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--tinta) 30%,transparent)}100%{box-shadow:0 0 0 18px transparent}}
 
 /* Lo último */
+.antetitulo{margin:0 0 6px!important;font-size:var(--t-xs)!important;letter-spacing:.08em;text-transform:uppercase}
+.antetitulo b{color:inherit!important;font-weight:800!important}
+.sobre .antetitulo{color:#fff}
+.sobre .antetitulo .info-b{color:#fff;border-color:rgba(255,255,255,.6)}
+.pct.cuentas > span{display:flex;flex-direction:column;gap:1px}.pct.cuentas > span:nth-child(2){align-items:center}.pct.cuentas > span:last-child{align-items:flex-end}
+.pct.cuentas small{font-size:var(--t-xs);color:var(--gris);font-weight:500}
 .porque{margin:10px 0 0;font-size:var(--t-s);color:var(--texto);line-height:1.45}
 .porque b{color:var(--tinta);font-weight:600}
 .porque a{color:var(--gris)}
@@ -311,6 +329,18 @@ a.tema:hover{border-color:var(--tinta)}
 .cab-seccion p a{color:var(--tinta);font-weight:600;text-underline-offset:3px}
 @media (max-width:600px){.guia{padding:18px}.guia h2{font-size:var(--t-l)}.guia .entradilla{font-size:var(--t-m)}}
 .por-bloque{margin:8px 0 0;font-size:var(--t-s);color:var(--texto)}.por-bloque:empty{display:none}
+/* Ajustes finales de la portada en el móvil (van al final para mandar sobre lo anterior) */
+.asi .ver-todos{text-decoration:none;border:1.5px solid var(--tinta);border-radius:999px;padding:9px 16px;color:var(--tinta)}
+@media (max-width:620px){
+  .cab-seccion{margin:36px 0 14px}
+  .cab-seccion h2{font-size:1.6rem}
+  .cab-seccion p{font-size:var(--t-s)}
+  .principal{margin-top:20px;padding-bottom:28px;gap:20px}
+  .resumen-dia h2{font-size:1.6rem}
+  .ciego{padding:16px;gap:10px}
+}
+.desarrollo .cab-seccion,.ultimo .cab-seccion{margin-top:36px}
+.resumen-dia .mini-foto::before{display:none!important}
 
 /* Cabecera y menú */
 .top .wrap.barra-top{display:flex;align-items:center;gap:18px;flex-wrap:nowrap;padding-block:12px}
@@ -378,7 +408,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <a class="logo" href="./" aria-label="Vista Plena, ir a la portada"><svg class="logo-ic" viewBox="0 0 64 64" aria-hidden="true"><path d="M6 40V58H24" style="fill:none;stroke:var(--izq);stroke-width:7;stroke-linecap:square"/><path d="M40 6H58V24" style="fill:none;stroke:var(--der);stroke-width:7;stroke-linecap:square"/><circle cx="32" cy="32" r="10" fill="currentColor"/></svg>Vista Plena</a>
     <nav class="nav" aria-label="Principal">
       <a class="navlink" href="./" aria-current="page">Portada</a>
-      <a class="navlink" href="./?vista=ciegos">Cobertura desigual</a>
+      <a class="navlink" href="./?vista=ciegos">Puntos ciegos</a>
       <a class="navlink navlink-29n" href="elecciones.html">Elecciones 29N</a>
       <a class="navlink" href="metodologia.html">Cómo lo hacemos</a>
       <a class="navlink" href="quienes-somos.html">Quiénes somos</a>
@@ -390,7 +420,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <div class="wrap menu-cols">
       <div><span class="eti">Noticias</span>
         <a class="fuerte" href="./">Portada</a>
-        <a class="fuerte" href="./?vista=ciegos">Cobertura desigual</a>
+        <a class="fuerte" href="./?vista=ciegos">Puntos ciegos</a>
         <a class="fuerte" href="buscar.html">Buscar noticias</a>
         <a href="./?vista=izquierda">Poca cobertura en la izquierda</a>
         <a href="./?vista=derecha">Poca cobertura en la derecha</a>
@@ -414,7 +444,8 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 </header>
 
 <div class="wrap">
-  <div class="subtop"><span id="fechaHoy"></span><span id="estado">Cargando…</span></div>
+  <div class="edicion"><span id="fechaHoy"></span><span class="vivo" id="estado">Cargando…</span></div>
+  <nav class="saltos" id="saltos" aria-label="En esta portada"></nav>
 
   <section class="guia" id="guia" aria-labelledby="guia-t">
     <div class="guia-cab">
@@ -442,7 +473,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
         </div>
       </div>
       <div>
-        <h3>Cobertura desigual</h3>
+        <h3>Puntos ciegos</h3>
         <div class="barra grande" aria-hidden="true"><div class="b-cen" style="flex-grow:25">25 %</div><div class="b-der" style="flex-grow:75">75 %</div></div>
         <div class="leyenda"><span></span><span></span><span>sin medios de izquierda</span></div>
         <p style="margin-top:14px">Una noticia con <strong>cobertura desigual</strong>: la publican al menos 5 medios, la mitad o más del mismo lado, y casi ninguno del otro tras 6 horas.</p>
@@ -490,7 +521,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   <div class="wrap pie-cols">
     <div><a class="logo" href="./" aria-label="Vista Plena"><svg class="logo-ic" viewBox="0 0 64 64" aria-hidden="true"><path d="M6 40V58H24" style="fill:none;stroke:var(--izq);stroke-width:7;stroke-linecap:square"/><path d="M40 6H58V24" style="fill:none;stroke:var(--der);stroke-width:7;stroke-linecap:square"/><circle cx="32" cy="32" r="10" fill="currentColor"/></svg>Vista Plena</a>
       <p>Cada noticia, contada por todos los lados. Sin opinión y sin algoritmo: la misma portada para todo el mundo.</p></div>
-    <nav aria-label="Noticias"><span class="eti">Noticias</span><a href="./">Portada</a><a href="./?vista=ciegos">Cobertura desigual</a><a href="elecciones.html">Elecciones 29N</a><a href="./#boletin">Boletín</a></nav>
+    <nav aria-label="Noticias"><span class="eti">Noticias</span><a href="./">Portada</a><a href="./?vista=ciegos">Puntos ciegos</a><a href="elecciones.html">Elecciones 29N</a><a href="./#boletin">Boletín</a></nav>
     <nav aria-label="Proyecto"><span class="eti">Proyecto</span><a href="quienes-somos.html">Quiénes somos</a><a href="metodologia.html">Metodología</a><a href="metodologia.html#datos">Datos abiertos</a><a href="/medio/">Los medios, uno a uno</a><a href="/archivo/">Archivo</a><a href="quienes-somos.html#correcciones">Correcciones</a></nav>
     <nav aria-label="Legal"><span class="eti">Legal</span><a href="aviso-legal.html">Aviso legal</a><a href="privacidad.html">Privacidad</a><a href="https://github.com/juandoga/vistaplena" target="_blank" rel="noopener">Código en GitHub</a></nav>
   </div>
@@ -498,7 +529,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 </footer>
 
 <script src="temas.js?v=5df45ce8"></script>
-<script src="comun.js?v=b5f6c127"></script>
+<script src="comun.js?v=d1ec811a"></script>
 <script>
 const SNAPSHOT = /*SNAPSHOT*/null;
 const NIVELES = [[-2,"Izquierda","var(--izq)"],[-1,"Centroizquierda","var(--izq)"],[0,"Centro","var(--cen)"],[1,"Centroderecha","var(--der)"],[2,"Derecha","var(--der)"]];
@@ -512,7 +543,7 @@ try {
 } catch (e) {}
 const PARAM = new URLSearchParams(location.search);
 let vista = ["ciegos","izquierda","derecha"].includes(PARAM.get("vista")) ? PARAM.get("vista") : "portada";
-const fh = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+const fh = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
 document.getElementById("fechaHoy").textContent = fh.charAt(0).toUpperCase() + fh.slice(1);
 function pieza(h){
   const el = document.createElement("article");
@@ -529,11 +560,11 @@ function resumenDia(top, tarjetas){
   const titulares = top.reduce((s, h) => s + h.a.length, 0);
   const medios = new Set(top.flatMap(h => h.a.map(a => a.m))).size;
   return `<section class="resumen-dia" aria-labelledby="rd-t">
-    <div><span class="eti">Para ponerte al día</span><h2 id="rd-t">Lo más contado hoy</h2>
-      <p class="cifras">Con la de arriba, las <b>${top.length}</b> historias principales reúnen <b>${titulares}</b> titulares de <b>${medios}</b> medios.</p><a class="al-correo" href="#boletin">Recibe cada viernes el resumen de la semana →</a></div>
+    <div><h2 id="rd-t">Lo más contado hoy</h2>
+      <a class="al-correo" href="#boletin">Recibe cada viernes el resumen de la semana →</a></div>
     <ol>${tarjetas.map(h => `<li><a href="${enlace(h)}">
       <span class="mini-foto">${h.f ? `<img src="${esc(h.f)}" alt="" loading="lazy" referrerpolicy="no-referrer" onload="this.classList.add('ok')" onerror="this.remove()">` : ""}</span>
-      <span class="t">${esc(h.t)}</span>${barra(h)}<span class="m">${h.tot} medios${h.ciego ? ` · <b style="color:var(--aviso)">cobertura desigual</b>` : ""}</span></a></li>`).join("")}</ol>
+      <span class="t">${esc(h.t)}</span>${barra(h)}<span class="m">${h.tot} medios${h.ciego ? ` · <b style="color:var(--aviso)">punto ciego</b>` : ""}</span></a></li>`).join("")}</ol>
   </section>`;
 }
 // «Lo último»: hora de la primera publicación de cada historia
@@ -544,7 +575,7 @@ function ultimoBloque(lista){
   return `<section class="ultimo" aria-labelledby="ul-t">
     <div class="cab-seccion"><h2 id="ul-t">Lo último${info("Las historias más recientes, en cuanto las publican al menos tres medios. Aún pueden crecer.", "Qué es «Lo último»")}</h2></div>
     <ol class="ultimo-lista">${lista.map(h => `<li><time datetime="${inicio(h)}">${horaCorta(inicio(h))}</time>
-      <a href="${enlace(h)}"><span class="t">${esc(h.t)}</span><span class="m">${h.tot} medios · empezó ${haceCuanto(inicio(h))}${h.ciego ? ` · <b>cobertura desigual</b>` : ""}</span>${barra(h)}</a></li>`).join("")}</ol>
+      <a href="${enlace(h)}"><span class="t">${esc(h.t)}</span><span class="m">${h.tot} medios · empezó ${haceCuanto(inicio(h))}${h.ciego ? ` · <b>punto ciego</b>` : ""}</span>${barra(h)}</a></li>`).join("")}</ol>
   </section>`;
 }
 // «En desarrollo»: temas que siguen moviéndose aunque hoy cada medio cuente un ángulo distinto
@@ -571,7 +602,7 @@ function desarrolloBloque(){
     }).join("")}</div></section>`;
 }
 // Por qué esta historia abre la portada: el mismo criterio con el que se ordena (ver metodología)
-const porque = h => `<p class="porque"><b>Lo más contado ahora</b>${info(`Abre la portada porque es lo que más medios están contando: la han publicado ${h.m12 || h.tot} en las últimas 12 horas${h.port ? `, y ${h.port} ${h.port === 1 ? "la lleva" : "la llevan"} entre los primeros titulares de su web` : ""}. No depende de lo que se lee en Vista Plena ni de quién eres. <a href="metodologia.html#como">Cómo ordenamos</a>`, "Por qué abre la portada")}</p>`;
+const porque = h => `<p class="porque antetitulo"><b>Lo más contado ahora</b>${info(`Abre la portada porque es lo que más medios están contando: la han publicado ${h.m12 || h.tot} en las últimas 12 horas${h.port ? `, y ${h.port} ${h.port === 1 ? "la lleva" : "la llevan"} entre los primeros titulares de su web` : ""}. No depende de lo que se lee en Vista Plena ni de quién eres. <a href="metodologia.html#como">Cómo ordenamos</a>`, "Por qué abre la portada")}</p>`;
 // Cabecera de sección: la explicación va en el botón «i»; con visible = true se muestra debajo (para datos, no para explicaciones)
 const cab = (t, p, visible) => `<div class="cab-seccion"><h2>${t}${p && !visible ? info(p, `Qué es «${t}»`) : ""}</h2>${p && visible ? `<p>${p}</p>` : ""}</div>`;
 // Temas: asuntos de varios días que reúnen varias historias (los calcula el servidor cada hora; ver tema.html)
@@ -641,10 +672,10 @@ function render(){
       const vistas = new Set([lead, ...hoy]);
             c.insertAdjacentHTML("beforeend", `
         <section class="principal" id="h-0">
-          <div>${lead.f ? `<figure class="foto hero"><img src="${esc(lead.f)}" alt="" referrerpolicy="no-referrer" onload="this.classList.add('ok')" onerror="this.closest('figure').classList.add('sinfoto')"><div class="sombra"></div><figcaption>Foto: ${esc(lead.fm)}</figcaption><div class="sobre">${meta(lead)}<h1><a href="${enlace(lead)}">${esc(lead.t)}</a></h1>${barra(lead, true)}</div></figure>` : `${meta(lead)}<h1><a href="${enlace(lead)}">${esc(lead.t)}</a></h1>${barra(lead, true)}`}${pct(lead)}<p class="por-bloque" id="leadBloques"></p>${porque(lead)}<p class="resumen">${lectura(lead)}</p><a class="ir-historia" href="${enlace(lead)}">Ver la historia completa →</a>${masTema(lead)}</div>
-          <div class="asi"><h3>Así la titula cada lado</h3>${bloques(lead, 2)}<a class="ver-todos" href="${enlace(lead)}">Ver los ${lead.tot} titulares →</a></div>
+          <div>${lead.f ? `<figure class="foto hero"><img src="${esc(lead.f)}" alt="" referrerpolicy="no-referrer" onload="this.classList.add('ok')" onerror="this.closest('figure').classList.add('sinfoto')"><div class="sombra"></div><figcaption>Foto: ${esc(lead.fm)}</figcaption><div class="sobre">${porque(lead)}${meta(lead)}<h1><a href="${enlace(lead)}">${esc(lead.t)}</a></h1>${barra(lead, true)}</div></figure>` : `${porque(lead)}${meta(lead)}<h1><a href="${enlace(lead)}">${esc(lead.t)}</a></h1>${barra(lead, true)}`}<div id="leadPct">${pct(lead)}</div><p class="resumen">${lectura(lead)}</p>${masTema(lead)}</div>
+          <div class="asi"><h3>Así la titula cada lado</h3>${bloques(lead, 2)}<a class="ver-todos boton secundario" href="${enlace(lead)}">Comparar los ${lead.tot} titulares</a></div>
         </section>`);
-      totalesMedios().then(T => { const el = document.getElementById("leadBloques"); if (el) el.innerHTML = frasePorBloque(lead, T); }).catch(() => {});
+      totalesMedios().then(T => { const el = document.getElementById("leadPct"); if (el) el.innerHTML = pctCuentas(lead, T); }).catch(() => {});
       const yaVistas = new Set([...vistas].map(h => h.id));
       // Cobertura desigual justo debajo de la principal: es lo que no se ve en otros sitios
       const reciente = h => !yaVistas.has(h.id) && Date.now() - new Date(h.act) < 2 * 864e5;
@@ -653,16 +684,24 @@ function render(){
       for (let i = 0; ciegos.length < 4 && (i < ciI.length || i < ciD.length); i++) { if (ciD[i]) ciegos.push(ciD[i]); if (ciI[i] && ciegos.length < 4) ciegos.push(ciI[i]); }
       ciegos.forEach(h => yaVistas.add(h.id));
       if (ciegos.length) {
-        c.insertAdjacentHTML("beforeend", cab("Cobertura desigual", "Noticias de hoy que publican sobre todo medios de un lado y casi ningún medio del otro."));
+        c.insertAdjacentHTML("beforeend", cab("Puntos ciegos", "Noticias que casi solo está contando un lado. Si lees sobre todo medios del otro, probablemente no te han llegado.", true));
         const grid = document.createElement("div"); grid.className = "ciegos";
         grid.innerHTML = ciegos.map(h => `<article class="ciego">${foto(h)}<span class="chip" style="align-self:flex-start">Poca cobertura en la ${h.ciego}</span><h3><a href="${enlace(h)}">${esc(h.t)}</a></h3>${barra(h)}<p>${h.tot} medios · ${haceCuanto(h.act)}</p></article>`).join("");
         c.appendChild(grid);
       }
+      c.firstElementChild.id = "s-principal";
+      if (ciegos.length) c.querySelector(".ciegos").previousElementSibling.id = "s-ciegos";
       c.insertAdjacentHTML("beforeend", resumenDia([lead, ...hoy], hoy));
+      const rd = c.querySelector(".resumen-dia"); if (rd) rd.id = "s-hoy";
+      // Los temas, como bloque propio debajo de lo más contado (arriba parecían pestañas)
+      const temas = document.getElementById("temas");
+      if (temas && temas.children.length > 1) { const cajaT = document.createElement("section"); cajaT.className = "temas-caja"; cajaT.id = "s-temas"; cajaT.innerHTML = `<div class="cab-seccion"><h2>Temas del momento</h2></div>`; cajaT.appendChild(temas); c.appendChild(cajaT); }
       c.insertAdjacentHTML("beforeend", desarrolloBloque());
       const ultimas = (DATA.ultimas || []).filter(h => !yaVistas.has(h.id)).sort((a, b) => new Date(inicio(b)) - new Date(inicio(a))).slice(0, 6);
       ultimas.forEach(h => yaVistas.add(h.id));
       c.insertAdjacentHTML("beforeend", ultimoBloque(ultimas));
+      const ul = c.querySelector(".ultimo"); if (ul) ul.id = "s-ultimo";
+      c.insertAdjacentHTML("beforeend", `<span id="s-mas"></span>`);
       c.insertAdjacentHTML("beforeend", cab("Más noticias", "Ordenadas por cuántos medios las han contado en las últimas 12 horas y en cuántas portadas están ahora."));
       const rej = document.createElement("div"); rej.className = "rejilla";
       resto.filter(h => !yaVistas.has(h.id)).forEach(h => rej.appendChild(pieza(h)));
@@ -681,11 +720,16 @@ function render(){
       c.appendChild(rej);
     }
   }
+  const S = document.getElementById("saltos");
+  const destinos = [["s-ciegos", "Puntos ciegos"], ["s-hoy", "Lo más contado hoy"], ["s-temas", "Temas"], ["s-ultimo", "Lo último"], ["s-mas", "Todas las noticias"]]
+    .filter(([id]) => document.getElementById(id));
+  S.hidden = vista !== "portada" || !!seccion || !destinos.length;
+  S.innerHTML = destinos.map(([id, t]) => `<a href="#${id}">${t}${id === "s-ciegos" ? `<b>${document.querySelectorAll(".ciego").length}</b>` : ""}</a>`).join("");
   const M = DATA.medios || [];
   document.getElementById("nMedios").textContent = M.length || 21;
   document.getElementById("escala").innerHTML = NIVELES.map(([v, n, col]) =>
     `<div><h4 style="border-color:${col};${Math.abs(v)===1?"border-top-style:dashed":""}">${n}</h4><ul>${M.filter(m => m.o === v).map(m => `<li><a href="/medio/${slug(m.n)}/">${esc(m.n)}</a></li>`).join("")}</ul></div>`).join("");
-  document.getElementById("estado").textContent = DATA.generado ? `Actualizado ${haceCuanto(DATA.generado)} · ${M.length} medios` : CARGA === "cargando" ? "Cargando…" : "Sin datos";
+  document.getElementById("estado").textContent = DATA.generado ? `Actualizado ${new Date(DATA.generado).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}` : CARGA === "cargando" ? "Cargando…" : "Sin datos";
 }
 const guia = document.getElementById("guia");
 function guiaVisible(v){ guia.hidden = !v; try { localStorage.setItem("contraste-guia", v ? "1" : "0"); } catch(e){} }
