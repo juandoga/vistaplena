@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-10-16",
+ "actualizado": "2026-10-17",
  "criterio": "Mientras los partidos no publiquen sus programas para el 29N, recogemos lo que cada uno ha propuesto en público: documentos del partido, declaraciones recogidas por la prensa y su programa de 2023. Siempre con fuente y fecha. No valoramos las propuestas: solo indicamos si el partido explica cómo lo haría y cómo lo pagaría.",
  "fuentes": {
   "EDB23": {
@@ -72,6 +72,16 @@
    "url": "https://www.idealista.com/news/finanzas/economia/2026/09/14/913884-podemos-lleva-esta-semana-al-congreso-su-para-crear-bajar-los-alquileres-y-expropiar",
    "fecha": "2026-09-14"
   },
+  "FA_ACTO": {
+   "nombre": "Diario Sabemos: acto de presentación de Frente Amplio en Madrid",
+   "url": "https://diariosabemos.com/analisis/cronica/ada-colau-frente-amplio-psoe-podemos-vivienda-elecciones_519414_102.html",
+   "fecha": "2026-10-17"
+  },
+  "FA_INFOBAE": {
+   "nombre": "Infobae: propuestas económicas de Podemos y Frente Amplio",
+   "url": "https://www.infobae.com/espana/2026/10/17/vivienda-salarios-e-impuestos-las-propuestas-economicas-que-distancian-a-podemos-y-frente-amplio/",
+   "fecha": "2026-10-17"
+  },
   "VOT": {
    "nombre": "Votaciones del Congreso (más abajo en esta guía)",
    "url": null,
@@ -95,7 +105,7 @@
   {
    "id": "fa",
    "nombre": "Frente Amplio",
-   "nota": "Coalición de Sumar, IU, Comuns y Más Madrid. Sus propuestas de 2023 son del programa de Sumar."
+   "nota": "Coalición de Sumar, IU, Comuns y Más Madrid. Se presentó el 17 de octubre; aún no ha publicado programa. Sus propuestas de 2023 son del programa de Sumar."
   },
   {
    "id": "podemos",
@@ -137,10 +147,10 @@
    ],
    "fa": [
     {
-     "t": "Más protección para inquilinos, prórrogas de contratos más largas y limitar la compra de vivienda para especular.",
-     "f": "FORBES",
-     "como": "no",
-     "nota": "Presentará su programa el 17 de octubre."
+     "t": "Invertir el 1 % del PIB al año en vivienda pública, contratos de alquiler indefinidos y un fondo estatal que financie nuevas promociones con créditos que se devuelven con los alquileres asequibles. Ventajas fiscales a quien alquile a precio social.",
+     "f": "FA_ACTO",
+     "como": "parcial",
+     "nota": "Explica cómo se pagarían las nuevas promociones (con los alquileres futuros), pero no cuánto cuesta el 1 % del PIB ni de dónde sale."
     },
     {
      "t": "Invertir el 1 % del PIB al año en vivienda pública de alquiler (2 millones de viviendas en 10 años), alquiler social obligatorio para grandes propietarios e impuesto al suelo sin usar.",
@@ -274,10 +284,10 @@
    ],
    "fa": [
     {
-     "t": "Trabajar menos horas y subir el salario mínimo.",
-     "f": "FORBES",
+     "t": "Semana laboral de 32 horas y subir el salario mínimo por encima del IPC.",
+     "f": "FA_ACTO",
      "como": "no",
-     "nota": "Sin cifras ni calendario por ahora. En 2023 proponía la semana de 37,5 horas."
+     "nota": "No dice en cuánto tiempo, cuánto subiría el salario mínimo ni cómo afectaría a las pequeñas empresas. En 2023 proponía 37,5 horas."
     }
    ],
    "podemos": [
@@ -410,10 +420,10 @@
    ],
    "fa": [
     {
-     "t": "Que paguen más las grandes herencias y los grandes patrimonios; en 2023, impuesto a las grandes fortunas y subir la renta a quien gane más de 120.000 € al año.",
-     "f": "FORBES",
-     "como": "parcial",
-     "nota": "Dice a quién subiría impuestos, no cuánto recaudaría."
+     "t": "Impuesto permanente a las grandes fortunas, reformar el impuesto de sociedades para que las pymes no paguen proporcionalmente más que las grandes empresas y gravar los beneficios extraordinarios que genere la inteligencia artificial.",
+     "f": "FA_INFOBAE",
+     "como": "no",
+     "nota": "No da tipos ni cuánto recaudaría. En 2023 también proponía subir la renta a quien gane más de 120.000 € al año."
     }
    ],
    "podemos": [
@@ -528,6 +538,12 @@
     }
    ],
    "fa": [
+    {
+     "t": "Empleo industrial en renovables, almacenamiento y movilidad; ayudas para pasarse al coche eléctrico primero para las rentas bajas y rehabilitación energética empezando por los barrios populares.",
+     "f": "FA_ACTO",
+     "como": "no",
+     "nota": "Sin cifras ni coste."
+    },
     {
      "t": "Renovables y almacenamiento de energía, en contra de alargar algunas nucleares; en 2023, impuesto a los beneficios extraordinarios de las energéticas y tarifa social.",
      "f": "FORBES",
