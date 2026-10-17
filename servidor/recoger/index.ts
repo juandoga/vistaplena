@@ -80,8 +80,18 @@ function parsePortada(html: string, base: string): Item[] {
     if (new URL(url).host !== host || vistos.has(url)) continue;
     const titulo = strip(m[2]);
     if (titulo.length < 35 || titulo.length > 220 || !/[\/-]\d{3,}|\.html?$/.test(url)) continue;
+    // Si la dirección lleva la fecha (/20261016/ o /2026/10/16/), se usa: así una noticia de hace días no entra como nueva
+    const f = url.match(/\/(20\d\d)(?:\/)?(\d\d)(?:\/)?(\d\d)\//);
+    let publicado = new Date();
+    if (f) {
+      const d = new Date(`${f[1]}-${f[2]}-${f[3]}T12:00:00+02:00`);
+      if (!isNaN(+d)) {
+        if (Date.now() - +d > 2 * 864e5) continue; // de hace más de dos días: no es noticia del momento
+        if (d.toDateString() !== new Date().toDateString()) publicado = d;
+      }
+    }
     vistos.add(url);
-    out.push({ titulo, url, resumen: "", publicado: new Date() });
+    out.push({ titulo, url, resumen: "", publicado });
     if (out.length >= 60) break;
   }
   return out;
