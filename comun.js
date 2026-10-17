@@ -48,7 +48,7 @@ function barra(h, grande){
   return `<div class="barra${grande ? " grande" : ""}" role="img" aria-label="Izquierda ${h.pi} %, centro ${h.pc} %, derecha ${h.pd} %">${seg("b-izq",h.pi,"Izquierda")}${seg("b-cen",h.pc,"Centro")}${seg("b-der",h.pd,"Derecha")}</div>`;
 }
 const pct = h => `<div class="pct"><span class="i">Izquierda <b>${h.pi} %</b></span><span>Centro <b>${h.pc} %</b></span><span class="d">Derecha <b>${h.pd} %</b></span></div>`;
-const meta = h => `<div class="meta"><span title="Dos medios del mismo grupo editorial y del mismo lado cuentan como una voz">${h.tot} medios${h.voces && h.voces < h.tot ? ` · ${h.voces} voces` : ""}</span><span>${haceCuanto(h.act)}</span>${h.port >= 2 ? `<span title="Medios que la llevan ahora entre los 15 primeros titulares de su web">En ${h.port} portadas</span>` : ""}${h.ciego ? `<span class="chip">Poca cobertura en la ${h.ciego}</span>` : ""}</div>`;
+const meta = h => `<div class="meta"><span title="Dos medios del mismo grupo editorial y del mismo lado cuentan como una voz">${h.tot} medios${h.voces && h.voces < h.tot ? ` · ${h.voces} voces` : ""}</span><span>${haceCuanto(h.act)}</span>${h.port >= 2 ? `<span title="Medios que la llevan ahora entre los 15 primeros titulares de su web">En ${h.port} portadas</span>` : ""}${h.ciego ? `<span class="chip">La ${h.ciego} apenas la cuenta</span>` : ""}</div>`;
 // Un titular por medio. Dentro de cada lado, primero los que mejor cuentan el hecho de la noticia (los que comparten
 // más palabras con su título) y, a igualdad, los más recientes. Así arriba sale el hecho y no la última reacción.
 const _norm = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -179,3 +179,19 @@ function pctCuentas(h, T){
   const c = (k, cls, nom, v) => `<span${cls ? ` class="${cls}"` : ""}><span>${nom} <b>${v} %</b></span><small>${n[k].size} de ${T[k]} medios</small></span>`;
   return `<div class="pct cuentas">${c("izq", "i", "Izquierda", h.pi)}${c("cen", "", "Centro", h.pc)}${c("der", "d", "Derecha", h.pd)}</div>`;
 }
+
+// Aspecto: automático (el del móvil), claro u oscuro. Se guarda en este navegador.
+(() => {
+  const marcar = () => {
+    let t = "auto"; try { t = localStorage.getItem("vp-tema") || "auto"; } catch (e) {}
+    document.querySelectorAll("[data-tema]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.tema === t)));
+  };
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-tema]"); if (!b) return;
+    const t = b.dataset.tema;
+    try { t === "auto" ? localStorage.removeItem("vp-tema") : localStorage.setItem("vp-tema", t); } catch (e) {}
+    if (t === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t);
+    marcar();
+  });
+  marcar();
+})();

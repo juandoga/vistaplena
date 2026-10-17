@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
+<script>try{var t=localStorage.getItem("vp-tema");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 <meta name="msvalidate.01" content="E9CB72CE86C079B72425B53725AC79AC">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Aviso legal · Vista Plena</title>
@@ -340,6 +341,11 @@ a.tema:hover{border-color:var(--tinta)}
 }
 .desarrollo .cab-seccion,.ultimo .cab-seccion{margin-top:36px}
 .resumen-dia .mini-foto::before{display:none!important}
+.filtro{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 24px}
+.filtro button{border:1px solid var(--linea);background:var(--fondo);color:var(--tinta);border-radius:999px;padding:8px 14px;font-size:var(--t-s);font-weight:600}
+.filtro button span{color:var(--gris);font-weight:500;margin-left:4px}
+.filtro button[aria-pressed="true"]{background:var(--tinta);color:var(--fondo);border-color:var(--tinta)}
+.filtro button[aria-pressed="true"] span{color:inherit;opacity:.7}
 
 /* Cabecera y menú */
 .top .wrap.barra-top{display:flex;align-items:center;gap:18px;flex-wrap:nowrap;padding-block:12px}
@@ -371,7 +377,10 @@ body{margin:0}
 @media (max-width:520px){.top .menu .menu-cols{grid-template-columns:1fr;gap:24px;padding-block:20px 28px}}
 .menu-cols > div{display:flex;flex-direction:column;min-width:0}
 .menu-cols .eti{margin-bottom:8px}
-.menu-cols a{padding:6px 0;text-decoration:none;color:var(--tinta);font-weight:500}
+.menu-cols a{padding:7px 0;text-decoration:none;color:var(--tinta);font-weight:600;font-size:1.0625rem}
+.aspecto-bot{display:inline-flex;border:1px solid var(--linea);border-radius:999px;padding:3px;margin-top:8px;gap:2px}
+.aspecto-bot button{border:0;background:none;border-radius:999px;padding:7px 12px;font-size:var(--t-s);font-weight:600;color:var(--gris)}
+.aspecto-bot button[aria-pressed="true"]{background:var(--tinta);color:var(--fondo)}
 .menu-cols a:hover{text-decoration:underline;text-underline-offset:3px}
 .menu-cols a.fuerte{font-weight:900;font-size:var(--t-l);letter-spacing:-.02em;line-height:1.2;padding:5px 0}
 @media (prefers-reduced-motion:no-preference){.menu:not([hidden]){animation:bajar .18s ease}@keyframes bajar{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}}
@@ -517,16 +526,14 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   <div class="menu" id="menu" hidden>
     <div class="wrap menu-cols">
       <div><span class="eti">Noticias</span>
-        <a class="fuerte" href="./">Portada</a>
-        <a class="fuerte" href="./?vista=ciegos">Puntos ciegos</a>
-        <a class="fuerte" href="buscar.html">Buscar noticias</a>
-        <a href="./?vista=izquierda">Poca cobertura en la izquierda</a>
-        <a href="./?vista=derecha">Poca cobertura en la derecha</a>
+        <a href="./">Portada</a>
+        <a href="./?vista=ciegos">Puntos ciegos</a>
+        <a href="buscar.html">Buscar noticias</a>
         <a href="./?guia=1">Cómo leer Vista Plena</a>
       </div>
       <div><span class="eti">Secciones</span><a href="./?seccion=vivienda">Vivienda</a><a href="./?seccion=economia">Economía y precios</a><a href="./?seccion=inmigracion">Inmigración</a><a href="./?seccion=politica">Política</a><a href="./?seccion=empleo">Empleo</a><a href="./?seccion=sanidad">Sanidad</a></div>
       <div><span class="eti">Elecciones 29N</span>
-        <a class="fuerte" href="elecciones.html">Qué propone cada partido</a>
+        <a href="elecciones.html">Qué propone cada partido</a>
         <a href="elecciones.html#partidos">Los partidos</a>
         <a href="elecciones.html#como">Cómo hacemos la guía</a>
       </div>
@@ -536,6 +543,9 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
         <a href="metodologia.html#datos">Datos abiertos</a>
         <a href="quienes-somos.html#correcciones">Correcciones</a>
         <a href="./#boletin">Boletín semanal</a>
+      </div>
+      <div class="aspecto"><span class="eti">Aspecto</span>
+        <div class="aspecto-bot" role="group" aria-label="Aspecto de la web"><button type="button" data-tema="auto">Automático</button><button type="button" data-tema="light">Claro</button><button type="button" data-tema="dark">Oscuro</button></div>
       </div>
     </div>
   </div>
@@ -611,7 +621,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   </div>
   <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
-<script src="comun.js?v=d1ec811a"></script>
+<script src="comun.js?v=a0a2d912"></script>
 
 </body>
 </html>
