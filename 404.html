@@ -254,16 +254,16 @@ a.tema:hover{border-color:var(--tinta)}
 .resumen-dia .cifras b{color:var(--tinta);font-variant-numeric:tabular-nums}
 .resumen-dia ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;counter-reset:r 1}
 @media (max-width:1100px){.resumen-dia{grid-template-columns:1fr}}
-@media (max-width:820px){.resumen-dia ol{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}.resumen-dia li{flex:0 0 62%;scroll-snap-align:start}}
-.resumen-dia li{counter-increment:r;min-width:0}
-.resumen-dia a{display:grid;gap:8px;text-decoration:none;color:var(--tinta)}
+@media (max-width:820px){.resumen-dia ol{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}.resumen-dia ol > li{flex:0 0 62%;scroll-snap-align:start}}
+.resumen-dia ol > li{counter-increment:r;min-width:0}
+.resumen-dia ol > li > a{display:grid;gap:8px;text-decoration:none;color:var(--tinta)}
 .resumen-dia .mini-foto{position:relative;aspect-ratio:16/10;border-radius:8px;overflow:hidden;background:var(--linea)}
 .resumen-dia .mini-foto img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .4s,transform .6s}
 .resumen-dia .mini-foto img.ok{opacity:1}
-.resumen-dia a:hover img{transform:scale(1.05)}
+.resumen-dia ol > li > a:hover img{transform:scale(1.05)}
 .resumen-dia .mini-foto::before{display:none;content:counter(r);position:absolute;left:8px;top:8px;z-index:1;width:24px;height:24px;border-radius:50%;background:var(--tinta);color:var(--fondo);display:grid;place-items:center;font-size:var(--t-xs);font-weight:700}
 .resumen-dia .t{font-family:var(--titular);font-weight:600;font-size:1rem;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.resumen-dia a:hover .t{text-decoration:underline;text-underline-offset:3px}
+.resumen-dia ol > li > a:hover .t{text-decoration:underline;text-underline-offset:3px}
 .resumen-dia .barra{height:6px}
 .resumen-dia .m{font-size:var(--t-xs);color:var(--gris)}
 .destacar{animation:destello 1.6s ease}
@@ -352,14 +352,30 @@ a.tema:hover{border-color:var(--tinta)}
   .resumen-dia{background:none;padding:0;margin-top:8px!important;display:block}
   .resumen-dia > div{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   .resumen-dia ol{display:block!important;overflow:visible;padding:0}
-  .resumen-dia li{border-top:1px solid var(--linea)}
-  .resumen-dia li:first-child{border-top:0}
-  .resumen-dia a{grid-template-columns:minmax(0,1fr) 92px;grid-template-areas:"t f" "b f" "m f";column-gap:14px;row-gap:6px;padding:14px 0;align-items:start}
+  .resumen-dia ol > li{border-top:1px solid var(--linea)}
+  .resumen-dia ol > li:first-child{border-top:0}
+  .resumen-dia ol > li > a{grid-template-columns:minmax(0,1fr) 92px;grid-template-areas:"t f" "b f" "m f";column-gap:14px;row-gap:6px;padding:14px 0;align-items:start}
   .resumen-dia .t{grid-area:t;font-size:1.2rem;-webkit-line-clamp:3}
   .resumen-dia .barra{grid-area:b}
   .resumen-dia .m{grid-area:m}
   .resumen-dia .mini-foto{grid-area:f;aspect-ratio:1;width:92px}
   .resumen-dia .mini-foto:empty{visibility:hidden}
+}
+/* Desplegables «Cómo la titula cada lado» */
+.desplegar{display:inline-flex;align-items:center;gap:8px;background:none;border:1px solid var(--linea);border-radius:999px;padding:7px 14px;font-size:var(--t-s);font-weight:600;color:var(--tinta)}
+.desplegar::after{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px);transition:transform .2s}
+.desplegar[aria-expanded="true"]::after{transform:rotate(-135deg) translateY(-2px)}
+.asi-bot{display:none}
+.resumen-dia ol > li > .desplegar{margin:0 0 14px;padding:5px 12px;font-size:var(--t-xs)}
+.desp{padding:0 0 16px}
+.desp .bloque li a{font-size:1rem}
+.desp .bloque li:nth-child(n+2),.desp .mas{display:none}
+.ver-todos-l{font-size:var(--t-s);font-weight:600;color:var(--tinta)}
+@media (max-width:820px){
+  .asi-bot{display:inline-flex}
+  .asi:not(.abierta) > :not(.asi-bot){display:none!important}
+  .asi.abierta .asi-bot{margin-bottom:16px}
+  .principal{gap:16px!important}
 }
 
 /* Cabecera y menú */

@@ -195,3 +195,13 @@ function pctCuentas(h, T){
   });
   marcar();
 })();
+
+// Desplegar «Cómo la titula cada lado» (portada)
+document.addEventListener("click", e => {
+  const b = e.target.closest(".desplegar"); if (!b) return;
+  const abrir = b.getAttribute("aria-expanded") !== "true";
+  b.setAttribute("aria-expanded", String(abrir));
+  if (b.classList.contains("asi-bot")) b.parentElement.classList.toggle("abierta", abrir);
+  else { const d = b.nextElementSibling; if (d) d.hidden = !abrir; }
+  if (abrir) evento("compara");
+});
