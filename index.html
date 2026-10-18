@@ -378,6 +378,18 @@ a.tema:hover{border-color:var(--tinta)}
   .asi.abierta .asi-bot{margin-bottom:16px}
   .principal{gap:16px!important}
 }
+/* Ordenador: «Más contadas hoy» en una fila, seguida de la principal */
+@media (min-width:821px){
+  .resumen-dia{display:block;background:none;padding:0;margin-top:28px}
+  .resumen-dia > div{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px}
+  .resumen-dia h2{font-size:var(--t-xs)!important;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);margin:0}
+  .resumen-dia .al-correo{margin:0;font-weight:600;color:var(--gris)}
+  .resumen-dia ol{grid-template-columns:repeat(var(--n,5),minmax(0,1fr))!important;gap:20px}
+  .resumen-dia ol > li{display:flex;flex-direction:column;align-items:flex-start}
+  .resumen-dia ol > li > a{width:100%}
+  .resumen-dia ol > li > .desplegar{margin-top:auto}
+}
+.desarrollo{margin-top:8px}
 
 /* Cabecera y menú */
 .top .wrap.barra-top{display:flex;align-items:center;gap:18px;flex-wrap:nowrap;padding-block:12px}
@@ -601,9 +613,9 @@ function resumenDia(top, tarjetas){
   const titulares = top.reduce((s, h) => s + h.a.length, 0);
   const medios = new Set(top.flatMap(h => h.a.map(a => a.m))).size;
   return `<section class="resumen-dia" aria-labelledby="rd-t">
-    <div><h2 id="rd-t">También lo más contado hoy</h2>
+    <div><h2 id="rd-t">Más contadas hoy</h2>
       <a class="al-correo" href="#boletin">Recibe cada viernes el resumen de la semana →</a></div>
-    <ol>${tarjetas.map(h => `<li><a href="${enlace(h)}">
+    <ol style="--n:${tarjetas.length}">${tarjetas.map(h => `<li><a href="${enlace(h)}">
       <span class="mini-foto">${h.f ? `<img src="${esc(h.f)}" alt="" loading="lazy" referrerpolicy="no-referrer" onload="this.classList.add('ok')" onerror="this.remove()">` : ""}</span>
       <span class="t">${esc(h.t)}</span>${barra(h)}<span class="m">${h.tot} medios${h.ciego ? ` · <b style="color:var(--aviso)">punto ciego</b>` : ""}</span></a>
       <button type="button" class="desplegar" aria-expanded="false">Cómo la titula cada lado</button><div class="desp" hidden>${bloques(h, 1)}<a class="ver-todos-l" href="${enlace(h)}">Comparar los ${h.tot} titulares →</a></div></li>`).join("")}</ol>
@@ -623,7 +635,7 @@ function ultimoBloque(lista){
 // «En desarrollo»: temas que siguen moviéndose aunque hoy cada medio cuente un ángulo distinto
 // (titulares sueltos que no llegan a formar una historia de 3 medios; los asigna el servidor de temas)
 const COL_LADO = { izq: "var(--izq)", cen: "var(--cen)", der: "var(--der)" };
-function desarrolloBloque(){
+function desarrolloBloque(conCabecera){
   const T = (DATA.desarrollo || []).filter(t => (t.titulares || []).length >= 2).slice(0, 3);
   if (!T.length) return "";
   const mueve = t => {
@@ -633,7 +645,7 @@ function desarrolloBloque(){
     return "";
   };
   return `<section class="desarrollo" aria-labelledby="des-t">
-    <div class="cab-seccion"><h2 id="des-t">En desarrollo${info("Temas con titulares nuevos en las últimas 12 horas, aunque cada medio cuente un aspecto distinto y no lleguen a formar una noticia común. La barra muestra qué medios los mueven. <a href='metodologia.html#temas'>Qué es un tema</a>", "Qué es «En desarrollo»")}</h2></div>
+    <div class="cab-seccion"${conCabecera ? "" : ' style="display:none"'}><h2 id="des-t">Temas del momento${info("Temas con titulares nuevos en las últimas 12 horas, aunque cada medio cuente un aspecto distinto y no lleguen a formar una noticia común. La barra muestra qué medios los mueven. <a href='metodologia.html#temas'>Qué es un tema</a>", "Qué son los temas")}</h2></div>
     <div class="desarrollo-lista">${T.map(t => {
       const n = t.izq_12h + t.cen_12h + t.der_12h || 1;
       const reparto = { pi: Math.round(100 * t.izq_12h / n), pd: Math.round(100 * t.der_12h / n) }; reparto.pc = 100 - reparto.pi - reparto.pd;
@@ -738,7 +750,8 @@ function render(){
       // Los temas, como bloque propio debajo de lo más contado (arriba parecían pestañas)
       const temas = document.getElementById("temas");
       if (temas && temas.children.length > 1) { const cajaT = document.createElement("section"); cajaT.className = "temas-caja"; cajaT.id = "s-temas"; cajaT.innerHTML = `<div class="cab-seccion"><h2>Temas del momento</h2></div>`; cajaT.appendChild(temas); c.appendChild(cajaT); }
-      c.insertAdjacentHTML("beforeend", desarrolloBloque());
+      const cajaTemas = c.querySelector(".temas-caja");
+      if (cajaTemas) cajaTemas.insertAdjacentHTML("beforeend", desarrolloBloque(false)); else { c.insertAdjacentHTML("beforeend", desarrolloBloque(true)); const d = c.querySelector(".desarrollo"); if (d) d.id = "s-temas"; }
       // El resto, todo junto y de lo más reciente a lo más antiguo (por su último titular). Sustituye a «Lo último»
       const vistosR = new Set();
       const restoReciente = [...resto, ...(DATA.ultimas || [])]

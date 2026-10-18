@@ -377,6 +377,18 @@ a.tema:hover{border-color:var(--tinta)}
   .asi.abierta .asi-bot{margin-bottom:16px}
   .principal{gap:16px!important}
 }
+/* Ordenador: «Más contadas hoy» en una fila, seguida de la principal */
+@media (min-width:821px){
+  .resumen-dia{display:block;background:none;padding:0;margin-top:28px}
+  .resumen-dia > div{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:14px}
+  .resumen-dia h2{font-size:var(--t-xs)!important;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gris);margin:0}
+  .resumen-dia .al-correo{margin:0;font-weight:600;color:var(--gris)}
+  .resumen-dia ol{grid-template-columns:repeat(var(--n,5),minmax(0,1fr))!important;gap:20px}
+  .resumen-dia ol > li{display:flex;flex-direction:column;align-items:flex-start}
+  .resumen-dia ol > li > a{width:100%}
+  .resumen-dia ol > li > .desplegar{margin-top:auto}
+}
+.desarrollo{margin-top:8px}
 
 /* Cabecera y menú */
 .top .wrap.barra-top{display:flex;align-items:center;gap:18px;flex-wrap:nowrap;padding-block:12px}
