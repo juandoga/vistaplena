@@ -739,14 +739,15 @@ function render(){
       const temas = document.getElementById("temas");
       if (temas && temas.children.length > 1) { const cajaT = document.createElement("section"); cajaT.className = "temas-caja"; cajaT.id = "s-temas"; cajaT.innerHTML = `<div class="cab-seccion"><h2>Temas del momento</h2></div>`; cajaT.appendChild(temas); c.appendChild(cajaT); }
       c.insertAdjacentHTML("beforeend", desarrolloBloque());
-      const ultimas = (DATA.ultimas || []).filter(h => !yaVistas.has(h.id)).sort((a, b) => new Date(inicio(b)) - new Date(inicio(a))).slice(0, 6);
-      ultimas.forEach(h => yaVistas.add(h.id));
-      c.insertAdjacentHTML("beforeend", ultimoBloque(ultimas));
-      const ul = c.querySelector(".ultimo"); if (ul) ul.id = "s-ultimo";
+      // El resto, todo junto y de lo más reciente a lo más antiguo (por su último titular). Sustituye a «Lo último»
+      const vistosR = new Set();
+      const restoReciente = [...resto, ...(DATA.ultimas || [])]
+        .filter(h => !yaVistas.has(h.id) && !vistosR.has(h.id) && vistosR.add(h.id))
+        .sort((a, b) => new Date(b.act) - new Date(a.act));
       c.insertAdjacentHTML("beforeend", `<span id="s-mas"></span>`);
-      c.insertAdjacentHTML("beforeend", cab("Más noticias", "Ordenadas por cuántos medios las han contado en las últimas 12 horas y en cuántas portadas están ahora."));
+      c.insertAdjacentHTML("beforeend", cab("Lo último", "Todas las demás noticias, de la más reciente a la más antigua según su último titular.", true));
       const rej = document.createElement("div"); rej.className = "rejilla";
-      resto.filter(h => !yaVistas.has(h.id)).forEach(h => rej.appendChild(pieza(h)));
+      restoReciente.forEach(h => rej.appendChild(pieza(h)));
       c.appendChild(rej);
     }
   } else {
@@ -768,7 +769,7 @@ function render(){
     }));
   }
   const S = document.getElementById("saltos");
-  const destinos = [["s-hoy", "Lo más contado hoy"], ["s-ciegos", "Puntos ciegos"], ["s-temas", "Temas"], ["s-ultimo", "Lo último"], ["s-mas", "Todas las noticias"]]
+  const destinos = [["s-hoy", "Lo más contado hoy"], ["s-ciegos", "Puntos ciegos"], ["s-temas", "Temas"], ["s-mas", "Lo último"]]
     .filter(([id]) => document.getElementById(id));
   S.hidden = vista !== "portada" || !!seccion || !destinos.length;
   S.innerHTML = destinos.map(([id, t]) => `<a href="#${id}">${t}${id === "s-ciegos" ? `<b>${document.querySelectorAll(".ciego").length}</b>` : ""}</a>`).join("");
