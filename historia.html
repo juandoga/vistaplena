@@ -603,6 +603,11 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .avisar .gracias{margin:12px 0 0}
 .hist-rel{margin-top:56px;padding-top:28px;border-top:3px solid var(--tinta)}
 .registro{padding-left:1.2em}.registro li{margin:0 0 10px;line-height:1.5}
+.novedad{display:grid;gap:4px;margin:0 0 18px;padding:12px 16px;border-radius:12px;border:1px solid var(--aviso);background:color-mix(in srgb,var(--aviso) 9%,transparent);text-decoration:none;color:var(--tinta)}
+.novedad .eti{color:var(--aviso)}
+.novedad .nt{font-family:var(--titular);font-weight:600;font-size:1.1rem;line-height:1.25}
+.novedad .nm{font-size:var(--t-s);color:var(--gris)}
+.novedad:hover .nt{text-decoration:underline;text-underline-offset:3px}
 .bol-corto{margin:48px 0 0;padding:20px;border-radius:14px;background:var(--panel)}
 .bol-corto label{display:block;font-size:var(--t-m);line-height:1.45;color:var(--texto);margin-bottom:12px}
 .bol-corto label b{color:var(--tinta)}
@@ -794,7 +799,8 @@ function pintar(h){
   document.title = `${h.t} · Vista Plena`;
   art.innerHTML = `
     <header class="hist-cab">
-      <div class="hist-etis">${secciones.map(s => `<a class="tema" href="./?seccion=${s.id}">${s.nombre}</a>`).join("")}${h.ciego ? `<span class="chip">Poca cobertura en la ${h.ciego}</span>` : ""}</div>
+      <div id="novedad"></div>
+      <div class="hist-etis">${secciones.map(s => `<a class="tema" href="./?seccion=${s.id}">${s.nombre}</a>`).join("")}${h.ciego ? `<span class="chip">La ${h.ciego} apenas la cuenta</span>` : ""}</div>
       <h1>${esc(h.t)}</h1>
       ${meta(h)}
       <p class="hilo" id="hilo" hidden></p>
@@ -898,6 +904,15 @@ async function relacionadas(h){
   } catch (e) {}
 }
 
+// Si el asunto ha seguido en otra noticia más reciente, se avisa arriba («Novedad: … →»)
+async function novedad(h){
+  try {
+    const N = await pedir(`rpc/novedades?p_id=${h.id}`);
+    if (!N.length) return;
+    const n = N[0];
+    document.getElementById("novedad").innerHTML = `<a class="novedad" href="${urlNoticia(n.id, n.titulo)}"><span class="eti">Novedad · ${haceCuanto(n.creada)}</span><span class="nt">${esc(n.titulo)}</span><span class="nm">${n.total} medios →</span></a>`;
+  } catch (e) {}
+}
 (async () => {
   if (!id) return noEncontrada();
   try {
@@ -907,6 +922,7 @@ async function relacionadas(h){
     pintar(h);
     document.getElementById("estado").textContent = `Actualizada ${haceCuanto(filas[0].actualizada)}`;
     relacionadas(h); if (h.tema) enTema(h); else hilo(h);
+    novedad(h);
   } catch (e) {
     if (!document.body.dataset.id) art.innerHTML = `<p class="vacia">No hemos podido cargar la historia. Comprueba tu conexión y vuelve a intentarlo.</p>`;
   }
