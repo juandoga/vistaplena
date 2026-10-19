@@ -4,9 +4,8 @@
 // Francia empezaron como «huelga», siguieron como «Macron» y luego como «prima de riesgo», y salían tres temas distintos.
 // Un ASUNTO reúne todo eso bajo un mismo paraguas. Lo decide una IA barata (Gemini), en tres pasos, cada hora (minuto 18):
 //
-// 1. Propagar (sin IA): si la mayoría de las noticias de un tema ya están en un asunto, las demás del tema entran también;
-//    si una noticia continúa a otra (historias.anterior), va al asunto de aquella. Así el asunto sigue a la noticia
-//    aunque cambie de palabras.
+// 1. Propagar (sin IA): si una noticia continúa a otra (historias.anterior, que ya comprobó la IA de verificar),
+//    va al asunto de aquella.
 // 2. Preguntar antes de crear: las noticias nuevas (3 o más medios, 72 h) se le enseñan a la IA junto a los asuntos
 //    abiertos: «¿pertenece a alguno?». Si dos o más noticias comparten un asunto de fondo que aún no existe, lo crea.
 // 3. Unir (una vez al día, ?modo=diario): la IA mira los asuntos abiertos y junta los que son el mismo.
@@ -111,6 +110,21 @@ Deno.serve(async (req) => {
     catch (e) { return json({ segundos: (Date.now() - t0) / 1000, error: String(e) }); }
   }
 
+  // Limpieza puntual (19/10): deshace lo que entró arrastrado por tema y lo devuelve a la IA para que lo mire
+  if (url.searchParams.get("limpiar") === "propagadas") {
+    const { data: rs } = await db.from("asuntos_registro").select("id, asunto_id, historias").eq("accion", "propagar");
+    let n = 0;
+    for (const r of rs ?? []) {
+      const ids = r.historias ?? [];
+      if (!ids.length) continue;
+      const { data: q } = await db.from("historias").update({ asunto_id: null, asunto_revisado: null }).in("id", ids).eq("asunto_id", r.asunto_id).select("id");
+      n += q?.length ?? 0;
+      await db.from("asuntos_registro").update({ accion: "propagar-deshecho" }).eq("id", r.id);
+    }
+    await db.rpc("recontar_asuntos");
+    return json({ ok: true, devueltas: n });
+  }
+
   // Datos: noticias de 3 o más medios de la semana, asuntos abiertos y vetos
   const { data: hs, error } = await db.rpc("historias_para_asuntos", { horas: 168 });
   if (error) return json({ error: error.message }, 500);
@@ -147,17 +161,8 @@ Deno.serve(async (req) => {
       const a = p && asuntoDe(p);
       if (a && asuntos.has(a) && !vetado(h.id, a)) { poner(h, a, "propagar"); n++; }
     }
-    const porTema = new Map<number, any[]>();
-    for (const h of H_) if (h.tema_id) { const l = porTema.get(h.tema_id) ?? []; l.push(h); porTema.set(h.tema_id, l); }
-    for (const l of porTema.values()) {
-      if (l.length < 2) continue;
-      const votos = new Map<number, number>();
-      for (const h of l) { const a = asuntoDe(h); if (a) votos.set(a, (votos.get(a) ?? 0) + 1); }
-      const [a, v] = [...votos].sort((x, y) => y[1] - x[1])[0] ?? [0, 0];
-      // La mayoría del tema (y al menos 2 noticias) ya está en ese asunto: entran las demás del tema
-      if (!a || v < 2 || v < l.length / 2 || !asuntos.has(a)) continue;
-      for (const h of l) if (!asuntoDe(h) && !vetado(h.id, a)) { poner(h, a, "propagar"); n++; }
-    }
+    // (Arrastrar por tema pequeño se probó el 19/10 y se quitó: los temas pequeños a veces están mal hechos
+    // y el asunto heredaba sus errores, como el alcalde de Algeciras dentro de «Begoña Gómez»)
     return n;
   };
   informe.propagadas += propagar();
