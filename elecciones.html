@@ -704,6 +704,29 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 @media (max-width:520px){.vc-res{margin-left:0}.vc-fila .l{min-width:100%}}
 .vot-mas{margin-top:8px;font-size:var(--t-s)}
 .vot-mas summary{cursor:pointer;font-weight:500;color:var(--tinta)}
+.fp-intro{margin:0 0 14px;color:var(--texto)}
+.fp-cab{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin:6px 0 4px}
+.fp-cab h3{margin:0;font-size:var(--t-l, 1.4rem)}
+.fp-cab a{font-size:var(--t-s);color:var(--gris)}
+.fp-estado{margin:0 0 6px;font-size:var(--t-s);color:var(--texto)}
+.fp-nota{margin:0 0 14px;font-size:var(--t-s);color:var(--gris)}
+.fp-bloque{margin-top:18px}
+.fp-bloque > .eti{display:block;margin-bottom:10px}
+.fp-tema{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding:12px;border-radius:10px;background:var(--panel);margin-bottom:8px}
+.fp-tema .tn{font-size:var(--t-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+.fp-tema .t{margin:0;line-height:1.45;color:var(--texto);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.fp-tema .pp-como{justify-self:start;margin:0}
+.fp-ir{border:0;background:none;padding:0;color:var(--tinta);font-weight:600;font-size:var(--t-s);text-decoration:underline;cursor:pointer;justify-self:start}
+.fp-sin{margin:0 0 8px;font-size:var(--t-s);color:var(--gris)}
+.fp-resumen{margin:0 0 12px;line-height:1.5}
+.fp-voto{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;align-items:start;padding:10px 0;border-bottom:1px solid var(--linea)}
+.fp-voto .v{grid-row:span 2;align-self:center}
+.fp-voto .tt{font-weight:600;color:var(--tinta);line-height:1.35}
+.fp-voto .m{font-size:var(--t-xs);color:var(--gris)}
+.fp-chip{display:inline-block;min-width:84px;text-align:center;font-size:var(--t-xs);font-weight:700;border-radius:999px;padding:4px 10px}
+.fp-chip.s{background:#1d7f46;color:#fff}.fp-chip.n{background:#4a4f58;color:#fff}.fp-chip.a{background:var(--panel);border:1.5px solid var(--cen);color:var(--texto)}.fp-chip.x{border:1.5px dashed var(--linea);color:var(--gris);font-weight:500}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .fp-chip.s{background:#4cbf7c;color:#111213}:root:not([data-theme="light"]) .fp-chip.n{background:#b9bec6;color:#111213}}
+:root[data-theme="dark"] .fp-chip.s{background:#4cbf7c;color:#111213}:root[data-theme="dark"] .fp-chip.n{background:#b9bec6;color:#111213}
 </style>
 </head>
 <body>
@@ -768,14 +791,10 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   <div class="aviso" id="estadoProgramas">Los partidos todavía no han presentado sus programas para el 29N. En cuanto cada uno publique el suyo, añadiremos sus propuestas tema a tema, con cita literal y enlace al documento original.</div>
 
   <section id="partidos">
-    <h2>Los partidos</h2>
-    <p id="criterio"></p>
-    <div class="tabla-wrap">
-      <table class="tabla">
-        <thead><tr><th>Partido</th><th>Programa para el 29N</th><th>Web oficial</th></tr></thead>
-        <tbody id="filasPartidos"><tr><td colspan="3" class="vacio">Cargando…</td></tr></tbody>
-      </table>
-    </div>
+    <h2>Los partidos, uno a uno</h2>
+    <p class="fp-intro">Elige un partido para ver en una sola página lo que propone en cada tema y cómo ha votado en el Congreso.</p>
+    <div id="fichaPartido"><p class="g-vacio">Cargando…</p></div>
+    <p class="aparte" id="criterio"></p>
   </section>
 
   <section id="como">
@@ -936,15 +955,79 @@ function pintar(){
         ${hoy.length ? `<details class="gv-caja gv-plegable"><summary><span>Noticias de ${esc(t.nombre.toLowerCase())} de estos días<small class="gv-sub">Lo más contado ahora mismo sobre ${esc(t.nombre.toLowerCase())}, con el reparto de medios de cada noticia.</small></span></summary><div class="hoy">${hoy.map(h => `<a class="hoy-item" href="${enlace(h)}">${esc(h.t)}${barra(h)}<span class="m">${h.tot} medios</span></a>`).join("")}<a class="mas-sec" href="./?seccion=${s.id}">Más noticias de ${esc(t.nombre.toLowerCase())} →</a></div></details>` : ""}
       </div>
     </div>`;
-  document.getElementById("filasPartidos").innerHTML = P.map(p => `<tr><td><strong>${esc(p.nombre)}</strong></td>
-    <td>${p.programa ? `<a href="${esc(p.programa.url)}" target="_blank" rel="noopener">Publicado el ${fechaLarga(p.programa.fecha)}</a>` : '<span class="pend">Pendiente</span>'}</td>
-    <td><a href="${esc(p.web)}" target="_blank" rel="noopener">${esc(p.web.replace(/^https?:\/\/(www\.)?/, ""))}</a></td></tr>`).join("");
+  document.getElementById("fichaPartido").innerHTML = fichaPartido();
 }
+// Los partidos, uno a uno: propuestas por tema y votos en el Congreso de cada partido
+const FICHA_P = [
+  { id: "psoe", post: "psoe", vot: "PSOE" }, { id: "pp", post: "pp", vot: "PP" }, { id: "vox", post: "vox", vot: "Vox" },
+  { id: "fa", post: "fa", vot: "Sumar", nombre: "Frente Amplio",
+    votNota: "El Frente Amplio se formó en octubre de 2026 y no tiene grupo propio en el Congreso. Mostramos lo que votó el grupo Sumar, en el que estaban sus partidos (Sumar, IU, Comuns y Más Madrid)." },
+  { id: "podemos", post: "podemos", vot: "Podemos" }, { id: "erc", vot: "ERC" }, { id: "junts", vot: "Junts" }, { id: "bildu", vot: "EH Bildu" },
+  { id: "pnv", vot: "PNV" }, { id: "bng", vot: "BNG" }, { id: "cc", vot: "CC" }, { id: "upn", vot: "UPN" }
+];
+let FICHA = (location.hash.match(/^#partidos-([a-z]+)/) || [])[1] || "psoe";
+const VOTO_K = { "Sí": ["s", "A favor"], "No": ["n", "En contra"], "Abstención": ["a", "Abstención"] };
+function fichaPartido(){
+  if (!PROG || !GUIA) return `<p class="g-vacio">Cargando…</p>`;
+  const datos = f => { const pr = PROG.partidos.find(x => x.id === f.id), po = POST && f.post ? POST.partidos.find(x => x.id === f.post) : null;
+    return { ...f, nombre: f.nombre || (po && po.nombre) || (pr && pr.nombre) || f.id, web: pr ? pr.web : "", programa: pr ? pr.programa : null, nota: po ? po.nota : "" }; };
+  const nProp = f => POST && f.post ? GUIA.temas.reduce((n, t) => n + ((POST.temas[t.id] || {})[f.post] || []).length, 0) : 0;
+  if (!FICHA_P.some(f => f.id === FICHA)) FICHA = "psoe";
+  const tabs = `<div class="gv-ptabs" role="tablist" aria-label="Partidos">${FICHA_P.map(f => { const d = datos(f), n = nProp(f);
+    return `<button type="button" role="tab" data-ficha="${f.id}" aria-selected="${f.id === FICHA}">${esc(d.nombre)}<small>${n ? n + (n === 1 ? " propuesta" : " propuestas") : "Votos en el Congreso"}</small></button>`; }).join("")}</div>`;
+  const p = datos(FICHA_P.find(f => f.id === FICHA));
+  let h = tabs + `<div class="fp-cab"><h3>${esc(p.nombre)}</h3>${p.web ? `<a href="${esc(p.web)}" target="_blank" rel="noopener">${esc(p.web.replace(/^https?:\/\/(www\.)?/, ""))}</a>` : ""}</div>`
+    + `<p class="fp-estado">${p.programa ? `Programa para el 29N: <a href="${esc(p.programa.url)}" target="_blank" rel="noopener">publicado el ${fechaLarga(p.programa.fecha)}</a>` : "Todavía no ha publicado su programa para el 29N."}</p>`
+    + (p.nota ? `<p class="fp-nota">${esc(p.nota)}</p>` : "");
+  // Propuestas, en el orden de los temas de la guía
+  h += `<div class="fp-bloque"><span class="eti">Qué propone, tema a tema</span>`;
+  if (!POST) h += `<p class="g-vacio">Cargando…</p>`;
+  else if (!p.post) h += `<p class="fp-sin">De momento la guía solo recoge las propuestas de PSOE, PP, Vox, Frente Amplio y Podemos. Cuando ${esc(p.nombre)} publique su programa, añadiremos las suyas con cita y página.</p>`;
+  else {
+    const sin = [];
+    for (const t of GUIA.temas) {
+      const L = (POST.temas[t.id] || {})[p.post] || [];
+      if (!L.length) { sin.push(t.nombre); continue; }
+      const x = L[0], c = COMO[x.como] || COMO.no;
+      h += `<div class="fp-tema"><span class="tn">${esc(t.nombre)}</span><p class="t">${esc(x.t)}</p><span class="pp-como ${c[0]}" title="${COMO_LARGO[x.como] || ""}">${c[1]}</span>`
+        + `<button type="button" class="fp-ir" data-ir-tema="${t.id}" data-ir-partido="${p.post}">${L.length > 1 ? `Ver sus ${L.length} propuestas y de dónde salen` : "Ver de dónde sale"}</button></div>`;
+    }
+    if (sin.length) h += `<p class="fp-sin">Sin propuestas públicas recogidas sobre: ${sin.map(esc).join(", ").toLowerCase()}.</p>`;
+  }
+  h += `</div>`;
+  // Votos en el Congreso
+  h += `<div class="fp-bloque"><span class="eti">Cómo ha votado en el Congreso</span>`;
+  if (!VOT) h += `<p class="g-vacio">Cargando las votaciones del Congreso…</p>`;
+  else {
+    const L = VOT.filter(v => v.partidos && v.partidos[p.vot]);
+    if (!L.length) h += `<p class="fp-sin">No hay votaciones suyas en los datos.</p>`;
+    else {
+      const cuenta = k => L.filter(v => v.partidos[p.vot].voto === k).length;
+      const mesAno = d => new Date(d + "T12:00:00").toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+      h += (p.votNota ? `<p class="fp-nota">${esc(p.votNota)}</p>` : "")
+        + `<p class="fp-resumen">En las <b>${L.length}</b> votaciones importantes del Pleno que recogemos, de ${mesAno(L[L.length - 1].fecha)} a ${mesAno(L[0].fecha)}, votó <b>a favor en ${cuenta("Sí")}</b>, <b>en contra en ${cuenta("No")}</b> y se abstuvo en ${cuenta("Abstención")}. Las más recientes:</p>`;
+      const nomT = id => (GUIA.temas.find(t => t.id === id) || {}).nombre || "";
+      h += L.slice(0, 6).map(v => { const k = VOTO_K[v.partidos[p.vot].voto] || ["x", "No votó"], [, res] = resLlano(v);
+        return `<div class="fp-voto"><span class="v"><span class="fp-chip ${k[0]}">${k[1]}</span></span><span class="tt">${esc(v.titulo_llano || corta(limpia(v.expediente)))}</span>`
+          + `<span class="m">${fechaCorta(v.fecha)} · ${esc(v.temas.map(nomT).filter(Boolean).join(", "))} · ${tipoLlano(v)}: ${res.toLowerCase()}</span></div>`; }).join("")
+        + `<p class="fp-sin" style="margin-top:10px">Cada votación, con qué se votaba y lo que votaron los demás partidos, está en su tema de la guía.</p>`;
+    }
+  }
+  return h + `</div>`;
+}
+document.addEventListener("click", e => {
+  const bf = e.target.closest("[data-ficha]");
+  if (bf) { FICHA = bf.dataset.ficha; history.replaceState(null, "", "#partidos-" + FICHA); document.getElementById("fichaPartido").innerHTML = fichaPartido();
+    document.querySelector(`[data-ficha="${FICHA}"]`)?.scrollIntoView({ inline: "center", block: "nearest" }); return; }
+  const bi = e.target.closest("[data-ir-tema]");
+  if (bi) { TEMA = bi.dataset.irTema; PARTIDO = bi.dataset.irPartido || "todos"; history.replaceState(null, "", "#" + TEMA); pintar();
+    document.getElementById("gvVista").scrollIntoView(); }
+});
 // Cuenta atrás
 (() => { const d = Math.ceil((new Date("2026-11-29T09:00:00+01:00") - Date.now()) / 864e5); document.getElementById("dias").textContent = d > 0 ? d : "Hoy"; })();
 pintar();
 Promise.all([fetch("programas.json").then(r => r.json()), fetch("guia.json").then(r => r.json()), fetch("posturas.json").then(r => r.json()).catch(() => null)])
-  .then(([p, g, q]) => { PROG = p; GUIA = g; POST = q; pintar(); if (location.hash && location.hash !== "#" + TEMA) document.querySelector(location.hash)?.scrollIntoView(); }).catch(() => {});
+  .then(([p, g, q]) => { PROG = p; GUIA = g; POST = q; pintar(); if (location.hash.startsWith("#partidos")) document.getElementById("partidos").scrollIntoView(); else if (location.hash && location.hash !== "#" + TEMA) document.querySelector(location.hash)?.scrollIntoView(); }).catch(() => {});
 (async () => {
   const h = { apikey: SUPA.key, Authorization: "Bearer " + SUPA.key };
   try {
