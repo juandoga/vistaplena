@@ -569,6 +569,11 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .hist-etis{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}
 .hist-etis .tema{text-decoration:none;padding:5px 12px}
 .hist-cab h1,.hist-vacia h1{margin:0 0 16px;font-family:var(--titular);font-weight:600;font-size:var(--t-xxl);line-height:1.06;letter-spacing:-.02em;color:var(--tinta);text-wrap:balance}
+.hist-cab .hist-cob{margin-top:22px}
+.hist-cab .hist-cob h2{font-size:var(--t-s)!important;font-weight:700!important;letter-spacing:.06em!important;text-transform:uppercase;color:var(--gris)!important;margin:0 0 10px!important}
+.pct.cuentas > span{display:flex;flex-direction:column;gap:1px}.pct.cuentas > span:nth-child(2){align-items:center}.pct.cuentas > span:last-child{align-items:flex-end}
+.pct.cuentas small{font-size:var(--t-xs);color:var(--gris);font-weight:500}
+@media (max-width:880px){.hist-asi{order:-1}}
 .hist-cuerpo{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:56px;align-items:start}
 @media (max-width:880px){.hist-cuerpo{grid-template-columns:1fr;gap:40px}}
 .hist-izq{min-width:0}
@@ -816,6 +821,12 @@ function pintar(h){
       <h1>${esc(h.t)}</h1>
       ${meta(h)}
       <p class="hilo" id="hilo" hidden></p>
+      <section class="hist-cob" aria-labelledby="cob-t">
+        <h2 id="cob-t">Quién la cuenta${info(`${lectura(h).replace(/<\/?strong>/g, "")} La publican ${h.tot} medios: ${n("izq")} de izquierda o centroizquierda, ${n("cen")} de centro y ${n("der")} de derecha o centroderecha.${h.voces && h.voces < h.tot ? ` Los medios de un mismo grupo y del mismo lado cuentan como una sola voz, por eso el porcentaje se calcula sobre ${h.voces} voces.` : ""} Cada lado se compara con lo que suele publicar. La barra no dice si la noticia es verdad ni a quién beneficia: solo quién la está contando. <a href='metodologia.html#que'>Cómo se calcula</a>`, "Cómo leer la barra")}</h2>
+        ${barra(h, true)}
+        <div id="pctHist">${pct(h)}</div>
+        ${h.ciego ? `<p class="resumen">${lectura(h)}</p>` : ""}
+      </section>
     </header>
     <div class="hist-cuerpo">
       <div class="hist-izq">
@@ -823,14 +834,6 @@ function pintar(h){
         ${h.ent ? `<section class="hist-que" aria-labelledby="que-t"><h2 id="que-t">Qué ha pasado</h2>
           <blockquote>${esc(h.ent)}${h.ent.length >= 395 ? "…" : ""}</blockquote>
           <p class="aparte">Entradilla de ${esc(h.entm)}, el medio más cercano al centro que la publica.${ent ? ` <a href="${esc(ent.u)}" target="_blank" rel="noopener">Leer la noticia completa</a>` : ""}</p></section>` : ""}
-        <section class="hist-cob" aria-labelledby="cob-t">
-          <h2 id="cob-t">Quién la cuenta</h2>
-          ${barra(h, true)}
-          ${pct(h)}
-          <p class="resumen">${lectura(h)}</p>
-          <p class="cuenta" id="cuentaBloques">La publican <b>${h.tot} medios</b>: ${n("izq")} de izquierda o centroizquierda, ${n("cen")} de centro y ${n("der")} de derecha o centroderecha.${h.voces && h.voces < h.tot ? ` Los medios de un mismo grupo y del mismo lado cuentan como una sola voz, por eso el porcentaje se calcula sobre ${h.voces} voces.` : ""}</p>
-          <p class="aparte">La barra no dice si la noticia es verdad ni a quién beneficia: solo quién la está contando. <a href="metodologia.html#etiquetas">Cómo etiquetamos a cada medio</a>.</p>
-        </section>
         ${cronologia(h)}
         ${compartir(h)}
       </div>
@@ -841,7 +844,7 @@ function pintar(h){
       </section>
     </div>`;
   // Con el total de medios de cada lado, la frase se vuelve comparable entre bloques de distinto tamaño
-  totalesMedios().then(T => { const el = document.getElementById("cuentaBloques"); if (el) el.innerHTML = frasePorBloque(h, T) + (h.voces && h.voces < h.tot ? ` Los medios de un mismo grupo y del mismo lado cuentan como una sola voz, por eso el porcentaje se calcula sobre ${h.voces} voces.` : ""); }).catch(() => {});
+  totalesMedios().then(T => { const el = document.getElementById("pctHist"); if (el) el.innerHTML = pctCuentas(h, T); }).catch(() => {});
   const nativo = document.getElementById("cNativo");
   if (nativo) nativo.addEventListener("click", () => navigator.share({ title: h.t, text: "Quién la cuenta y quién no, en Vista Plena", url: direccion() }).catch(() => {}));
   document.getElementById("cCopiar").addEventListener("click", async () => {
