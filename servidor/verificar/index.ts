@@ -30,7 +30,11 @@ const INSTRUCCIONES = `Eres el verificador de un agregador de noticias. Te doy l
 Para cada candidato decide:
 - "mismo": informa del MISMO hecho concreto (el mismo suceso, anuncio, decisión o dato), aunque lo cuente con otro enfoque, con otra fase del mismo hecho, con una reacción directa a él o con cifras actualizadas (más muertos, otro recuento): una cifra distinta no hace que sea otro hecho.
 - "otro": informa de un hecho distinto, aunque comparta tema, lugar, personas o palabras (por ejemplo, otra huelga, otro partido, otra sentencia u otro día).
-Responde solo con JSON, una clave por letra: {"A":"mismo","B":"otro"}.`;
+- "opinion": es una columna, un editorial o un análisis general (por ejemplo «29-N: ahora o nunca» o «Sánchez y Feijóo encaran su duelo electoral»), no la información de ese hecho concreto.
+Cada titular lleva entre corchetes cuándo se publicó: un candidato publicado días antes que la noticia no puede contar ese hecho (cuenta otro).
+Responde solo con JSON, una clave por letra: {"A":"mismo","B":"otro","C":"opinion"}.`;
+// Fecha corta en hora de Madrid, para que la IA vea si un titular es de otro día («14 oct 21:05»)
+const cuando = (iso: string) => new Date(iso).toLocaleString("es-ES", { timeZone: "Europe/Madrid", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
 // Llamada genérica a Gemini: devuelve el JSON que conteste
 // La versión gratuita de Gemini admite unas 15 consultas por minuto: se deja al menos 4,2 s entre una y otra
@@ -59,11 +63,12 @@ async function gemini(modelo: string, sistema: string, texto: string): Promise<R
   try { return JSON.parse(d.candidates?.[0]?.content?.parts?.map((p: any) => p.text ?? "").join("") || "{}"); } catch { return {}; }
 }
 
+// referencia y candidatos: «[14 oct 21:05] titular». Respuestas: «mismo», «otro», «opinion» o «error» (sin respuesta válida)
 async function preguntar(modelo: string, referencia: string[], candidatos: string[]) {
   const letras = candidatos.map((_, i) => String.fromCharCode(65 + i));
   const texto = `Titulares de la noticia:\n${referencia.map((t) => `- ${t}`).join("\n")}\n\nCandidatos:\n${candidatos.map((t, i) => `${letras[i]}) ${t}`).join("\n")}`;
   const salida = await gemini(modelo, INSTRUCCIONES, texto);
-  return letras.map((l) => (salida[l] === "otro" ? "otro" : salida[l] === "mismo" ? "mismo" : "error"));
+  return letras.map((l) => (["mismo", "otro", "opinion"].includes(salida[l]) ? salida[l] : "error"));
 }
 
 const REPETIDAS = `Eres el editor de un agregador de noticias. Te doy pares de noticias (cada una con su título). Para cada par decide:
@@ -108,45 +113,73 @@ Deno.serve(async (req) => {
     const { data: arts } = await db.from("articulos").select("id, titulo, medio_id, ia_revisado, publicado").eq("historia_id", hid).order("publicado").limit(300);
     if (!h || !arts?.length) continue;
     const marcarVistos = async (ids: number[]) => { if (ids.length) await db.from("articulos").update({ ia_revisado: true }).in("id", ids); };
-    // Noticias pequeñas: no se pregunta (con 2 o 3 titulares el agrupador ya exige que se parezcan mucho)
-    if (arts.length < 4) { await marcarVistos(arts.filter((a) => pend.has(a.id) && !dudosoSet.has(a.id)).map((a) => a.id)); continue; }
-    // Referencia: el título de la noticia y hasta 5 titulares ya revisados (o, en una noticia nueva, los primeros), de medios distintos
+    // Noticias de 1 o 2 titulares: no se pregunta
+    if (arts.length < 3) { await marcarVistos(arts.filter((a) => pend.has(a.id) && !dudosoSet.has(a.id)).map((a) => a.id)); continue; }
     const enDuda = (a: any) => pend.has(a.id);
-    let base = arts.filter((a) => !enDuda(a) && a.ia_revisado);
-    if (base.length < 2) base = arts.filter((a) => !dudosoSet.has(a.id)).slice(0, 3); // noticia nueva: los primeros titulares definen el hecho
-    const ref = [h.titulo], refIds: number[] = [], vistos = new Set<number>();
-    for (const a of base) if (!vistos.has(a.medio_id) && a.titulo !== h.titulo && ref.length < 6) { ref.push(a.titulo); refIds.push(a.id); vistos.add(a.medio_id); }
-    if (ref.length < 3) continue;
-    await marcarVistos(refIds.filter((id) => pend.has(id)));
+    const conFecha = (a: any) => `[${cuando(a.publicado)}] ${a.titulo}`;
+    // El título de la noticia lleva la fecha del titular del que sale (o la del primero)
+    const delTitulo = arts.find((a) => a.titulo === h.titulo) ?? arts[0];
+    const ref = [conFecha({ ...delTitulo, titulo: h.titulo })], refIds: number[] = [];
+    if (arts.length === 3) {
+      // Noticia de 3 titulares: la referencia es solo el título, y se pregunta por los otros dos
+      if (delTitulo.titulo === h.titulo) refIds.push(delTitulo.id);
+    } else {
+      // Referencia: el título de la noticia y hasta 5 titulares ya revisados (o, en una noticia nueva, los primeros), de medios distintos
+      let base = arts.filter((a) => !enDuda(a) && a.ia_revisado);
+      if (base.length < 2) base = arts.filter((a) => !dudosoSet.has(a.id)).slice(0, 3); // noticia nueva: los primeros titulares definen el hecho
+      const vistos = new Set<number>();
+      for (const a of base) if (!vistos.has(a.medio_id) && a.titulo !== h.titulo && ref.length < 6) { ref.push(conFecha(a)); refIds.push(a.id); vistos.add(a.medio_id); }
+      if (ref.length < 3) continue;
+    }
+    await marcarVistos(refIds.filter((id) => pend.has(id) && !dudosoSet.has(id)));
     const cola = arts.filter((a) => enDuda(a) && !refIds.includes(a.id));
+    if (!cola.length) continue;
+    // Primero se pregunta por todos; después se decide (hace falta ver todas las respuestas para saber si falla el título)
+    const resultados: { a: any; r: string }[] = [];
     for (let i = 0; i < cola.length && quedan > 0; i += 12) {
       const cand = cola.slice(i, i + 12);
       quedan--;
       let res: string[];
-      try { res = await preguntar(modelo, ref, cand.map((a) => a.titulo)); }
+      try { res = await preguntar(modelo, ref, cand.map(conFecha)); }
       catch (e) { informe.push({ historia: hid, error: String(e).slice(0, 200) }); quedan = 0; break; }
-      for (let j = 0; j < cand.length; j++) {
-        const a = cand[j], otro = res[j] === "otro";
-        revisados++;
-        if (dudosoSet.has(a.id)) await db.from("historias_dudosas").update({ ia: res[j], ia_modelo: modelo, ia_fecha: new Date().toISOString() }).eq("articulo_id", a.id);
-        else if (otro) await db.from("historias_dudosas").upsert({ articulo_id: a.id, historia_id: hid, motivo: "la IA cree que cuenta otro hecho", ia: "otro", ia_modelo: modelo, ia_fecha: new Date().toISOString() }, { onConflict: "articulo_id" });
-        if (auto && otro) {
-          await db.from("articulos").update({ historia_id: null, ia_revisado: true }).eq("id", a.id).eq("historia_id", hid);
-          await db.from("historia_vetos").upsert({ articulo_id: a.id, historia_id: hid }, { onConflict: "articulo_id,historia_id", ignoreDuplicates: true });
-          await db.from("historias_dudosas").update({ decision: "sacar" }).eq("articulo_id", a.id);
-          sacados++;
-        } else if (res[j] !== "error") await marcarVistos([a.id]);
-      }
-      informe.push({ historia: hid, titulo: h.titulo, respuestas: cand.map((a, j) => `${res[j]} · ${a.titulo}`).filter((x) => x.startsWith("otro")) });
+      cand.forEach((a, j) => resultados.push({ a, r: res[j] }));
     }
+    // ¿Es el título el que no encaja? Si la IA dice que la mitad o más de los demás titulares de la noticia (y al menos 2)
+    // cuentan otra cosa, lo más probable es que el raro sea el titular que da el título («Burnham recibe a Zelenski» en una
+    // noticia sobre la cumbre de la UE). Entonces no se saca nada: queda en la gestión para decidirlo a mano.
+    const nFuera = resultados.filter((x) => x.r === "otro" || x.r === "opinion").length;
+    const tituloRaro = nFuera >= 2 && nFuera * 2 >= arts.length - 1;
+    for (const { a, r } of resultados) {
+      const otro = r === "otro" || r === "opinion";
+      const ia = r === "opinion" ? "otro" : r;
+      const motivo = tituloRaro ? "quizá el que no encaja es el título de la noticia" : r === "opinion" ? "la IA cree que es opinión, no información del hecho" : "la IA cree que cuenta otro hecho";
+      revisados++;
+      if (dudosoSet.has(a.id)) await db.from("historias_dudosas").update({ ia, ia_modelo: modelo, ia_fecha: new Date().toISOString(), ...(otro ? { motivo } : {}) }).eq("articulo_id", a.id);
+      else if (otro) await db.from("historias_dudosas").upsert({ articulo_id: a.id, historia_id: hid, motivo, ia: "otro", ia_modelo: modelo, ia_fecha: new Date().toISOString() }, { onConflict: "articulo_id" });
+      if (auto && otro && !tituloRaro) {
+        await db.from("articulos").update({ historia_id: null, ia_revisado: true }).eq("id", a.id).eq("historia_id", hid);
+        await db.from("historia_vetos").upsert({ articulo_id: a.id, historia_id: hid }, { onConflict: "articulo_id,historia_id", ignoreDuplicates: true });
+        await db.from("historias_dudosas").update({ decision: "sacar" }).eq("articulo_id", a.id);
+        sacados++;
+      } else if (r !== "error") await marcarVistos([a.id]);
+    }
+    if (nFuera) informe.push({ historia: hid, titulo: h.titulo, ...(tituloRaro ? { aviso: "quizá falla el título: no se ha sacado nada" } : {}), respuestas: resultados.filter((x) => x.r === "otro" || x.r === "opinion").map((x) => `${x.r} · ${x.a.titulo}`) });
   }
   // Fase 2: noticias repetidas (dos noticias del mismo hecho que no se juntaron). Se juntan en la que tiene más medios.
+  // No se juntan noticias creadas con más de 24 horas de diferencia: serían otra fase u otro día (y así no se cuela
+  // un titular de hace dos días en una noticia nueva).
   let juntadas = 0;
   const destino = new Map<number, number>(); // noticia que ya se juntó en otra → la otra
   const final = (id: number): number => destino.has(id) ? final(destino.get(id)!) : id;
-  const { data: pares } = await db.rpc("pares_parecidos");
-  for (let i = 0; i < (pares ?? []).length && quedan > 0 && Date.now() - inicio < 85e3; i += 15) {
-    const lote = pares!.slice(i, i + 15);
+  const { data: todos } = await db.rpc("pares_parecidos");
+  const idsPares = [...new Set((todos ?? []).flatMap((p: any) => [p.a, p.b]))];
+  const { data: fechas } = idsPares.length ? await db.from("historias").select("id, creada").in("id", idsPares) : { data: [] as any[] };
+  const creada = new Map((fechas ?? []).map((x: any) => [x.id, +new Date(x.creada)]));
+  const lejanas = (p: any) => Math.abs((creada.get(p.a) ?? 0) - (creada.get(p.b) ?? 0)) > 864e5;
+  for (const p of (todos ?? []).filter(lejanas)) await db.from("historias_pares").upsert({ a: p.a, b: p.b, resultado: "distinta" }, { onConflict: "a,b" });
+  const pares = (todos ?? []).filter((p: any) => !lejanas(p));
+  for (let i = 0; i < pares.length && quedan > 0 && Date.now() - inicio < 85e3; i += 15) {
+    const lote = pares.slice(i, i + 15);
     quedan--;
     let res: Record<string, string>;
     try { res = await gemini(modelo, REPETIDAS, lote.map((p: any, j: number) => `${j + 1}) A: ${p.ta}\n   B: ${p.tb}`).join("\n")); } catch (e) { informe.push({ error: String(e).slice(0, 200) }); break; }
@@ -158,6 +191,7 @@ Deno.serve(async (req) => {
         const queda = final(q0), sale = final(s0);
         if (queda === sale) continue;
         destino.set(sale, queda);
+        // Los titulares vetados en «queda» no pasan (el disparador respetar_vetos los deja sueltos)
         await db.from("articulos").update({ historia_id: queda }).eq("historia_id", sale);
         await db.from("historias").update({ actualizada: new Date().toISOString() }).eq("id", queda);
         juntadas++;
