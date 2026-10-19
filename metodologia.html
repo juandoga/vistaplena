@@ -703,6 +703,15 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
       <li>Cada historia está, como mucho, en un tema. En la portada, cada tema aparece una sola vez.</li>
     </ul>
     <p>El nombre del tema es el nombre propio más repetido en sus titulares. Se recalcula cada hora.</p>
+    <h3>Temas grandes</h3>
+    <p>Algunas noticias cambian de protagonista sin dejar de ser la misma historia: unas protestas empiezan con una huelga, siguen con disturbios, luego habla el presidente y al final reaccionan los mercados. Por palabras salían como temas distintos. Por eso, por encima de los temas hay <strong>temas grandes</strong>, que reúnen todo lo que nace del mismo origen.</p>
+    <ul class="lista">
+      <li>Los agrupa cada hora un modelo de inteligencia artificial (Gemini, de Google). Solo decide qué noticias van juntas y propone un nombre corto; no escribe ni resume noticias.</li>
+      <li>Antes de abrir un tema grande nuevo, se le pregunta si la noticia encaja en alguno de los que ya están abiertos. Una vez al día revisa si hay dos que en realidad son el mismo y los une.</li>
+      <li>Si la mayoría de las noticias de un tema ya están en un tema grande, las demás de ese tema entran también, aunque hablen de otra persona.</li>
+      <li>Nunca son categorías («Política», «Elecciones») ni mezclan lugares: unas protestas en Italia no van con las de Francia. Ante la duda, la noticia se queda fuera.</li>
+      <li>Revisamos los temas grandes a mano. Lo que se saca de un tema grande no vuelve a él. Se apagan a los 4 días sin noticias nuevas.</li>
+    </ul>
   </section>
 
   <section id="ciegos">
@@ -773,7 +782,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   </div>
   <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
-<script src="comun.js?v=68b34426"></script>
+<script src="comun.js?v=19ae567c"></script>
 <script>
 const ETI = { "-2": "Izquierda", "-1": "Centroizquierda", "0": "Centro", "1": "Centroderecha", "2": "Derecha" };
 const COL = { "-2": "var(--izq)", "-1": "var(--izq)", "0": "var(--cen)", "1": "var(--der)", "2": "var(--der)" };

@@ -36,7 +36,7 @@ const ajuste = async (n: string) => (await db.from("ajustes").select("valor").eq
 const cuando = (iso: string) => new Date(iso).toLocaleString("es-ES", { timeZone: "Europe/Madrid", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
 // Gemini (versión gratuita: unas 15 consultas por minuto; se dejan 4,2 s entre una y otra)
-let ultimaLlamada = 0, reserva = "gemini-2.5-flash-lite";
+let ultimaLlamada = 0, reserva = "gemini-3.5-flash-lite";
 // Formatos fijos de respuesta: la IA no puede enrollarse ni repetir (evita que tarde un minuto en contestar)
 const ESQUEMA_AGRUPAR = { type: "OBJECT", properties: {
   asignar: { type: "ARRAY", items: { type: "OBJECT", properties: { noticia: { type: "INTEGER" }, asunto: { type: "STRING" } }, required: ["noticia", "asunto"] } },
