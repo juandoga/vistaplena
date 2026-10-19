@@ -617,7 +617,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 // Las páginas de cada noticia (/noticia/titulo-123/) se generan cada hora. Si una aún no existe, o su título ha cambiado,
 // se abre la versión dinámica, que siempre funciona.
 (() => {
-  const m = location.pathname.match(/^\/(noticia|tema)\/(?:[a-z0-9-]*-)?(\d+)\/?$/);
+  const m = location.pathname.match(/^\/(noticia|tema)\/(?:[a-z0-9-]*-)?(a?\d+)\/?$/);
   if (m) { location.replace(`/${m[1] === "tema" ? "tema" : "historia"}.html?id=${m[2]}`); return; }
   document.getElementById("t404").textContent = "Esta página no existe";
   document.getElementById("p404").textContent = "Puede que el enlace esté mal escrito o que la página ya no esté disponible.";

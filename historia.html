@@ -881,21 +881,35 @@ async function hilo(h){
 }
 
 // Tema: el asunto de varios días al que pertenece esta historia, con las otras noticias del tema en orden
+// Si la historia está en un tema grande (asunto, lo agrupa la IA), se enseña ese; si no, su tema
 async function enTema(h){
   try {
+    const [fila] = await pedir(`historias?select=asunto_id&id=eq.${h.id}`).catch(() => []);
+    if (fila && fila.asunto_id) {
+      const [a] = await pedir(`asuntos_v?select=id,nombre,historias,activo,ids&id=eq.${fila.asunto_id}`);
+      if (a && a.historias >= 2) {
+        const ids = a.ids.filter(x => x !== h.id).slice(-8);
+        const otras = ids.length ? await pedir(`portada_m?select=id,titulo,creada,total&id=in.(${ids.join(",")})&order=creada.desc&limit=3`) : [];
+        return pintarTema({ ...a, url: urlAsunto(a.id, a.nombre) }, otras);
+      }
+    }
+    if (!h.tema) return hilo(h);
     const [t, otras] = await Promise.all([
       pedir(`temas_v?select=id,nombre,historias,activo&id=eq.${h.tema}`).then(r => r[0]),
       pedir(`portada_m?select=id,titulo,creada,total&tema_id=eq.${h.tema}&order=creada.desc&limit=8`)]);
     if (!t) return hilo(h);
-    const lista = otras.filter(x => x.id !== h.id).slice(0, 3);
+    pintarTema({ ...t, url: urlTema(t.id, t.nombre) }, otras.filter(x => x.id !== h.id));
+  } catch (e) { hilo(h); }
+}
+function pintarTema(t, otras){
+    const lista = otras.slice(0, 3);
     const dia = x => new Date(x.creada).toLocaleDateString("es-ES", { day: "numeric", month: "short" });
     const p = document.getElementById("hilo");
     p.className = "en-tema";
-    p.innerHTML = `<span class="et">Tema${t.activo ? " · en desarrollo" : ""}</span><a class="nombre" href="${urlTema(t.id, t.nombre)}">${esc(t.nombre)}</a>
+    p.innerHTML = `<span class="et">Tema${t.activo ? " · en desarrollo" : ""}</span><a class="nombre" href="${t.url}">${esc(t.nombre)}</a>
       ${lista.length ? `<ul>${lista.map(x => `<li><time>${dia(x)}</time><a href="${urlNoticia(x.id, x.titulo)}">${esc(x.titulo)}</a></li>`).join("")}</ul>` : ""}
-      <a class="todo" href="${urlTema(t.id, t.nombre)}">Ver la cronología completa (${t.historias} noticias) →</a>`;
+      <a class="todo" href="${t.url}">Ver la cronología completa (${t.historias} noticias) →</a>`;
     p.hidden = false;
-  } catch (e) { hilo(h); }
 }
 
 // Historias relacionadas: las que comparten más palabras clave con esta
@@ -936,7 +950,7 @@ async function novedad(h){
     const h = mapear(filas[0]);
     pintar(h);
     document.getElementById("estado").textContent = `Actualizada ${haceCuanto(filas[0].actualizada)}`;
-    relacionadas(h); if (h.tema) enTema(h); else hilo(h);
+    relacionadas(h); enTema(h);
     novedad(h);
   } catch (e) {
     if (!document.body.dataset.id) art.innerHTML = `<p class="vacia">No hemos podido cargar la historia. Comprueba tu conexión y vuelve a intentarlo.</p>`;

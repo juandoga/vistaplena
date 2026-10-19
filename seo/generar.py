@@ -405,21 +405,31 @@ def main():
     try:
         if os.environ.get("VP_DATOS"):  # pruebas sin conexión: un JSON con {"historias": [...], "temas": [...]}
             datos = json.load(open(os.environ["VP_DATOS"]))
-            historias, temas = datos["historias"], datos["temas"]
+            historias, temas, asuntos = datos["historias"], datos["temas"], datos.get("asuntos", [])
         else:
           historias = todo(f"portada_m?select={CAMPOS}&creada=gt.{desde}&order=id")
           temas = todo(f"temas_v?select=id,nombre,inicio,actualizado,historias,activo&actualizado=gt.{desde}&historias=gte.2&order=id")
+          # Temas grandes (asuntos, los agrupa la IA): /tema/<nombre>-a<id>/. Mandan sobre el tema pequeño de cada noticia
+          try:
+              asuntos = todo(f"asuntos_v?select=id,nombre,descripcion,actualizado,historias,ids&actualizado=gt.{desde}&historias=gte.2&order=id")
+          except Exception as e:
+              print("Sin asuntos:", e)
+              asuntos = []
     except Exception as e:
         print("Supabase no responde; se publica la web sin páginas generadas:", e)
         return
     temas = {t["id"]: t for t in temas}
+    asunto_de = {}
+    for a in asuntos:
+        for hid in a.get("ids") or []:
+            asunto_de[hid] = {"id": f"a{a['id']}", "nombre": a["nombre"], "actualizado": a["actualizado"], "descripcion": a.get("descripcion")}
     tpl_h, tpl_t = plantilla("historia.html"), plantilla("tema.html")
     os.makedirs(os.path.join(SALIDA, "og"), exist_ok=True)
     mapa = []
     con_og = 0
     for h in historias:
         url = url_noticia(h["id"], h["titulo"])
-        tema = temas.get(h.get("tema_id"))
+        tema = asunto_de.get(h["id"]) or temas.get(h.get("tema_id"))
         imagen = BASE + "/og.png"
         creada = dt.datetime.fromisoformat(h["creada"].replace("Z", "+00:00"))
         if (ahora - creada).total_seconds() < OG_HORAS * 3600:
@@ -440,8 +450,14 @@ def main():
     for h in historias:
         if h.get("tema_id") in temas:
             por_tema.setdefault(h["tema_id"], []).append(h)
+        if h["id"] in asunto_de:
+            a = asunto_de[h["id"]]
+            temas.setdefault(a["id"], a)
+            por_tema.setdefault(a["id"], []).append(h)
     for tid, hs in por_tema.items():
         t = temas[tid]
+        if len(hs) < 2 and str(tid).startswith("a"):
+            continue
         hs.sort(key=lambda x: x["creada"], reverse=True)
         url = url_tema(tid, t["nombre"])
         desc = f"{len(hs)} noticias sobre {t['nombre']}, en orden, y quién cuenta cada una: izquierda, centro y derecha."

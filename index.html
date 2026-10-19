@@ -588,11 +588,11 @@ const SNAPSHOT = /*SNAPSHOT*/null;
 const NIVELES = [[-2,"Izquierda","var(--izq)"],[-1,"Centroizquierda","var(--izq)"],[0,"Centro","var(--cen)"],[1,"Centroderecha","var(--der)"],[2,"Derecha","var(--der)"]];
 let DATA = SNAPSHOT || { medios: [], historias: [], generado: null };
 // Estado de la carga: «cargando» hasta que llegan los datos, «error» si no llegan
-let CARGA = "cargando", TEMAS_GUARDADOS = [];
+let CARGA = "cargando", TEMAS_GUARDADOS = [], ASUNTOS_GUARDADOS = [];
 // La última portada que vio este lector (menos de 12 horas): se enseña al instante mientras llega la nueva
 try {
   const g = JSON.parse(localStorage.getItem("vp-portada") || "null");
-  if (g && g.guardada > Date.now() - 12 * 3600e3 && g.data && g.data.historias && g.data.historias.length) { DATA = g.data; TEMAS_GUARDADOS = g.temas || []; }
+  if (g && g.guardada > Date.now() - 12 * 3600e3 && g.data && g.data.historias && g.data.historias.length) { DATA = g.data; TEMAS_GUARDADOS = g.temas || []; ASUNTOS_GUARDADOS = g.asuntos || []; }
 } catch (e) {}
 const PARAM = new URLSearchParams(location.search);
 let vista = ["ciegos","izquierda","derecha"].includes(PARAM.get("vista")) ? PARAM.get("vista") : "portada";
@@ -636,7 +636,11 @@ function ultimoBloque(lista){
 // (titulares sueltos que no llegan a formar una historia de 3 medios; los asigna el servidor de temas)
 const COL_LADO = { izq: "var(--izq)", cen: "var(--cen)", der: "var(--der)" };
 function desarrolloBloque(conCabecera){
-  const T = (DATA.desarrollo || []).filter(t => (t.titulares || []).length >= 2).slice(0, 3);
+  const vistosA = new Set(); // dos temas pequeños del mismo tema grande salen una sola vez
+  const T = (DATA.desarrollo || []).filter(t => (t.titulares || []).length >= 2).filter(t => {
+    const g = [...ASUNTOS.values()].find(x => (x.temas || []).includes(t.id)), k = g ? "a" + g.id : "t" + t.id;
+    return !vistosA.has(k) && vistosA.add(k);
+  }).slice(0, 3);
   if (!T.length) return "";
   const mueve = t => {
     const n = t.izq_12h + t.cen_12h + t.der_12h || 1;
@@ -649,10 +653,13 @@ function desarrolloBloque(conCabecera){
     <div class="desarrollo-lista">${T.map(t => {
       const n = t.izq_12h + t.cen_12h + t.der_12h || 1;
       const reparto = { pi: Math.round(100 * t.izq_12h / n), pd: Math.round(100 * t.der_12h / n) }; reparto.pc = 100 - reparto.pi - reparto.pd;
-      return `<article class="des"><h3><a href="${urlTema(t.id, t.nombre)}">${esc(t.nombre)}</a></h3>
+      // Si el tema está dentro de un tema grande (asunto), se enlaza y se nombra el grande
+      const g = [...ASUNTOS.values()].find(x => (x.temas || []).includes(t.id));
+      const destino = g ? urlAsunto(g.id, g.nombre) : urlTema(t.id, t.nombre), nombreT = g ? g.nombre : t.nombre;
+      return `<article class="des"><h3><a href="${destino}">${esc(nombreT)}</a></h3>
         <p class="m">${t.sueltos_12h} titulares nuevos de ${t.medios_12h} medios${mueve(t)}</p>${barra(reparto)}
         <ul>${t.titulares.slice(0, 3).map(a => `<li><span class="md"><i style="background:${COL_LADO[lado(a.o)]}"></i>${esc(a.m)} · ${horaCorta(a.p)}</span><a href="${esc(a.u)}" target="_blank" rel="noopener">${esc(a.t)}</a></li>`).join("")}</ul>
-        <a class="ir" href="${urlTema(t.id, t.nombre)}">Todo el tema →</a></article>`;
+        <a class="ir" href="${destino}">Todo el tema →</a></article>`;
     }).join("")}</div></section>`;
 }
 // Por qué esta historia abre la portada: el mismo criterio con el que se ordena (ver metodología)
@@ -661,6 +668,11 @@ const porque = h => `<p class="porque antetitulo"><b>Lo más contado ahora</b>${
 const cab = (t, p, visible) => `<div class="cab-seccion"><h2>${t}${p && !visible ? info(p, `Qué es «${t}»`) : ""}</h2>${p && visible ? `<p>${p}</p>` : ""}</div>`;
 // Temas: asuntos de varios días que reúnen varias historias (los calcula el servidor cada hora; ver tema.html)
 let TEMAS = new Map(TEMAS_GUARDADOS.map(t => [t.id, t]));
+// Temas grandes (asuntos): los agrupa la IA cada hora y reúnen varios temas y noticias con un mismo origen
+// («Protestas en Francia»: huelgas, disturbios, Macron, prima de riesgo). Mandan sobre los temas pequeños.
+let ASUNTOS = new Map(ASUNTOS_GUARDADOS.map(a => [a.id, a])), ASUNTO_DE = new Map();
+function indexarAsuntos(){ ASUNTO_DE = new Map(); for (const a of ASUNTOS.values()) for (const id of a.ids || []) ASUNTO_DE.set(id, a); }
+indexarAsuntos();
 let seccion = new URLSearchParams(location.search).get("seccion");
 // Última visita: los temas con novedades desde entonces llevan un punto
 let VISITA_PREVIA = null;
@@ -672,6 +684,11 @@ try {
 const temaNuevo = t => VISITA_PREVIA && new Date(t.actualizado) > new Date(VISITA_PREVIA);
 // Enlace al tema de una historia, con cuántas noticias más tiene
 function masTema(h){
+  const a = ASUNTO_DE.get(h.id);
+  if (a) {
+    const masA = a.historias - 1;
+    return `<a class="mas-tema" href="${urlAsunto(a.id, a.nombre)}">Tema: <b>${esc(a.nombre)}</b>${masA > 0 ? ` · ${masA} noticia${masA > 1 ? "s" : ""} más` : ""} →</a>`;
+  }
   const t = h.tema && TEMAS.get(h.tema);
   if (!t) return "";
   const mas = t.historias - 1;
@@ -680,7 +697,10 @@ function masTema(h){
 // En la portada, cada tema sale una sola vez: con su historia más contada (los puntos ciegos se muestran siempre)
 function unaPorTema(H){
   const vistos = new Set();
-  return H.filter(h => { if (!h.tema || h.ciego) return true; if (vistos.has(h.tema)) return false; vistos.add(h.tema); return true; });
+  return H.filter(h => {
+    const a = ASUNTO_DE.get(h.id), k = a ? "a" + a.id : h.tema ? "t" + h.tema : null;
+    if (!k || h.ciego) return true; if (vistos.has(k)) return false; vistos.add(k); return true;
+  });
 }
 function pintarSecciones(H){
   const nav = document.getElementById("secciones");
@@ -689,12 +709,18 @@ function pintarSecciones(H){
 }
 function pintarTemas(){
   const nav = document.getElementById("temas");
-  const T = [...TEMAS.values()].filter(t => t.nuevas_48h > 0 || t.medios_12h >= 3)
-    .sort((a, b) => (b.nuevas_48h + (b.medios_12h || 0) / 3) - (a.nuevas_48h + (a.medios_12h || 0) / 3) || new Date(b.actualizado) - new Date(a.actualizado)).slice(0, 8);
+  // Como mucho 6: primero los temas grandes (asuntos), luego los temas pequeños que no están dentro de ninguno
+  const A = [...ASUNTOS.values()].filter(a => a.historias >= 2 && (a.nuevas_48h > 0 || a.medios_48h >= 3))
+    .sort((a, b) => (b.nuevas_48h + b.medios_48h / 3) - (a.nuevas_48h + a.medios_48h / 3) || new Date(b.actualizado) - new Date(a.actualizado));
+  const dentro = new Set(A.flatMap(a => a.temas || []));
+  const T = [...A.map(a => ({ url: urlAsunto(a.id, a.nombre), nombre: a.nombre, historias: a.historias, actualizado: a.actualizado })),
+    ...[...TEMAS.values()].filter(t => !dentro.has(t.id) && (t.nuevas_48h > 0 || t.medios_12h >= 3))
+      .sort((a, b) => (b.nuevas_48h + (b.medios_12h || 0) / 3) - (a.nuevas_48h + (a.medios_12h || 0) / 3) || new Date(b.actualizado) - new Date(a.actualizado))
+      .map(t => ({ url: urlTema(t.id, t.nombre), nombre: t.nombre, historias: t.historias, actualizado: t.actualizado }))].slice(0, 6);
   nav.hidden = vista !== "portada" || !!seccion;
   // Chip fijo durante la campaña: lleva a la campaña de hoy en la guía
   const fijo = Date.now() < new Date("2026-11-30").getTime() ? `<a class="tema fijo" href="elecciones.html">Elecciones 29N: qué propone cada partido</a>` : "";
-  nav.innerHTML = `<span class="eti">Ir a un tema</span>` + fijo + T.map(t => `<a class="tema${temaNuevo(t) ? " nuevo" : ""}" href="${urlTema(t.id, t.nombre)}"${temaNuevo(t) ? ' title="Novedades desde tu última visita"' : ""}>${esc(t.nombre)}<span class="n">${t.historias}</span></a>`).join("");
+  nav.innerHTML = `<span class="eti">Ir a un tema</span>` + fijo + T.map(t => `<a class="tema${temaNuevo(t) ? " nuevo" : ""}" href="${t.url}"${temaNuevo(t) ? ' title="Novedades desde tu última visita"' : ""}>${esc(t.nombre)}<span class="n">${t.historias}</span></a>`).join("");
 }
 function render(){
   const H = DATA.historias || [];
@@ -810,7 +836,7 @@ render();
 (async function cargarPortada(intento = 1){
   try {
     // Los puntos ciegos se piden aparte: por definición los cuentan pocos medios y no entrarían entre las 40 más contadas
-    const [hist, ciegos, ultimas, med, temas] = await Promise.all([
+    const [hist, ciegos, ultimas, med, temas, asuntos] = await Promise.all([
       // Orden de la portada: medios que han contado la historia en las últimas 12 horas (lo que está pasando ahora)
       pedir(`portada_m?select=${CAMPOS}&order=peso.desc,voces.desc,actualizada.desc&limit=40`),
       pedir(`portada_m?select=${CAMPOS}&punto_ciego=not.is.null&order=voces.desc,actualizada.desc&limit=30`),
@@ -818,7 +844,8 @@ render();
       pedir(`portada_m?select=${CAMPOS}&order=creada.desc&limit=14`),
       pedir("medios?select=nombre,orientacion,ultima_lectura&activo=eq.true&order=orientacion,nombre"),
       // Temas activos (asuntos de varios días); si fallan, la portada funciona igual
-      pedir("temas_v?select=id,nombre,actualizado,historias,nuevas_48h,sueltos_12h,medios_12h,izq_12h,cen_12h,der_12h&activo=eq.true").catch(() => [])
+      pedir("temas_v?select=id,nombre,actualizado,historias,nuevas_48h,sueltos_12h,medios_12h,izq_12h,cen_12h,der_12h&activo=eq.true").catch(() => []),
+      pedir("asuntos_v?select=id,nombre,actualizado,historias,nuevas_48h,medios_48h,ids,temas&activo=eq.true&historias=gte.2").catch(() => [])
     ]);
     // Titulares sueltos de los temas que más se mueven (como mucho 3 temas)
     const enDes = temas.filter(t => t.sueltos_12h >= 3 && t.medios_12h >= 3).sort((a, b) => b.medios_12h - a.medios_12h).slice(0, 3);
@@ -829,6 +856,7 @@ render();
         .map(a => ({ m: a.medios.nombre, o: a.medios.orientacion, t: a.titulo, u: a.url, p: a.publicado }));
     }
     TEMAS = new Map(temas.map(t => [t.id, t]));
+    ASUNTOS = new Map(asuntos.map(a => [a.id, a])); indexarAsuntos();
     const ids = new Set(hist.map(x => x.id));
     const todas = [...hist, ...ciegos.filter(x => !ids.has(x.id))];
     // Hora real de la última lectura de los medios (no la hora a la que se abrió la página)
@@ -836,7 +864,7 @@ render();
     DATA = { generado: ultima, medios: med.map(m => ({ n: m.nombre, o: m.orientacion })), historias: todas.map(mapear), ultimas: ultimas.map(mapear), desarrollo: enDes };
     CARGA = "ok";
     render();
-    try { localStorage.setItem("vp-portada", JSON.stringify({ guardada: Date.now(), data: DATA, temas: [...TEMAS.values()] })); } catch (e) {}
+    try { localStorage.setItem("vp-portada", JSON.stringify({ guardada: Date.now(), data: DATA, temas: [...TEMAS.values()], asuntos: [...ASUNTOS.values()] })); } catch (e) {}
   } catch (e) {
     if (intento < 3) return setTimeout(() => cargarPortada(intento + 1), intento * 2000);
     CARGA = "error"; render();

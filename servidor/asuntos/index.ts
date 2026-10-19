@@ -37,11 +37,18 @@ const cuando = (iso: string) => new Date(iso).toLocaleString("es-ES", { timeZone
 
 // Gemini (versión gratuita: unas 15 consultas por minuto; se dejan 4,2 s entre una y otra)
 let ultimaLlamada = 0;
-async function gemini(modelo: string, sistema: string, texto: string): Promise<any> {
+// Formatos fijos de respuesta: la IA no puede enrollarse ni repetir (evita que tarde un minuto en contestar)
+const ESQUEMA_AGRUPAR = { type: "OBJECT", properties: {
+  asignar: { type: "ARRAY", items: { type: "OBJECT", properties: { noticia: { type: "INTEGER" }, asunto: { type: "STRING" } }, required: ["noticia", "asunto"] } },
+  nuevos: { type: "ARRAY", items: { type: "OBJECT", properties: { nombre: { type: "STRING" }, descripcion: { type: "STRING" }, noticias: { type: "ARRAY", items: { type: "INTEGER" } } }, required: ["nombre", "descripcion", "noticias"] } } },
+  required: ["asignar", "nuevos"] };
+const ESQUEMA_UNIR = { type: "OBJECT", properties: { unir: { type: "ARRAY", items: { type: "OBJECT", properties: {
+  asuntos: { type: "ARRAY", items: { type: "STRING" } }, nombre: { type: "STRING" } }, required: ["asuntos"] } } }, required: ["unir"] };
+async function gemini(modelo: string, sistema: string, texto: string, esquema?: unknown): Promise<any> {
   const espera = ultimaLlamada + 4200 - Date.now();
   if (espera > 0) await new Promise((ok) => setTimeout(ok, espera));
   ultimaLlamada = Date.now();
-  const config: Record<string, unknown> = { temperature: 0, responseMimeType: "application/json", maxOutputTokens: 4000 };
+  const config: Record<string, unknown> = { temperature: 0, responseMimeType: "application/json", maxOutputTokens: 3000, ...(esquema ? { responseSchema: esquema } : {}) };
   if (modelo.startsWith("gemini-2.5")) config.thinkingConfig = { thinkingBudget: 0 };
   else if (modelo.startsWith("gemini-3")) config.thinkingConfig = { thinkingLevel: "minimal" };
   const llamada = (cfg: Record<string, unknown>) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
@@ -69,8 +76,8 @@ Reglas:
 - Una noticia va a un asunto solo si quien siga ese asunto esperaría encontrarla allí. Ante la duda, déjala fuera: es mejor una noticia suelta que una noticia donde no va.
 - Nombre del asunto nuevo: de 2 a 5 palabras, neutro y descriptivo, sin adjetivos ni juicios («Protestas en Francia», no «Caos en Francia»). Descripción: una frase neutra que diga qué une a esas noticias.
 Responde solo con JSON:
-{"asignar":{"<número de noticia>":"<código de asunto>"},"nuevos":[{"nombre":"...","descripcion":"...","noticias":[<números>]}]}
-Las noticias que no van a ningún asunto no se ponen. Si no hay nada que asignar ni crear: {"asignar":{},"nuevos":[]}.`;
+{"asignar":[{"noticia":<número>,"asunto":"<código>"}],"nuevos":[{"nombre":"...","descripcion":"...","noticias":[<números>]}]}
+Las noticias que no van a ningún asunto no se ponen. Si no hay nada que asignar ni crear: {"asignar":[],"nuevos":[]}.`;
 
 const UNIR = `Eres el editor de una web española que reúne noticias. Te doy los asuntos abiertos: cada uno con su código, su nombre, su descripción y sus últimas noticias.
 ¿Hay asuntos que en realidad son el MISMO asunto de fondo (el mismo origen y el mismo lugar), partidos en dos? Por ejemplo, «Protestas en Francia» y «Crisis del Gobierno francés por los disturbios» son el mismo; «Protestas en Francia» y «Protestas en Italia» no.
@@ -92,6 +99,11 @@ Deno.serve(async (req) => {
   const lotes = Math.min(10, Number(url.searchParams.get("lotes") || 2));
   const modelo = (await ajuste("ia_modelo")) || "gemini-3.1-flash-lite";
   const ahora = Date.now();
+  if (url.searchParams.get("eco") === "1") {
+    const t0 = Date.now();
+    try { const r = await gemini(modelo, AGRUPAR, "ASUNTOS ABIERTOS:\n(ninguno)\n\nNOTICIAS:\n1) [19 oct] Disturbios en París\n2) [19 oct] Macron habla tras los disturbios\n3) [19 oct] Gana el Madrid", ESQUEMA_AGRUPAR); return json({ segundos: (Date.now() - t0) / 1000, r }); }
+    catch (e) { return json({ segundos: (Date.now() - t0) / 1000, error: String(e) }); }
+  }
 
   // Datos: noticias de 3 o más medios de la semana, asuntos abiertos y vetos
   const { data: hs, error } = await db.rpc("historias_para_asuntos", { horas: 168 });
@@ -165,12 +177,13 @@ Deno.serve(async (req) => {
       lista.map((h, i) => `${i + 1}) [${cuando(h.creada)} · ${h.medios} medios] ${h.titulo}`).join("\n");
     let res: any;
     const t0 = Date.now();
-    try { res = await gemini(modelo, AGRUPAR, texto); informe.segundos = [...(informe.segundos ?? []), Math.round((Date.now() - t0) / 1000)]; } catch (e) { informe.errores.push(String(e).slice(0, 200)); break; }
+    try { res = await gemini(modelo, AGRUPAR, texto, ESQUEMA_AGRUPAR); informe.segundos = [...(informe.segundos ?? []), Math.round((Date.now() - t0) / 1000)]; } catch (e) { informe.errores.push(String(e).slice(0, 200)); break; }
     informe.preguntadas += lote.length;
     lote.forEach((h) => revisadas.push(h.id));
     const codigo = (c: string) => { const m = String(c).match(/^A(N?)(\d+)$/i); return m ? (m[1] ? -Number(m[2]) : Number(m[2])) : NaN; };
-    for (const [num, c] of Object.entries(res?.asignar ?? {})) {
-      const h = lista[Number(num) - 1], a = codigo(c as string);
+    const pares: [unknown, unknown][] = Array.isArray(res?.asignar) ? res.asignar.map((x: any) => [x?.noticia, x?.asunto]) : Object.entries(res?.asignar ?? {});
+    for (const [num, c] of pares) {
+      const h = lista[Number(num) - 1], a = codigo(String(c));
       if (h && asuntos.has(a) && !asuntoDe(h) && !vetado(h.id, a)) { poner(h, a, "asignar"); informe.asignadas++; }
     }
     for (const n of Array.isArray(res?.nuevos) ? res.nuevos : []) {
@@ -195,7 +208,7 @@ Deno.serve(async (req) => {
     const texto = lista.map((a) => `A${a.id} · ${a.nombre}${a.descripcion ? ` — ${a.descripcion}` : ""}\n` +
       ultimas(a.id, 5).map((h) => `   - [${cuando(h.creada)}] ${h.titulo}`).join("\n")).join("\n");
     let res: any = {};
-    try { res = await gemini(modelo, UNIR, texto); } catch (e) { informe.errores.push(String(e).slice(0, 200)); }
+    try { res = await gemini(modelo, UNIR, texto, ESQUEMA_UNIR); } catch (e) { informe.errores.push(String(e).slice(0, 200)); }
     for (const u of Array.isArray(res?.unir) ? res.unir : []) {
       const ids = (Array.isArray(u?.asuntos) ? u.asuntos : []).map((c: string) => Number(String(c).replace(/^A/i, ""))).filter((id: number) => asuntos.has(id));
       if (ids.length < 2) continue;
