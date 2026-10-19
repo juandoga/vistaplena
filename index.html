@@ -693,7 +693,7 @@ function pintarTemas(){
     .sort((a, b) => (b.nuevas_48h + (b.medios_12h || 0) / 3) - (a.nuevas_48h + (a.medios_12h || 0) / 3) || new Date(b.actualizado) - new Date(a.actualizado)).slice(0, 8);
   nav.hidden = vista !== "portada" || !!seccion;
   // Chip fijo durante la campaña: lleva a la campaña de hoy en la guía
-  const fijo = Date.now() < new Date("2026-11-30").getTime() ? `<a class="tema fijo" href="elecciones.html#campana">Elecciones 29N</a>` : "";
+  const fijo = Date.now() < new Date("2026-11-30").getTime() ? `<a class="tema fijo" href="elecciones.html">Elecciones 29N: qué propone cada partido</a>` : "";
   nav.innerHTML = `<span class="eti">Ir a un tema</span>` + fijo + T.map(t => `<a class="tema${temaNuevo(t) ? " nuevo" : ""}" href="${urlTema(t.id, t.nombre)}"${temaNuevo(t) ? ' title="Novedades desde tu última visita"' : ""}>${esc(t.nombre)}<span class="n">${t.historias}</span></a>`).join("");
 }
 function render(){

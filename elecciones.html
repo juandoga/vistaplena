@@ -550,6 +550,8 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .boton{display:inline-block;background:var(--tinta);color:var(--fondo)!important;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:700;font-size:var(--t-s)}
 .aparte{color:var(--gris);font-size:var(--t-s)}
 
+@media (max-width:620px){.elecc .subtop{display:none}.elecc .metodo-cab{padding-top:16px}.elecc .metodo-cab h1{font-size:1.85rem!important}.elecc .metodo-cab .resumen{font-size:1rem!important;margin-top:8px}.elecc .cuenta{padding:8px 14px!important;margin-top:12px!important}.elecc .cuenta b{font-size:1.3rem!important}.gv-fija{margin-top:12px}}
+
 /* Guía 29N por temas: un tema cada vez, en cajas */
 .gv-fija{position:sticky;top:62px;z-index:4;background:var(--fondo);border-bottom:1px solid var(--linea);padding:10px 0;margin-top:20px}
 .gv-temas{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;max-width:1200px;margin:0 auto;padding:0 20px}
@@ -756,18 +758,13 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <div class="cuenta"><b id="dias">—</b><span>días para votar</span></div>
   </header>
 
-  <div class="aviso" id="estadoProgramas">Los partidos todavía no han presentado sus programas para el 29N. En cuanto cada uno publique el suyo, añadiremos sus propuestas tema a tema, con cita literal y enlace al documento original.</div>
 
-  <section id="campana" class="campana" hidden>
-    <h2>La campaña hoy</h2>
-    <div class="campana-res" id="campanaRes"></div>
-    <div class="campana-lista" id="campanaLista"></div>
-  </section>
 
 </div>
   <div class="gv-fija"><nav class="gv-temas" id="gvTemas" aria-label="Temas"></nav></div>
 <div class="wrap metodo elecc">
   <div id="gvVista" class="gv-vista"></div>
+  <div class="aviso" id="estadoProgramas">Los partidos todavía no han presentado sus programas para el 29N. En cuanto cada uno publique el suyo, añadiremos sus propuestas tema a tema, con cita literal y enlace al documento original.</div>
 
   <section id="partidos">
     <h2>Los partidos</h2>
@@ -942,25 +939,6 @@ function pintar(){
 pintar();
 Promise.all([fetch("programas.json").then(r => r.json()), fetch("guia.json").then(r => r.json()), fetch("posturas.json").then(r => r.json()).catch(() => null)])
   .then(([p, g, q]) => { PROG = p; GUIA = g; POST = q; pintar(); if (location.hash && location.hash !== "#" + TEMA) document.querySelector(location.hash)?.scrollIntoView(); }).catch(() => {});
-// La campaña hoy: noticias electorales de las últimas 48 horas, ordenadas como la portada, y su cobertura sumada
-const ELECTORAL = /(\b(?:re)?elecci|\b29-?n\b|campaña|candidat|debates? electoral|cara a cara|encuesta|sondeo|listas electorales|frente amplio|voto por correo|junta electoral|mitin|programa electoral|interventores)/i;
-// …y que sea de la política española (si no, entran mítines de Trump o el Brexit)
-const ESPANA = /(29-?n|generales|psoe|\bpp\b|\bvox\b|sumar|podemos|frente amplio|\berc\b|junts|bildu|\bpnv\b|\bbng\b|coalici[oó]n canaria|\bupn\b|feij[oó]o|s[aá]nchez|abascal|colau|d[ií]az|rufi[aá]n|montero|puigdemont|ayuso|congreso|moncloa|junta electoral|españ)/i;
-async function campana(){
-  try {
-    const filas = await pedir(`portada_m?select=${CAMPOS},izq,cen,der,peso&actualizada=gte.${new Date(Date.now() - 48 * 3600e3).toISOString()}&order=peso.desc&limit=150`);
-    const L = filas.map(x => ({ ...mapear(x), izq: x.izq, cen: x.cen, der: x.der }))
-      .filter(h => (ELECTORAL.test(h.t) || h.a.filter(a => ELECTORAL.test(a.t)).length >= Math.max(2, h.a.length / 3)) && (ESPANA.test(h.t) || h.a.filter(a => ESPANA.test(a.t)).length >= Math.max(2, h.a.length / 2))).slice(0, 8);
-    if (!L.length) return;
-    const s = L.reduce((o, x) => ({ i: o.i + (x.izq || 0), c: o.c + (x.cen || 0), d: o.d + (x.der || 0) }), { i: 0, c: 0, d: 0 });
-    const tot = s.i + s.c + s.d || 1, pi = Math.round(100 * s.i / tot), pd = Math.round(100 * s.d / tot), acum = { pi, pd, pc: 100 - pi - pd };
-    document.getElementById("campanaRes").innerHTML = `<p class="aparte">Las ${L.length} noticias de campaña más contadas en las últimas 48 horas. Su cobertura sumada:${info("Suma de las voces de todas estas noticias: cuántos medios de cada lado las publican. Una noticia es «de campaña» si su titular habla de las elecciones, las candidaturas, las encuestas o los debates.", "Cómo se calcula")}</p>${barra(acum, true)}${pct(acum)}`;
-    document.getElementById("campanaLista").innerHTML = L.map(h => `<a class="hoy-item" href="${enlace(h)}">${esc(h.t)}${barra(h)}<span class="m">${h.tot} medios${h.port >= 2 ? ` · en ${h.port} portadas` : ""}${h.ciego ? ` · <b>poca cobertura en la ${h.ciego}</b>` : ""}</span></a>`).join("");
-    document.getElementById("campana").hidden = false;
-    if (location.hash === "#campana") document.getElementById("campana").scrollIntoView();
-  } catch (e) {}
-}
-campana();
 (async () => {
   const h = { apikey: SUPA.key, Authorization: "Bearer " + SUPA.key };
   try {
