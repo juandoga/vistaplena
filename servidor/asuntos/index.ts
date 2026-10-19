@@ -85,7 +85,10 @@ Responde solo con JSON:
 Las noticias que no van a ningún asunto no se ponen. Si no hay nada que asignar ni crear: {"asignar":[],"nuevos":[]}.`;
 
 const UNIR = `Eres el editor de una web española que reúne noticias. Te doy los asuntos abiertos: cada uno con su código, su nombre, su descripción y sus últimas noticias.
-¿Hay asuntos que en realidad son el MISMO asunto de fondo (el mismo origen y el mismo lugar), partidos en dos? Por ejemplo, «Protestas en Francia» y «Crisis del Gobierno francés por los disturbios» son el mismo; «Protestas en Francia» y «Protestas en Italia» no.
+¿Hay asuntos que en realidad son el MISMO asunto de fondo (el mismo origen y el mismo lugar), partidos en dos? Ejemplos:
+- «Protestas en Francia» y «Crisis del Gobierno francés por los disturbios»: el mismo (los disturbios son el origen de la crisis).
+- «Moción de censura en Algeciras» y «Dimisión del alcalde de Algeciras»: el mismo (las dos nacen de la acusación al alcalde).
+- «Protestas en Francia» y «Protestas en Italia»: distintos (otro país).
 Ante la duda, no los unas.
 Si al unir el nombre del primero ya no describe todo, propón un nombre nuevo (2 a 5 palabras, neutro).
 Responde solo con JSON: {"unir":[{"asuntos":["A12","A15"],"nombre":"..."}]}. Si no hay que unir nada: {"unir":[]}.`;
