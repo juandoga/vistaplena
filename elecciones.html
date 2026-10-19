@@ -596,6 +596,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .gv-plegable[open] summary{margin-bottom:12px}
 .gv-plegable summary > span:first-child{flex:1}
 .gv-n{font-size:var(--t-xs);font-weight:600;color:var(--gris)}
+.gv-sub{display:block;margin-top:4px;font-size:var(--t-xs);font-weight:400;line-height:1.4;color:var(--gris)}
 @media (max-width:859px){
   .gv-cols{display:flex;flex-direction:column}
   .gv-datos-caja{order:2}
@@ -917,7 +918,12 @@ function pintar(){
   document.getElementById("gvTemas").innerHTML = T.map(t => `<button type="button" data-tema="${t.id}" aria-pressed="${t.id === TEMA}">${esc(t.nombre)}</button>`).join("");
   const t = T.find(x => x.id === TEMA), s = S.find(x => x.id === t.id);
   const hoy = s ? HIST.filter(h => window.seccionesDe(h).includes(s.id)).slice(0, 3) : [];
-  const nVot = VOT ? VOT.filter(v => v.temas.includes(t.id)).length : null;
+  const LV = VOT ? VOT.filter(v => v.temas.includes(t.id)) : null, nVot = LV ? LV.length : null;
+  // Subtítulo de las votaciones: cuántas, sobre qué y de qué fechas, para que se entienda sin abrir
+  const mesAno = d => new Date(d + "T12:00:00").toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+  const subVot = nVot === null ? "Cargando las votaciones del Congreso…"
+    : !nVot ? `Todavía no hay votaciones del Pleno sobre ${esc(t.nombre.toLowerCase())}.`
+    : `${nVot === 1 ? "1 votación" : nVot + " votaciones"} sobre ${esc(t.nombre.toLowerCase())} en el Pleno, de ${mesAno(LV[LV.length - 1].fecha)} a ${mesAno(LV[0].fecha)}. Ábrelo para ver quién votó a favor y quién en contra.`;
   document.getElementById("gvVista").innerHTML = `
     <div class="gv-cab" id="${t.id}"><h2>${esc(t.nombre)}</h2>${s ? `<p class="gv-cis">Le preocupa al<b>${String(s.cis).replace(".", ",")} %</b>de los españoles${info(`${esc(s.cisNota)} · CIS, septiembre de 2026`, "De dónde sale")}</p>` : ""}</div>
     <div class="gv-cols">
@@ -925,9 +931,9 @@ function pintar(){
         <div class="gv-datos">${t.datos.map(d => `<div class="gv-dato"><span class="c">${esc(d.cifra)}</span><span class="q">${esc(d.que)}</span><span class="f">${esc(d.fuente)} · ${esc(d.periodo)} · <a href="${esc(d.url)}" target="_blank" rel="noopener">fuente</a></span></div>`).join("")}</div></section>
       <div class="gv-princ">
         <section class="gv-caja"><span class="eti">Qué propone cada partido${POST ? info(esc(POST.criterio), "De dónde sale") : ""}</span>${propuestas(t.id, P)}</section>
-        <details class="gv-caja gv-plegable" id="${t.id}-votos"${location.hash === "#" + t.id + "-votos" ? " open" : ""}><summary><span>Qué ha votado cada partido</span><span class="gv-n">${nVot === null ? "" : nVot === 1 ? "1 votación" : nVot + " votaciones"}</span></summary>
+        <details class="gv-caja gv-plegable" id="${t.id}-votos"${location.hash === "#" + t.id + "-votos" ? " open" : ""}><summary><span>Qué ha votado cada partido en el Congreso<small class="gv-sub">${subVot}</small></span></summary>
           <p class="aparte">${"Leyes, decretos y proposiciones de ley votados en el Pleno del Congreso en esta legislatura, de lo más reciente a lo más antiguo. Mostramos lo que votó la mayoría de los diputados de cada partido."}</p>${votaciones(t.id)}</details>
-        ${hoy.length ? `<details class="gv-caja gv-plegable"><summary><span>Noticias de estos días</span><span class="gv-n">${hoy.length}</span></summary><div class="hoy">${hoy.map(h => `<a class="hoy-item" href="${enlace(h)}">${esc(h.t)}${barra(h)}<span class="m">${h.tot} medios</span></a>`).join("")}<a class="mas-sec" href="./?seccion=${s.id}">Más noticias de ${esc(t.nombre.toLowerCase())} →</a></div></details>` : ""}
+        ${hoy.length ? `<details class="gv-caja gv-plegable"><summary><span>Noticias de ${esc(t.nombre.toLowerCase())} de estos días<small class="gv-sub">Lo más contado ahora mismo sobre ${esc(t.nombre.toLowerCase())}, con el reparto de medios de cada noticia.</small></span></summary><div class="hoy">${hoy.map(h => `<a class="hoy-item" href="${enlace(h)}">${esc(h.t)}${barra(h)}<span class="m">${h.tot} medios</span></a>`).join("")}<a class="mas-sec" href="./?seccion=${s.id}">Más noticias de ${esc(t.nombre.toLowerCase())} →</a></div></details>` : ""}
       </div>
     </div>`;
   document.getElementById("filasPartidos").innerHTML = P.map(p => `<tr><td><strong>${esc(p.nombre)}</strong></td>
