@@ -290,6 +290,27 @@ Deno.serve(async (req) => {
     }
   }
 
+  // 3b. Revisar los asuntos abiertos (una vez al día, o ?revisar=1): saca lo que no nace del mismo origen y no vuelve
+  const sacar: { h: number; a: number }[] = [], deshacer: number[] = [];
+  if ((diario || url.searchParams.get("revisar") === "1") && asuntos.size) {
+    const P = [...asuntos.values()].map((a) => ({ a, hs: ultimas(a.id, 15) })).filter((x) => x.hs.length);
+    const numeradas: any[] = [];
+    const textoR = P.map(({ a, hs }) => `A${a.id} · ${a.nombre}${a.descripcion ? ` — ${a.descripcion}` : ""}\n   Propuestas:\n` +
+      hs.map((h) => { numeradas.push({ h, a: a.id }); return `   ${numeradas.length}) [${cuando(h.creada)}] ${h.titulo}`; }).join("\n")).join("\n\n");
+    let rev: any = null;
+    try { rev = await gemini(modelo, REVISAR, textoR, ESQUEMA_REVISAR); } catch (e) { informe.errores.push("revisar abiertos: " + String(e).slice(0, 160)); }
+    for (const r of Array.isArray(rev?.asuntos) ? rev.asuntos : []) {
+      const id = Number(String(r?.codigo ?? "").replace(/^A/i, ""));
+      if (!asuntos.has(id)) continue;
+      const total = numeradas.filter((x) => x.a === id).length;
+      const fuera = (Array.isArray(r?.fuera) ? r.fuera : []).map(Number).map((n: number) => numeradas[n - 1]).filter((x: any) => x && x.a === id);
+      // Si sobra todo o casi todo, el asunto entero se deshace
+      if (r?.deshacer || (total >= 2 && total - fuera.length < 2)) { deshacer.push(id); continue; }
+      for (const x of fuera) { sacar.push({ h: x.h.id, a: id }); cambios.delete(x.h.id); }
+    }
+    informe.revision = { sacadas: sacar.map((x) => `${asuntos.get(x.a)?.nombre}: ${porId.get(x.h)?.titulo}`), deshechos: deshacer.map((id) => asuntos.get(id)?.nombre) };
+  }
+
   // 4. Guardar
   const porAsunto = new Map<string, number[]>();
   for (const [h, { a, accion }] of cambios) { const k = `${a}|${accion}`; const l = porAsunto.get(k) ?? []; l.push(h); porAsunto.set(k, l); }
@@ -303,6 +324,17 @@ Deno.serve(async (req) => {
     const [a, accion] = k.split("|");
     await db.from("historias").update({ asunto_id: Number(a) }).in("id", ids);
     await db.from("asuntos_registro").insert({ asunto_id: Number(a), accion, historias: ids });
+  }
+  for (const { h, a } of sacar) {
+    await db.from("historias").update({ asunto_id: null }).eq("id", h).eq("asunto_id", a);
+    await db.from("asuntos_vetos").upsert({ historia_id: h, asunto_id: a }, { onConflict: "historia_id,asunto_id", ignoreDuplicates: true });
+  }
+  if (sacar.length) await db.from("asuntos_registro").insert({ accion: "sacar", historias: sacar.map((x) => x.h), detalle: "revisión de la IA" });
+  for (const a of deshacer) {
+    const { data: q } = await db.from("historias").update({ asunto_id: null }).eq("asunto_id", a).select("id");
+    if (q?.length) await db.from("asuntos_vetos").upsert(q.map((x: any) => ({ historia_id: x.id, asunto_id: a })), { onConflict: "historia_id,asunto_id", ignoreDuplicates: true });
+    await db.from("asuntos").update({ activo: false, oculto: true }).eq("id", a);
+    await db.from("asuntos_registro").insert({ asunto_id: a, accion: "deshacer", historias: (q ?? []).map((x: any) => x.id), detalle: "revisión de la IA" });
   }
   for (let i = 0; i < revisadas.length; i += 200) await db.from("historias").update({ asunto_revisado: new Date().toISOString() }).in("id", revisadas.slice(i, i + 200));
   await db.rpc("recontar_asuntos");
