@@ -36,7 +36,7 @@ const ajuste = async (n: string) => (await db.from("ajustes").select("valor").eq
 const cuando = (iso: string) => new Date(iso).toLocaleString("es-ES", { timeZone: "Europe/Madrid", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
 // Gemini (versión gratuita: unas 15 consultas por minuto; se dejan 4,2 s entre una y otra)
-let ultimaLlamada = 0;
+let ultimaLlamada = 0, reserva = "gemini-2.5-flash-lite";
 // Formatos fijos de respuesta: la IA no puede enrollarse ni repetir (evita que tarde un minuto en contestar)
 const ESQUEMA_AGRUPAR = { type: "OBJECT", properties: {
   asignar: { type: "ARRAY", items: { type: "OBJECT", properties: { noticia: { type: "INTEGER" }, asunto: { type: "STRING" } }, required: ["noticia", "asunto"] } },
@@ -52,11 +52,16 @@ async function gemini(modelo: string, sistema: string, texto: string, esquema?: 
   if (modelo.startsWith("gemini-2.5")) config.thinkingConfig = { thinkingBudget: 0 };
   else if (modelo.startsWith("gemini-3")) config.thinkingConfig = { thinkingLevel: "minimal" };
   const llamada = (cfg: Record<string, unknown>) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
-    method: "POST", headers: { "x-goog-api-key": CLAVE, "Content-Type": "application/json" }, signal: AbortSignal.timeout(100000),
+    method: "POST", headers: { "x-goog-api-key": CLAVE, "Content-Type": "application/json" }, signal: AbortSignal.timeout(50000),
     body: JSON.stringify({ systemInstruction: { parts: [{ text: sistema }] }, contents: [{ role: "user", parts: [{ text: texto }] }], generationConfig: cfg }),
   });
-  let r = await llamada(config);
-  if (r.status === 503) { await new Promise((ok) => setTimeout(ok, 3000)); r = await llamada(config); }
+  // Si Google está saturado (503) o tarda demasiado, se reintenta y después se prueba con el modelo de reserva
+  let r: Response;
+  try {
+    r = await llamada(config);
+    if (r.status === 503) { await new Promise((ok) => setTimeout(ok, 3000)); r = await llamada(config); }
+  } catch (e) { if (!reserva || modelo === reserva) throw e; return gemini(reserva, sistema, texto, esquema); }
+  if (r.status === 503 && reserva && modelo !== reserva) return gemini(reserva, sistema, texto, esquema);
   if (r.status === 400 && config.thinkingConfig) { const { thinkingConfig: _, ...sin } = config; r = await llamada(sin); }
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(`Gemini respondió ${r.status}: ${JSON.stringify(d).slice(0, 300)}`);
@@ -98,6 +103,7 @@ Deno.serve(async (req) => {
   const horas = Math.min(168, Number(url.searchParams.get("horas") || 72));
   const lotes = Math.min(10, Number(url.searchParams.get("lotes") || 2));
   const modelo = (await ajuste("ia_modelo")) || "gemini-3.1-flash-lite";
+  reserva = (await ajuste("ia_modelo_reserva")) || reserva;
   const ahora = Date.now();
   if (url.searchParams.get("eco") === "1") {
     const t0 = Date.now();
