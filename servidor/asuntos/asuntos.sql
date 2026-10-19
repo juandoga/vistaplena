@@ -119,3 +119,7 @@ begin
   insert into asuntos_registro (asunto_id, accion, historias, detalle) values (a, 'sacar', array[h], 'desde la gestión');
 end $$;
 revoke all on function sacar_de_asunto(bigint) from public, anon, authenticated;
+
+-- Tareas programadas (creadas el 19/10/2026)
+-- select cron.schedule('asuntos', '18 * * * *', $$select llamar_interna('asuntos')$$);                     -- cada hora, después de temas (min 16)
+-- select cron.schedule('asuntos-diario', '48 5 * * *', $$select llamar_interna('asuntos?modo=diario')$$);   -- 7:48 en Madrid: une asuntos repetidos

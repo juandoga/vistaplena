@@ -7,7 +7,8 @@
 // 1. Propagar (sin IA): si una noticia continúa a otra (historias.anterior, que ya comprobó la IA de verificar),
 //    va al asunto de aquella.
 // 2. Preguntar antes de crear: las noticias nuevas (3 o más medios, 72 h) se le enseñan a la IA junto a los asuntos
-//    abiertos: «¿pertenece a alguno?». Si dos o más noticias comparten un asunto de fondo que aún no existe, lo crea.
+//    abiertos: «¿pertenece a alguno?». Si dos o más noticias comparten un asunto de fondo que aún no existe, lo propone.
+//    Después, una segunda pregunta revisa esas propuestas y saca lo que no nace del mismo origen. Solo se guarda lo que pasa.
 // 3. Unir (una vez al día, ?modo=diario): la IA mira los asuntos abiertos y junta los que son el mismo.
 //
 // Para no crear «megatemas»: nada de categorías («Política», «Elecciones 29N»), mismo lugar y mismo origen, ante la duda
@@ -88,6 +89,16 @@ const UNIR = `Eres el editor de una web española que reúne noticias. Te doy lo
 Ante la duda, no los unas.
 Si al unir el nombre del primero ya no describe todo, propón un nombre nuevo (2 a 5 palabras, neutro).
 Responde solo con JSON: {"unir":[{"asuntos":["A12","A15"],"nombre":"..."}]}. Si no hay que unir nada: {"unir":[]}.`;
+
+const REVISAR = `Eres el editor jefe de una web española que reúne noticias. Un compañero ha agrupado noticias en ASUNTOS: historias de fondo que reúnen hechos distintos nacidos del MISMO origen concreto (unas protestas, una crisis, un caso judicial, una catástrofe, una negociación concreta).
+Para cada asunto te doy su código, su nombre, a veces las noticias que ya estaban dentro, y las noticias propuestas (numeradas).
+Revisa cada propuesta con rigor:
+- Fuera: la noticia que cuenta otro hecho con otro origen, aunque comparta persona, partido, ciudad o país (por ejemplo, la pareja de una ministra y las listas electorales de su partido no son el mismo asunto; el alcalde de una ciudad acusado de agresión sexual no tiene nada que ver con el caso de otra persona).
+- Deshacer: si el asunto propuesto no tiene un origen concreto común (solo comparte partido, persona o tema general), márcalo entero.
+Ante la duda, fuera.
+Responde solo con JSON: {"asuntos":[{"codigo":"A12","fuera":[3,7],"deshacer":false}]}. Incluye todos los códigos.`;
+const ESQUEMA_REVISAR = { type: "OBJECT", properties: { asuntos: { type: "ARRAY", items: { type: "OBJECT", properties: {
+  codigo: { type: "STRING" }, fuera: { type: "ARRAY", items: { type: "INTEGER" } }, deshacer: { type: "BOOLEAN" } }, required: ["codigo", "fuera", "deshacer"] } } }, required: ["asuntos"] };
 
 // Nombres que son categorías, no asuntos: se rechazan aunque la IA los proponga
 const CATEGORIA = /^(la |el )?(pol[ií]tica|econom[ií]a|sucesos|internacional|sociedad|actualidad|tribunales|justicia|cultura|deportes?|inmigraci[oó]n|vivienda|sanidad|educaci[oó]n|gobierno|elecciones|campa[ñn]a)\b|29[ -]?n\b|elecciones generales|campa[ñn]a electoral/i;
@@ -190,25 +201,64 @@ Deno.serve(async (req) => {
     const t0 = Date.now();
     try { res = await gemini(modelo, AGRUPAR, texto, ESQUEMA_AGRUPAR); informe.segundos = [...(informe.segundos ?? []), Math.round((Date.now() - t0) / 1000)]; } catch (e) { informe.errores.push(String(e).slice(0, 200)); break; }
     informe.preguntadas += lote.length;
-    lote.forEach((h) => revisadas.push(h.id));
     const codigo = (c: string) => { const m = String(c).match(/^A(N?)(\d+)$/i); return m ? (m[1] ? -Number(m[2]) : Number(m[2])) : NaN; };
+    // a) Propuestas de la IA, sin guardar todavía: noticias para asuntos abiertos y asuntos nuevos
+    type Propuesta = { clave: string; id?: number; nombre: string; descripcion: string; hs: any[]; nuevo: boolean };
+    const props = new Map<string, Propuesta>();
+    const usadas = new Set<number>();
     const pares: [unknown, unknown][] = Array.isArray(res?.asignar) ? res.asignar.map((x: any) => [x?.noticia, x?.asunto]) : Object.entries(res?.asignar ?? {});
     for (const [num, c] of pares) {
       const h = lista[Number(num) - 1], a = codigo(String(c));
-      if (h && asuntos.has(a) && !asuntoDe(h) && !vetado(h.id, a)) { poner(h, a, "asignar"); informe.asignadas++; }
+      if (!h || !asuntos.has(a) || asuntoDe(h) || vetado(h.id, a) || usadas.has(h.id)) continue;
+      const k = `A${a}`, x = asuntos.get(a)!;
+      const pr = props.get(k) ?? { clave: k, id: a, nombre: x.nombre, descripcion: x.descripcion, hs: [], nuevo: false };
+      pr.hs.push(h); usadas.add(h.id); props.set(k, pr);
     }
+    let nN = 0;
     for (const n of Array.isArray(res?.nuevos) ? res.nuevos : []) {
       const nombre = String(n?.nombre ?? "").trim().replace(/[.«»"]/g, ""), descripcion = String(n?.descripcion ?? "").trim().slice(0, 240);
-      const miembros = [...new Set((Array.isArray(n?.noticias) ? n.noticias : []).map((x: any) => lista[Number(x) - 1]).filter((h: any) => h && !asuntoDe(h)))] as any[];
+      const miembros = [...new Set((Array.isArray(n?.noticias) ? n.noticias : []).map((x: any) => lista[Number(x) - 1]).filter((h: any) => h && !asuntoDe(h) && !usadas.has(h.id)))] as any[];
       if (miembros.length < 2 || !nombre || nombre.length > 60 || nombre.split(/\s+/).length > 7 || CATEGORIA.test(nombre)) {
         informe.descartados.push({ nombre, noticias: miembros.length, motivo: miembros.length < 2 ? "menos de 2 noticias" : "nombre de categoría o demasiado largo" });
         continue;
       }
       // ¿Ya hay un asunto abierto con ese mismo nombre? Entonces van a él
       const igual = [...asuntos.values()].find((a) => a.nombre.toLowerCase() === nombre.toLowerCase());
-      const a = igual ? igual.id : await nuevoAsunto(nombre, descripcion);
-      for (const h of miembros) poner(h, a, igual ? "asignar" : "crear");
-      if (!igual) informe.creados.push({ id: a, nombre, descripcion, noticias: miembros.map((h) => h.titulo) });
+      const k = igual ? `A${igual.id}` : `N${++nN}`;
+      const pr = props.get(k) ?? { clave: k, id: igual?.id, nombre: igual?.nombre ?? nombre, descripcion: igual?.descripcion ?? descripcion, hs: [], nuevo: !igual };
+      for (const h of miembros) { pr.hs.push(h); usadas.add(h.id); }
+      props.set(k, pr);
+    }
+    // b) Segunda mirada: la IA revisa sus propias propuestas y saca lo que no nace del mismo origen
+    if (props.size) {
+      const P = [...props.values()];
+      const textoR = P.map((pr) => {
+        const ref = pr.nuevo ? [] : ultimas(pr.id!, 3);
+        return `${pr.clave} · ${pr.nombre}${pr.descripcion ? ` — ${pr.descripcion}` : ""}` +
+          (ref.length ? `\n   Ya están dentro:\n${ref.map((h) => `   - ${h.titulo}`).join("\n")}` : "") +
+          `\n   Propuestas:\n${pr.hs.map((h) => `   ${lista.indexOf(h) + 1}) [${cuando(h.creada)}] ${h.titulo}`).join("\n")}`;
+      }).join("\n\n");
+      let rev: any = null;
+      try { rev = await gemini(modelo, REVISAR, textoR, ESQUEMA_REVISAR); } catch (e) { informe.errores.push("revisar: " + String(e).slice(0, 160)); }
+      if (!rev) continue; // sin revisión no se guarda nada de este lote (se volverá a mirar)
+      for (const r of Array.isArray(rev?.asuntos) ? rev.asuntos : []) {
+        const pr = props.get(String(r?.codigo ?? "").toUpperCase());
+        if (!pr) continue;
+        if (r?.deshacer) { informe.descartados.push({ nombre: pr.nombre, noticias: pr.hs.length, motivo: "la revisión dice que no tienen un origen común" }); pr.hs = []; continue; }
+        const fuera = new Set((Array.isArray(r?.fuera) ? r.fuera : []).map(Number));
+        const quitadas = pr.hs.filter((h) => fuera.has(lista.indexOf(h) + 1));
+        if (quitadas.length) informe.descartados.push({ nombre: pr.nombre, noticias: quitadas.length, motivo: "fuera en la revisión: " + quitadas.map((h) => h.titulo.slice(0, 60)).join(" | ") });
+        pr.hs = pr.hs.filter((h) => !fuera.has(lista.indexOf(h) + 1));
+      }
+    }
+    lote.forEach((h) => revisadas.push(h.id));
+    // c) Guardar lo que pasa la revisión (un asunto nuevo necesita al menos 2 noticias)
+    for (const pr of props.values()) {
+      if (!pr.hs.length || (pr.nuevo && pr.hs.length < 2)) continue;
+      const a = pr.nuevo ? await nuevoAsunto(pr.nombre, pr.descripcion) : pr.id!;
+      for (const h of pr.hs) poner(h, a, pr.nuevo ? "crear" : "asignar");
+      if (pr.nuevo) informe.creados.push({ id: a, nombre: pr.nombre, descripcion: pr.descripcion, noticias: pr.hs.map((h) => h.titulo) });
+      else informe.asignadas += pr.hs.length;
     }
     informe.propagadas += propagar();
   }
