@@ -73,8 +73,20 @@ async function preguntar(modelo: string, referencia: string[], candidatos: strin
 
 const REPETIDAS = `Eres el editor de un agregador de noticias. Te doy pares de noticias (cada una con su título). Para cada par decide:
 - "misma": las dos cuentan exactamente el mismo hecho concreto (el mismo anuncio, suceso, decisión o dato), aunque con distintas palabras o cifras actualizadas.
-- "distinta": cuentan hechos distintos, aunque estén relacionados (un hecho y su reacción posterior, una fase siguiente, otro día, otra declaración, otro lugar).
-Responde solo con JSON, una clave por número de par: {"1":"misma","2":"distinta"}.`;
+- "relacionada": una es la reacción a la otra, su consecuencia o su fase siguiente (otra persona u otro partido que opina sobre el hecho, una detención días después de un crimen, el resultado de unas primarias que se anunciaron antes).
+- "distinta": cuentan hechos distintos, aunque compartan tema (otro día, otra declaración, otro lugar).
+Ejemplos:
+- «Dimite Montse Mínguez por los negocios de su pareja» / «El PP dice que la dimisión de Mínguez le da la razón» → "relacionada" (la segunda es una reacción).
+- «Dos detenidos en Irún investigados por terrorismo» / «Detenidos dos radicales en Irún con información sobre armas» → "misma".
+- «Investigan como homicidio la muerte de una anciana en Burgos» / «Dos menores detenidos por la muerte de la anciana de Burgos» → "relacionada" (la detención es una fase siguiente).
+Si dudas entre "misma" y "relacionada", responde "relacionada".
+Responde solo con JSON, una clave por número de par: {"1":"misma","2":"relacionada","3":"distinta"}.`;
+
+// Cuando parece que el raro es el título de la noticia, se le pregunta a la IA cuál de todos los titulares sobra
+const SOBRA = `Eres el verificador de un agregador de noticias. Te doy los titulares de una noticia, marcados con letras y con su fecha entre corchetes. Deberían contar un mismo hecho concreto, pero quizá uno cuenta otra cosa.
+Responde con JSON: {"sobra":"A","titulo":"C"}
+- "sobra": la letra del ÚNICO titular que cuenta un hecho distinto del que cuentan los demás; "ninguno" si todos cuentan el mismo hecho; "varios" si hay más de uno que sobra o no está claro.
+- "titulo": la letra del titular que mejor resume el hecho que cuentan los demás (nunca el que sobra).`;
 
 const TIPO = `Eres el editor de una web que compara cómo cuentan los medios los asuntos públicos (política, economía, trabajo, vivienda, sanidad, educación, justicia, sociedad, internacional, ciencia, medio ambiente, catástrofes y sucesos graves con relevancia pública).
 Para cada noticia (por su título) decide:
@@ -110,7 +122,7 @@ Deno.serve(async (req) => {
   for (const [hid, pend] of porH) {
     if (quedan <= 0 || Date.now() - inicio > 60e3) break; // lo que no dé tiempo, en la siguiente hora
     const { data: h } = await db.from("historias").select("titulo").eq("id", hid).maybeSingle();
-    const { data: arts } = await db.from("articulos").select("id, titulo, medio_id, ia_revisado, publicado").eq("historia_id", hid).order("publicado").limit(300);
+    const { data: arts } = await db.from("articulos").select("id, titulo, resumen, medio_id, ia_revisado, publicado").eq("historia_id", hid).order("publicado").limit(300);
     if (!h || !arts?.length) continue;
     const marcarVistos = async (ids: number[]) => { if (ids.length) await db.from("articulos").update({ ia_revisado: true }).in("id", ids); };
     // Noticias de 1 o 2 titulares: no se pregunta
@@ -146,10 +158,33 @@ Deno.serve(async (req) => {
     }
     // ¿Es el título el que no encaja? Si la IA dice que la mitad o más de los demás titulares de la noticia (y al menos 2)
     // cuentan otra cosa, lo más probable es que el raro sea el titular que da el título («Burnham recibe a Zelenski» en una
-    // noticia sobre la cumbre de la UE). Entonces no se saca nada: queda en la gestión para decidirlo a mano.
+    // noticia sobre la cumbre de la UE). Entonces esos titulares no se sacan: se hace la segunda pregunta (abajo) y, si
+    // tampoco queda claro, quedan en la gestión para decidirlo a mano.
     const nFuera = resultados.filter((x) => x.r === "otro" || x.r === "opinion").length;
     const tituloRaro = nFuera >= 2 && nFuera * 2 >= arts.length - 1;
+    // Segunda pregunta: con todos los titulares delante, ¿cuál sobra? Si la IA señala justo el titular del título, ese
+    // titular sale y la noticia toma como título el que la IA elige. Si no lo tiene claro, queda en la gestión.
+    let resuelto = false;
+    if (tituloRaro && auto && quedan > 0 && delTitulo.titulo === h.titulo && arts.length <= 26) {
+      quedan--;
+      try {
+        const sal = await gemini(modelo, SOBRA, arts.map((a, i) => `${String.fromCharCode(65 + i)}) ${conFecha(a)}`).join("\n"));
+        const iS = String(sal.sobra ?? "").charCodeAt(0) - 65, iT = String(sal.titulo ?? "").charCodeAt(0) - 65;
+        const nuevo = arts[iT];
+        if (String(sal.sobra ?? "").length === 1 && arts[iS]?.id === delTitulo.id && nuevo && iT !== iS) {
+          await db.from("articulos").update({ historia_id: null, ia_revisado: true }).eq("id", delTitulo.id).eq("historia_id", hid);
+          await db.from("historia_vetos").upsert({ articulo_id: delTitulo.id, historia_id: hid }, { onConflict: "articulo_id,historia_id", ignoreDuplicates: true });
+          await db.from("historias_dudosas").upsert({ articulo_id: delTitulo.id, historia_id: hid, motivo: "era el título de la noticia y contaba otro hecho", ia: "otro", ia_modelo: modelo, ia_fecha: new Date().toISOString(), decision: "sacar" }, { onConflict: "articulo_id" });
+          await db.from("historias").update({ titulo: nuevo.titulo, resumen: nuevo.resumen ?? null }).eq("id", hid);
+          sacados++; resuelto = true;
+          informe.push({ historia: hid, titulo_cambiado: `${h.titulo}  →  ${nuevo.titulo}` });
+        }
+      } catch (e) { informe.push({ historia: hid, error: String(e).slice(0, 200) }); }
+    }
     for (const { a, r } of resultados) {
+      // Si ya se quitó el título raro, las respuestas se dieron frente a un título equivocado: no cuentan.
+      // Los titulares quedan como vistos y, si estaban en duda, se vuelven a preguntar en la siguiente pasada.
+      if (resuelto) { if (!dudosoSet.has(a.id)) await marcarVistos([a.id]); continue; }
       const otro = r === "otro" || r === "opinion";
       const ia = r === "opinion" ? "otro" : r;
       const motivo = tituloRaro ? "quizá el que no encaja es el título de la noticia" : r === "opinion" ? "la IA cree que es opinión, no información del hecho" : "la IA cree que cuenta otro hecho";
@@ -163,12 +198,12 @@ Deno.serve(async (req) => {
         sacados++;
       } else if (r !== "error") await marcarVistos([a.id]);
     }
-    if (nFuera) informe.push({ historia: hid, titulo: h.titulo, ...(tituloRaro ? { aviso: "quizá falla el título: no se ha sacado nada" } : {}), respuestas: resultados.filter((x) => x.r === "otro" || x.r === "opinion").map((x) => `${x.r} · ${x.a.titulo}`) });
+    if (nFuera && !resuelto) informe.push({ historia: hid, titulo: h.titulo, ...(tituloRaro ? { aviso: "quizá falla el título: no se ha sacado nada" } : {}), respuestas: resultados.filter((x) => x.r === "otro" || x.r === "opinion").map((x) => `${x.r} · ${x.a.titulo}`) });
   }
   // Fase 2: noticias repetidas (dos noticias del mismo hecho que no se juntaron). Se juntan en la que tiene más medios.
   // No se juntan noticias creadas con más de 24 horas de diferencia: serían otra fase u otro día (y así no se cuela
   // un titular de hace dos días en una noticia nueva).
-  let juntadas = 0;
+  let juntadas = 0, enlazadas = 0;
   const destino = new Map<number, number>(); // noticia que ya se juntó en otra → la otra
   const final = (id: number): number => destino.has(id) ? final(destino.get(id)!) : id;
   const { data: todos } = await db.rpc("pares_parecidos");
@@ -184,14 +219,23 @@ Deno.serve(async (req) => {
     let res: Record<string, string>;
     try { res = await gemini(modelo, REPETIDAS, lote.map((p: any, j: number) => `${j + 1}) A: ${p.ta}\n   B: ${p.tb}`).join("\n")); } catch (e) { informe.push({ error: String(e).slice(0, 200) }); break; }
     for (let j = 0; j < lote.length; j++) {
-      const p = lote[j], misma = res[String(j + 1)] === "misma";
-      await db.from("historias_pares").upsert({ a: p.a, b: p.b, resultado: misma ? "misma" : "distinta" }, { onConflict: "a,b" });
+      const p = lote[j], r = res[String(j + 1)], misma = r === "misma";
+      const resultado = misma ? "misma" : r === "relacionada" ? "relacionada" : "distinta";
+      await db.from("historias_pares").upsert({ a: p.a, b: p.b, resultado }, { onConflict: "a,b" });
+      // Relacionadas (una es la reacción o la fase siguiente de la otra): no se juntan, se enlazan. La más reciente
+      // apunta a la anterior (historias.anterior), la noticia muestra el aviso «Novedad» y recoger ya no las junta.
+      if (resultado === "relacionada" && auto) {
+        const [vieja, nueva] = (creada.get(p.a) ?? 0) <= (creada.get(p.b) ?? 0) ? [p.a, p.b] : [p.b, p.a];
+        const { data: n } = await db.from("historias").update({ anterior: vieja }).eq("id", nueva).is("anterior", null).select("id");
+        if (n?.length) { enlazadas++; informe.push({ enlazadas: `${p.ta}  ⟶  ${p.tb}` }); }
+      }
       if (misma && auto) {
         const [q0, s0] = p.na >= p.nb ? [p.a, p.b] : [p.b, p.a];
         const queda = final(q0), sale = final(s0);
         if (queda === sale) continue;
         destino.set(sale, queda);
         // Los titulares vetados en «queda» no pasan (el disparador respetar_vetos los deja sueltos)
+        // Cada titular movido queda apuntado en historias_movimientos (disparador apuntar_movimiento): deshacer_fusion(sale, queda) lo revierte
         await db.from("articulos").update({ historia_id: queda }).eq("historia_id", sale);
         await db.from("historias").update({ actualizada: new Date().toISOString() }).eq("id", queda);
         juntadas++;
@@ -215,6 +259,6 @@ Deno.serve(async (req) => {
       if (t === "ligera") { ligeras++; informe.push({ ligera: lote[j].titulo }); }
     }
   }
-  if (juntadas || ligeras || sacados) await db.rpc("refrescar_portada");
-  return json({ ok: true, modelo, automatico: auto, consultas: informe.length, revisados, sacados, juntadas, ligeras, detalle: informe.filter((x) => !x.respuestas || x.respuestas.length).slice(0, 60) });
+  if (juntadas || ligeras || sacados || enlazadas) await db.rpc("refrescar_portada");
+  return json({ ok: true, modelo, automatico: auto, consultas: informe.length, revisados, sacados, juntadas, enlazadas, ligeras, detalle: informe.filter((x) => !x.respuestas || x.respuestas.length).slice(0, 60) });
 });
