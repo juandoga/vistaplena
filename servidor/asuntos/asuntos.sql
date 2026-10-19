@@ -123,3 +123,19 @@ revoke all on function sacar_de_asunto(bigint) from public, anon, authenticated;
 -- Tareas programadas (creadas el 19/10/2026)
 -- select cron.schedule('asuntos', '18 * * * *', $$select llamar_interna('asuntos')$$);                     -- cada hora, después de temas (min 16)
 -- select cron.schedule('asuntos-diario', '48 5 * * *', $$select llamar_interna('asuntos?modo=diario')$$);   -- 7:48 en Madrid: une asuntos repetidos
+
+-- 19/10 (2): un tema pequeño cuenta como «dentro» de un asunto solo si al menos la mitad de sus noticias están en él
+-- (si no, un tema mal hecho con una sola noticia del asunto se escondía en la portada o se enlazaba al asunto)
+create or replace view asuntos_v with (security_invoker = on) as
+select a.id, coalesce(a.nombre_manual, a.nombre) as nombre, a.descripcion, a.creado, a.actualizado, a.activo, a.medios_48h,
+  count(h.id)::int as historias,
+  count(h.id) filter (where h.creada > now() - interval '48 hours')::int as nuevas_48h,
+  coalesce(array_agg(h.id order by h.creada) filter (where h.id is not null), '{}') as ids,
+  coalesce((select array_agg(x.tema_id) from (
+      select h2.tema_id, count(*) c from historias h2 where h2.asunto_id = a.id and h2.tema_id is not null group by 1) x
+    join temas t on t.id = x.tema_id where x.c * 2 >= greatest(t.historias, 1)), '{}') as temas
+from asuntos a
+left join historias h on h.asunto_id = a.id and h.actualizada > now() - interval '14 days'
+where not a.oculto
+group by a.id;
+grant select on asuntos_v to anon, authenticated;
