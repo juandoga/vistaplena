@@ -623,6 +623,11 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
       <p class="aparte">La revisión automática (cada hora) cree que estos titulares cuentan otro hecho distinto al de su historia. Una IA da también su opinión, en prueba: tus decisiones sirven para medir cuánto acierta. Si es así, pulsa «Sacar» y no volverá a entrar en ella. Si está bien donde está, pulsa «Está bien».</p>
       <div id="listaDudosas"></div>
     </section>
+    <section id="fusionesG">
+      <h2>Noticias juntadas <span class="n" id="nFus"></span></h2>
+      <p class="aparte">Noticias que el sistema ha juntado en los últimos dos días porque cree que cuentan el mismo hecho. Si dos no son el mismo hecho (por ejemplo, un nombramiento y la reacción de un partido), pulsa «Separar»: cada titular vuelve a su noticia y no se volverán a juntar.</p>
+      <div id="listaFus"></div>
+    </section>
     <section id="avisos">
       <h2>Avisos de los lectores <span class="n" id="nAvisos"></span></h2>
       <div id="listaAvisos"></div>
@@ -737,6 +742,24 @@ document.getElementById("pedir").addEventListener("click", async e => {
   setTimeout(() => { e.target.disabled = false; }, 120000);
 });
 
+async function pintarFus(){
+  const F = await llamar("fusiones").catch(() => []);
+  document.getElementById("nFus").textContent = F.length ? `${F.length}` : "";
+  document.getElementById("listaFus").innerHTML = F.length ? F.map(f => `<article class="dud-h" id="fus${f.de}-${f.a}">
+    <p class="m">${fecha(f.creado)} · ${f.n} titular${f.n === 1 ? "" : "es"}</p>
+    <p><b>${esc(f.titulo_de || "Noticia " + f.de)}</b></p>
+    <p class="m">se juntó con</p>
+    <p><a href="historia.html?id=${f.a}" target="_blank" rel="noopener">${esc(f.titulo_a || "Noticia " + f.a)}</a></p>
+    <button class="boton secundario" type="button" data-sep="${f.de}-${f.a}">Separar</button> <span class="m" role="status"></span></article>`).join("")
+    : `<p class="aparte">No hay noticias juntadas en los últimos dos días.</p>`;
+}
+document.getElementById("listaFus").addEventListener("click", async e => {
+  const b = e.target.closest("[data-sep]"); if (!b) return;
+  const [de, a] = b.dataset.sep.split("-").map(Number), st = b.nextElementSibling;
+  b.disabled = true; st.textContent = "Separando…";
+  try { const r = await llamar(null, { accion: "separar", de, a }); st.textContent = `Separadas (${r.n} titulares vuelven a su noticia).`; setTimeout(pintarFus, 1500); }
+  catch (err) { st.textContent = err.detalle || "No se ha podido separar."; b.disabled = false; }
+});
 async function pintarCorr(){
   const C = await llamar("correcciones").catch(() => []);
   document.getElementById("listaCorr").innerHTML = C.map(c => `<li>${fecha(c.fecha)} · <b>${esc(c.tipo)}</b>${c.titulo ? ` · ${esc(c.titulo)}` : ""}: ${esc(c.que)} <button class="boton secundario" type="button" data-corr="${c.id}">Quitar</button></li>`).join("");
@@ -757,7 +780,7 @@ document.getElementById("listaCorr").addEventListener("click", async e => {
 async function cargar(){
   try {
     const [avisos, temas, dudosas] = await Promise.all([llamar("avisos"), llamar("temas"), llamar("dudosas").catch(() => [])]);
-    pintarCorr();
+    pintarCorr(); pintarFus();
     // Titulares dudosos, agrupados por historia
     const porH = new Map();
     for (const d of dudosas) { const l = porH.get(d.historia_id) || []; l.push(d); porH.set(d.historia_id, l); }

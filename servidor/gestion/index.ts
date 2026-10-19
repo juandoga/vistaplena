@@ -148,6 +148,20 @@ Deno.serve(async (req) => {
       return json((ds ?? []).filter((d) => A.get(d.articulo_id)?.historia_id === d.historia_id && Hm.has(d.historia_id))
         .map((d) => ({ ...d, titulo: A.get(d.articulo_id).titulo, url: A.get(d.articulo_id).url, medio: A.get(d.articulo_id).medios?.nombre, historia: Hm.get(d.historia_id) })));
     }
+    if (req.method === "GET" && q === "fusiones") {
+      // Noticias juntadas en los últimos 2 días (por recoger, verificar o a mano), para poder separarlas
+      const { data: mov } = await db.from("historias_movimientos").select("de, a, titulo_de, creado").gt("creado", new Date(Date.now() - 2 * 864e5).toISOString()).order("creado", { ascending: false }).limit(1000);
+      const grupos = new Map<string, any>();
+      for (const m of mov ?? []) { const k = `${m.de}-${m.a}`; const g = grupos.get(k) ?? { de: m.de, a: m.a, titulo_de: m.titulo_de, creado: m.creado, n: 0 }; g.n++; grupos.set(k, g); }
+      const L = [...grupos.values()];
+      const ids = [...new Set(L.map((g) => g.a))];
+      const { data: hs } = ids.length ? await db.from("historias").select("id, titulo").in("id", ids) : { data: [] as any[] };
+      const T = new Map((hs ?? []).map((h: any) => [h.id, h.titulo]));
+      const { data: sep } = await db.from("historias_pares").select("a, b").eq("resultado", "distinta");
+      const S = new Set((sep ?? []).map((p: any) => `${p.a}-${p.b}`));
+      // Las ya separadas (marcadas como distintas) no se muestran
+      return json(L.filter((g) => !S.has(`${Math.min(g.de, g.a)}-${Math.max(g.de, g.a)}`)).map((g) => ({ ...g, titulo_a: T.get(g.a) ?? null })));
+    }
     if (req.method === "GET" && q === "correcciones") {
       const { data } = await db.from("correcciones").select("*").eq("publica", true).order("fecha", { ascending: false }).limit(50);
       return json(data ?? []);
@@ -192,6 +206,14 @@ Deno.serve(async (req) => {
         }
         await db.from("correcciones").insert({ tipo, historia_id: hid, titulo, que });
         return json({ ok: true });
+      }
+      if (b.accion === "separar") {
+        const de = Number(b.de), a = Number(b.a);
+        const { data: n, error } = await db.rpc("deshacer_fusion", { p_de: de, p_a: a });
+        if (error) return json({ error: error.message }, 400);
+        const { data: h } = await db.from("historias").select("titulo").eq("id", de).maybeSingle();
+        await db.from("correcciones").insert({ tipo: "Noticias separadas", historia_id: de, titulo: h?.titulo ?? null, que: `Se habían juntado dos noticias distintas; las hemos vuelto a separar (${n} titulares).` });
+        return json({ ok: true, n });
       }
       if (b.accion === "borrar_correccion") {
         await db.from("correcciones").update({ publica: false }).eq("id", b.id);
