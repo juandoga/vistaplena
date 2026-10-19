@@ -8,7 +8,7 @@
 //    si una noticia continúa a otra (historias.anterior), va al asunto de aquella. Así el asunto sigue a la noticia
 //    aunque cambie de palabras.
 // 2. Preguntar antes de crear: las noticias nuevas (3 o más medios, 72 h) se le enseñan a la IA junto a los asuntos
-//    abiertos: «¿pertenece a alguno?». Si tres o más noticias comparten un asunto de fondo que aún no existe, lo crea.
+//    abiertos: «¿pertenece a alguno?». Si dos o más noticias comparten un asunto de fondo que aún no existe, lo crea.
 // 3. Unir (una vez al día, ?modo=diario): la IA mira los asuntos abiertos y junta los que son el mismo.
 //
 // Para no crear «megatemas»: nada de categorías («Política», «Elecciones 29N»), mismo lugar y mismo origen, ante la duda
@@ -22,7 +22,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 const CLAVE = Deno.env.get("GEMINI_API_KEY") ?? "";
-const H = 3600e3, LOTE = 30;
+const H = 3600e3, LOTE = 40;
 
 async function esInterna(req: Request): Promise<boolean> {
   const v = req.headers.get("x-interna") ?? "";
@@ -41,11 +41,11 @@ async function gemini(modelo: string, sistema: string, texto: string): Promise<a
   const espera = ultimaLlamada + 4200 - Date.now();
   if (espera > 0) await new Promise((ok) => setTimeout(ok, espera));
   ultimaLlamada = Date.now();
-  const config: Record<string, unknown> = { temperature: 0, responseMimeType: "application/json", maxOutputTokens: 2500 };
+  const config: Record<string, unknown> = { temperature: 0, responseMimeType: "application/json", maxOutputTokens: 4000 };
   if (modelo.startsWith("gemini-2.5")) config.thinkingConfig = { thinkingBudget: 0 };
   else if (modelo.startsWith("gemini-3")) config.thinkingConfig = { thinkingLevel: "minimal" };
   const llamada = (cfg: Record<string, unknown>) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
-    method: "POST", headers: { "x-goog-api-key": CLAVE, "Content-Type": "application/json" }, signal: AbortSignal.timeout(45000),
+    method: "POST", headers: { "x-goog-api-key": CLAVE, "Content-Type": "application/json" }, signal: AbortSignal.timeout(80000),
     body: JSON.stringify({ systemInstruction: { parts: [{ text: sistema }] }, contents: [{ role: "user", parts: [{ text: texto }] }], generationConfig: cfg }),
   });
   let r = await llamada(config);
@@ -61,7 +61,8 @@ async function gemini(modelo: string, sistema: string, texto: string): Promise<a
 const AGRUPAR = `Eres el editor de una web española que reúne noticias de muchos medios. Un ASUNTO es una historia de fondo que dura varios días y reúne hechos distintos que nacen del mismo origen. Ejemplo: «Protestas en Francia» reúne las huelgas, los disturbios, las detenciones, el discurso de Macron, la petición de dimisión del ministro del Interior, la subida de la prima de riesgo francesa y las reacciones de otros países a esas protestas.
 Te doy los asuntos abiertos (con su código, como A12, y sus últimas noticias) y una lista de noticias numeradas, con su fecha.
 1. Para cada noticia, decide si pertenece a uno de los asuntos abiertos.
-2. Si 3 o más noticias de la lista comparten un asunto de fondo que todavía no está abierto, crea un asunto nuevo con ellas.
+2. Si 2 o más noticias de la lista comparten un asunto de fondo que todavía no está abierto, crea un asunto nuevo con ellas.
+3. Mete en cada asunto (abierto o nuevo) TODAS las noticias de la lista que pertenecen a él, no solo unas pocas.
 Reglas:
 - Un asunto tiene un origen concreto que se explica en una frase (unas protestas, una crisis, un caso judicial, una catástrofe, una negociación, un juicio). Nunca es una categoría ni un área: «Política española», «Economía», «Sucesos», «Tribunales», «Elecciones 29N», «Campaña electoral», «Gobierno de Sánchez» o «Inmigración» no son asuntos.
 - Mismo lugar y mismo origen: unas protestas en Italia no son las de Francia aunque se parezcan; una huelga en España no es la de Francia; un crimen no es otro crimen.
@@ -147,15 +148,14 @@ Deno.serve(async (req) => {
   const ultimas = (a: number, n: number) => H_.filter((h) => asuntoDe(h) === a).slice(-n);
   const revisadas: number[] = [];
   const valeComoCandidata = (h: any) => !asuntoDe(h) && !sinAsunto.has(h.id) && h.ia_tipo !== "ligera" && !SORTEO.test(h.titulo);
-  const nuevas = H_.filter((h) => valeComoCandidata(h) && !h.asunto_revisado && ahora - +new Date(h.creada) < horas * H)
-    .sort((a, b) => b.medios - a.medios);
+  const nuevas = H_.filter((h) => valeComoCandidata(h) && !h.asunto_revisado && ahora - +new Date(h.creada) < horas * H);
   for (let l = 0; l < lotes && l * LOTE < nuevas.length; l++) {
     const lote = nuevas.slice(l * LOTE, (l + 1) * LOTE).filter((h) => !asuntoDe(h));
     if (!lote.length) continue;
-    // Contexto: noticias recientes sin asunto ya vistas (4 o más medios), para poder crear un asunto con ellas y las nuevas
+    // Contexto: otras noticias recientes sin asunto (4 o más medios), para poder crear un asunto con ellas y las nuevas
     const enLote = new Set(lote.map((h) => h.id));
-    const contexto = H_.filter((h) => valeComoCandidata(h) && !enLote.has(h.id) && (h.asunto_revisado || revisadas.includes(h.id)) && h.medios >= 4 &&
-      ahora - +new Date(h.actualizada) < 72 * H).sort((a, b) => b.medios - a.medios).slice(0, 30);
+    const contexto = H_.filter((h) => valeComoCandidata(h) && !enLote.has(h.id) && h.medios >= 4 &&
+      ahora - +new Date(h.actualizada) < 72 * H).sort((a, b) => b.medios - a.medios).slice(0, 40);
     const lista = [...lote, ...contexto];
     const textoAsuntos = [...asuntos.values()].map((a) => {
       const u = ultimas(a.id, 4);
@@ -175,8 +175,8 @@ Deno.serve(async (req) => {
     for (const n of Array.isArray(res?.nuevos) ? res.nuevos : []) {
       const nombre = String(n?.nombre ?? "").trim().replace(/[.«»"]/g, ""), descripcion = String(n?.descripcion ?? "").trim().slice(0, 240);
       const miembros = [...new Set((Array.isArray(n?.noticias) ? n.noticias : []).map((x: any) => lista[Number(x) - 1]).filter((h: any) => h && !asuntoDe(h)))] as any[];
-      if (miembros.length < 3 || !nombre || nombre.length > 60 || nombre.split(/\s+/).length > 7 || CATEGORIA.test(nombre)) {
-        informe.descartados.push({ nombre, noticias: miembros.length, motivo: miembros.length < 3 ? "menos de 3 noticias" : "nombre de categoría o demasiado largo" });
+      if (miembros.length < 2 || !nombre || nombre.length > 60 || nombre.split(/\s+/).length > 7 || CATEGORIA.test(nombre)) {
+        informe.descartados.push({ nombre, noticias: miembros.length, motivo: miembros.length < 2 ? "menos de 2 noticias" : "nombre de categoría o demasiado largo" });
         continue;
       }
       // ¿Ya hay un asunto abierto con ese mismo nombre? Entonces van a él
