@@ -709,7 +709,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
 <script src="temas.js?v=5df45ce8"></script>
-<script src="comun.js?v=19ae567c"></script>
+<script src="comun.js?v=834549c6"></script>
 <script>
 const id = Number(new URLSearchParams(location.search).get("id") || document.body.dataset.id);
 const art = document.getElementById("art");
@@ -825,7 +825,7 @@ function pintar(h){
         <h2 id="cob-t">Quién la cuenta${info(`${lectura(h).replace(/<\/?strong>/g, "")} La publican ${h.tot} medios: ${n("izq")} de izquierda o centroizquierda, ${n("cen")} de centro y ${n("der")} de derecha o centroderecha.${h.voces && h.voces < h.tot ? ` Los medios de un mismo grupo y del mismo lado cuentan como una sola voz, por eso el porcentaje se calcula sobre ${h.voces} voces.` : ""} Cada lado se compara con lo que suele publicar. La barra no dice si la noticia es verdad ni a quién beneficia: solo quién la está contando. <a href='metodologia.html#que'>Cómo se calcula</a>`, "Cómo leer la barra")}</h2>
         ${barra(h, true)}
         <div id="pctHist">${pct(h)}</div>
-        ${h.ciego ? `<p class="resumen">${lectura(h)}</p>` : ""}
+        ${h.ciego ? `<p class="resumen">${lectura(h)}<span id="ctxCiego"></span></p>` : ""}
       </section>
     </header>
     <div class="hist-cuerpo">
@@ -951,6 +951,9 @@ async function novedad(h){
     pintar(h);
     document.getElementById("estado").textContent = `Actualizada ${haceCuanto(filas[0].actualizada)}`;
     relacionadas(h); enTema(h);
+    if (h.ciego) pedir(`ciegos_contexto?select=id,asunto_id,asunto,medios_lado&id=eq.${h.id}`).then(([c]) => {
+      const t = contextoCiego(c, h), el = document.getElementById("ctxCiego"); if (t && el) el.innerHTML = " " + t;
+    }).catch(() => {});
     novedad(h);
   } catch (e) {
     if (!document.body.dataset.id) art.innerHTML = `<p class="vacia">No hemos podido cargar la historia. Comprueba tu conexión y vuelve a intentarlo.</p>`;

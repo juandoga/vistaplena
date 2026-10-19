@@ -45,6 +45,12 @@ function lectura(h){
   if (d <= -20) return `La cuentan <strong>más los medios de derechas</strong>.`;
   return `<strong>Cobertura repartida</strong> entre izquierda, centro y derecha.`;
 }
+// Punto ciego con contexto: el lado que no cuenta esta noticia sí ha contado otras del mismo tema grande.
+// Entonces lo que falta es este hecho concreto, no el tema entero (ver la vista ciegos_contexto)
+function contextoCiego(c, h){
+  if (!c || !h.ciego || c.medios_lado < 3) return "";
+  return `Los medios de ${h.ciego === "izquierda" ? "izquierdas" : "derechas"} sí han contado otras noticias del tema <a href="${urlAsunto(c.asunto_id, c.asunto)}">${esc(c.asunto)}</a> (${c.medios_lado} medios). Lo que apenas cuentan es este hecho concreto.`;
+}
 function barra(h, grande){
   const seg = (cls, v, et) => v ? `<div class="${cls}" style="flex-grow:${v}" title="${et}: ${v} %">${grande && v >= 12 ? v + " %" : ""}</div>` : "";
   return `<div class="barra${grande ? " grande" : ""}" role="img" aria-label="Izquierda ${h.pi} %, centro ${h.pc} %, derecha ${h.pd} %">${seg("b-izq",h.pi,"Izquierda")}${seg("b-cen",h.pc,"Centro")}${seg("b-der",h.pd,"Derecha")}</div>`;

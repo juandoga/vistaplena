@@ -139,3 +139,15 @@ left join historias h on h.asunto_id = a.id and h.actualizada > now() - interval
 where not a.oculto
 group by a.id;
 grant select on asuntos_v to anon, authenticated;
+
+-- 19/10 (3): punto ciego con contexto. Si el lado que no cuenta la noticia sí ha contado otras del mismo asunto, se dice
+create or replace view ciegos_contexto with (security_invoker = on) as
+select p.id, h.asunto_id, coalesce(a.nombre_manual, a.nombre) as asunto, p.punto_ciego,
+  (select count(distinct ar.medio_id) from historias h2 join articulos ar on ar.historia_id = h2.id join medios m on m.id = ar.medio_id
+    where h2.asunto_id = h.asunto_id and h2.id <> p.id
+      and case when p.punto_ciego = 'izquierda' then m.orientacion < 0 else m.orientacion > 0 end)::int as medios_lado
+from portada_v2 p
+join historias h on h.id = p.id
+join asuntos a on a.id = h.asunto_id and not a.oculto
+where p.punto_ciego is not null;
+grant select on ciegos_contexto to anon, authenticated;
