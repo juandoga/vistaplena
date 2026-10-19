@@ -550,6 +550,60 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .boton{display:inline-block;background:var(--tinta);color:var(--fondo)!important;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:700;font-size:var(--t-s)}
 .aparte{color:var(--gris);font-size:var(--t-s)}
 
+/* Guía 29N por temas: un tema cada vez, en cajas */
+.gv-fija{position:sticky;top:62px;z-index:4;background:var(--fondo);border-bottom:1px solid var(--linea);padding:10px 0;margin-top:20px}
+.gv-temas{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;max-width:1200px;margin:0 auto;padding:0 20px}
+.gv-temas::-webkit-scrollbar{display:none}
+.gv-temas button{flex:none;border:1px solid var(--linea);background:var(--fondo);color:var(--tinta);border-radius:999px;padding:8px 14px;font-size:var(--t-s);font-weight:600}
+.gv-temas button[aria-pressed="true"]{background:var(--tinta);color:var(--fondo);border-color:var(--tinta)}
+.gv-cab{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:24px 0 14px;scroll-margin-top:140px}
+.gv-cab h2{margin:0;font-weight:900;font-size:1.9rem;letter-spacing:-.025em;line-height:1.05;color:var(--tinta)}
+.gv-cis{margin:0;font-size:var(--t-xs);color:var(--gris);text-align:right;line-height:1.3}
+.gv-cis b{display:block;font-size:1.15rem;color:var(--tinta);font-variant-numeric:tabular-nums}
+.metodo .gv-caja,.gv-caja{border:1px solid var(--linea);border-radius:14px;padding:16px;border-top:1px solid var(--linea);margin:0 0 14px;background:var(--fondo);min-width:0;scroll-margin-top:140px}
+.gv-caja > .eti{display:flex;align-items:center;gap:6px;margin-bottom:12px}
+.gv-datos{display:grid;gap:10px}
+.gv-dato{background:var(--panel);border-radius:10px;padding:12px}
+.gv-dato .c{display:block;font-weight:900;font-size:1.45rem;color:var(--tinta);font-variant-numeric:tabular-nums}
+.gv-dato .q{display:block;font-size:var(--t-s);line-height:1.4;color:var(--texto)}
+.gv-dato .f{display:block;font-size:var(--t-xs);color:var(--gris);margin-top:6px}
+.gv-ptabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px 12px;padding:0 16px}
+.gv-ptabs::-webkit-scrollbar{display:none}
+.gv-ptabs button{flex:none;border:0;background:var(--panel);color:var(--tinta);border-radius:10px;padding:10px 14px;font-weight:700;font-size:var(--t-s);display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:92px;text-align:left}
+.gv-ptabs button small{font-weight:500;font-size:var(--t-xs);color:var(--gris)}
+.gv-ptabs button[aria-selected="true"]{background:var(--tinta);color:var(--fondo)}
+.gv-ptabs button[aria-selected="true"] small{color:inherit;opacity:.75}
+.gv-resumen{display:grid;gap:8px}
+.gv-fila{display:grid;grid-template-columns:96px minmax(0,1fr);grid-template-areas:"p t" "p s";column-gap:12px;row-gap:6px;align-items:center;padding:12px;border-radius:10px;background:var(--panel);border:0;text-align:left;color:var(--texto);font-size:var(--t-s);width:100%}
+.gv-fila b{grid-area:p;color:var(--tinta);font-size:var(--t-m)}
+.gv-fila .t{grid-area:t;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.4}
+.gv-fila .pp-como{grid-area:s;justify-self:start;margin:0}
+.gv-fila:hover{outline:1px solid var(--linea)}
+.gv-ayuda,.gv-donde{font-size:var(--t-s);color:var(--gris);margin:10px 0 0}
+.gv-donde{margin:0 0 12px}.gv-donde b{color:var(--tinta)}
+.gv-prop{border-left:4px solid var(--linea);padding:2px 0 2px 14px;margin:0 0 18px}
+.gv-prop.si{border-color:#1f7a46}.gv-prop.parcial{border-color:#b07d00}.gv-prop.no{border-color:#9aa0a8}
+.gv-prop > p:first-child{margin:0 0 8px;color:var(--tinta);font-size:var(--t-m);line-height:1.5}
+.gv-nota{margin:8px 0 0;font-size:var(--t-s);color:var(--texto)}
+.gv-fuente{margin:6px 0 0;font-size:var(--t-xs);color:var(--gris)}
+.gv-fuente a{color:var(--gris)}
+.gv-plegable summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;font-weight:700;color:var(--tinta)}
+.gv-plegable summary::-webkit-details-marker{display:none}
+.gv-plegable summary::after{content:"";flex:none;width:8px;height:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg)}
+.gv-plegable[open] summary::after{transform:rotate(-135deg)}
+.gv-plegable[open] summary{margin-bottom:12px}
+.gv-plegable summary > span:first-child{flex:1}
+.gv-n{font-size:var(--t-xs);font-weight:600;color:var(--gris)}
+@media (max-width:859px){
+  .gv-cols{display:flex;flex-direction:column}
+  .gv-datos-caja{order:2}
+  .gv-datos{gap:0}
+  .gv-dato{background:none;border-radius:0;padding:10px 0;border-top:1px solid var(--linea);display:grid;grid-template-columns:92px minmax(0,1fr);column-gap:12px}
+  .gv-dato:first-child{border-top:0;padding-top:0}
+  .gv-dato .c{font-size:1.15rem;grid-row:span 3}
+}
+@media (min-width:860px){.gv-cols{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:start}.gv-datos-caja{position:sticky;top:150px}}
+
 .elecc .cuenta{display:inline-flex;align-items:baseline;gap:10px;margin-top:22px;background:var(--tinta);color:var(--fondo);border-radius:999px;padding:10px 20px}
 .elecc .cuenta b{font-size:1.6rem;font-weight:900;font-variant-numeric:tabular-nums}
 .elecc .cuenta span{font-size:var(--t-s)}
@@ -698,7 +752,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   <header class="metodo-cab">
     <span class="eti">Elecciones generales · 29 de noviembre de 2026</span>
     <h1>Qué propone y qué ha votado cada partido</h1>
-    <p class="resumen">Tema a tema: los datos oficiales del problema, las visiones que hay sobre él, lo que propone cada partido con la frase exacta de su programa y lo que ha votado en el Congreso. Sin opiniones.</p>
+    <p class="resumen">Elige un tema y compara lo que propone cada partido, si explica cómo lo haría y lo que ha votado en el Congreso. Sin opiniones.</p>
     <div class="cuenta"><b id="dias">—</b><span>días para votar</span></div>
   </header>
 
@@ -710,9 +764,10 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <div class="campana-lista" id="campanaLista"></div>
   </section>
 
-  <nav class="indice" aria-label="Temas" id="indiceTemas"></nav>
-
-  <div id="temasElec"></div>
+</div>
+  <div class="gv-fija"><nav class="gv-temas" id="gvTemas" aria-label="Temas"></nav></div>
+<div class="wrap metodo elecc">
+  <div id="gvVista" class="gv-vista"></div>
 
   <section id="partidos">
     <h2>Los partidos</h2>
@@ -815,29 +870,43 @@ function votaciones(id){
     (L.length > 4 ? `<details class="vot-mas"><summary>${L.length === 5 ? "Ver 1 votación más" : `Ver las otras ${L.length - 4} votaciones`}</summary><div class="vc-lista" style="margin-top:12px">${L.slice(4).map(fichaVot).join("")}</div></details>` : "");
 }
 
-// Qué propone cada partido mientras no hay programas: lo dicho en público, con fuente, fecha y si explica cómo
-const COMO = { si: ["si", "Explica cómo y cómo lo pagaría"], parcial: ["parcial", "Explica cómo, pero no cómo lo pagaría"], no: ["no", "No explica cómo"] };
-function posturas(tema){
-  if (!POST) return `<p class="g-vacio">Ningún partido ha publicado todavía su programa para el 29N.</p>`;
-  const T = POST.temas[tema] || {};
-  const tarjeta = p => {
-    const L = T[p.id] || [];
-    return `<div class="pp-card"><h4>${esc(p.nombre)}</h4>${L.length ? `<ul>${L.map(x => {
-      const f = POST.fuentes[x.f] || {}, c = COMO[x.como] || COMO.no;
-      const fecha = f.fecha ? new Date(f.fecha + "T12:00:00").toLocaleDateString("es-ES", { month: "short", year: "numeric" }) : "";
-      return `<li><p>${esc(x.t)}</p><span class="pp-como ${c[0]}">${c[1]}</span>${x.nota ? `<span class="pp-nota">${esc(x.nota)}</span>` : ""}
-        <span class="pp-f">${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.nombre)}</a>` : `<a href="#${tema}-votos">${esc(f.nombre)}</a>`}${fecha ? ` · ${fecha}` : ""}</span></li>`;
-    }).join("")}</ul>` : `<p class="pend">No hemos encontrado propuestas públicas de este partido sobre este tema.</p>`}${p.nota ? `<p class="pp-pnota">${esc(p.nota)}</p>` : ""}</div>`;
-  };
-  return `<p class="aparte pp-intro">Los partidos aún no han publicado sus programas para el 29N. Esto es lo que han propuesto en público, con su fuente y su fecha.</p>
-    <div class="pp-grid">${POST.partidos.map(tarjeta).join("")}</div>
-    <p class="aparte">Los partidos que solo se presentan en una comunidad (ERC, Junts, PNV, EH Bildu, BNG, Coalición Canaria) aparecerán cuando publiquen sus programas. Sus votos en el Congreso están más abajo.</p>`;
+// Qué propone cada partido: «Todos» compara de un vistazo; al tocar un partido se ven sus propuestas completas
+const COMO = { si: ["si", "Explica cómo"], parcial: ["parcial", "Explica a medias"], no: ["no", "No explica cómo"] };
+const COMO_LARGO = { si: "Explica cómo lo haría y cómo lo pagaría", parcial: "Explica cómo lo haría, pero no cómo lo pagaría", no: "No explica cómo lo haría" };
+function propuestas(tema, PR){
+  if (!POST) return `<p class="g-vacio">Cargando…</p>`;
+  const T = POST.temas[tema] || {}, prog = id => (PR || []).find(p => p.programa && p.nombre === (POST.partidos.find(x => x.id === id) || {}).nombre);
+  const tabs = [{ id: "todos", nombre: "Todos", sub: "Comparar" }, ...POST.partidos.map(p => { const n = (T[p.id] || []).length; return { id: p.id, nombre: p.nombre, sub: n ? `${n} propuesta${n > 1 ? "s" : ""}` : "Sin propuestas" }; })];
+  if (!tabs.some(x => x.id === PARTIDO)) PARTIDO = "todos";
+  const pest = `<div class="gv-ptabs" role="tablist" aria-label="Partidos">${tabs.map(x => `<button type="button" role="tab" data-partido="${x.id}" aria-selected="${x.id === PARTIDO}">${esc(x.nombre)}<small>${x.sub}</small></button>`).join("")}</div>`;
+  if (PARTIDO === "todos") {
+    return pest + `<div class="gv-resumen">${POST.partidos.map(p => { const L = T[p.id] || [], x = L[0];
+      return `<button type="button" class="gv-fila" data-partido="${p.id}"><b>${esc(p.nombre)}</b><span class="t">${x ? esc(x.t) : "<i>Sin propuestas públicas sobre este tema</i>"}</span>${x ? `<span class="pp-como ${COMO[x.como][0]}">${COMO[x.como][1]}</span>` : ""}</button>`; }).join("")}</div>
+      <p class="gv-ayuda">Toca un partido para ver todas sus propuestas, por qué llevan ese sello y de dónde salen.</p>`;
+  }
+  const p = POST.partidos.find(x => x.id === PARTIDO), L = T[PARTIDO] || [], pg = prog(PARTIDO), nombreT = (GUIA.temas.find(x => x.id === tema) || {}).nombre || "";
+  const citas = pg ? ((pg.propuestas || {})[tema] || []) : [];
+  return pest + `<p class="gv-donde">Estás viendo: <b>${esc(p.nombre)}</b> · <b>${esc(nombreT)}</b></p>`
+    + (citas.length ? `<div class="gv-prop si"><span class="eti">Programa electoral</span>${citas.map(x => `<p>«${esc(x.texto)}» <a href="${esc(x.url || pg.programa.url)}" target="_blank" rel="noopener">pág. ${esc(x.pagina)}</a></p>`).join("")}</div>` : "")
+    + (L.length ? L.map(x => { const f = POST.fuentes[x.f] || {}, c = COMO[x.como] || COMO.no;
+        const fecha = f.fecha ? new Date(f.fecha + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }) : "";
+        return `<div class="gv-prop ${c[0]}"><p>${esc(x.t)}</p><span class="pp-como ${c[0]}" title="${COMO_LARGO[x.como] || ""}">${c[1]}</span>${x.nota ? `<p class="gv-nota">${esc(x.nota)}</p>` : ""}
+          <p class="gv-fuente">Fuente: ${f.url ? `<a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.nombre)}</a>` : `<a href="#${tema}-votos">${esc(f.nombre)}</a>`}${fecha ? ` · ${fecha}` : ""}</p></div>`; }).join("")
+      : citas.length ? "" : `<p class="g-vacio">No hemos encontrado propuestas públicas de ${esc(p.nombre)} sobre este tema.</p>`)
+    + (p.nota ? `<p class="gv-fuente">${esc(p.nota)}</p>` : "");
 }
-
+// Tema y partido elegidos (el tema se guarda en la dirección: elecciones.html#vivienda)
+let TEMA = (location.hash.slice(1).split("-")[0]) || "vivienda", PARTIDO = "todos";
+document.addEventListener("click", e => {
+  const bt = e.target.closest("[data-tema]");
+  if (bt) { TEMA = bt.dataset.tema; PARTIDO = "todos"; history.replaceState(null, "", "#" + TEMA); pintar();
+    bt.scrollIntoView({ inline: "center", block: "nearest" }); const v = document.getElementById("gvVista"); if (v.getBoundingClientRect().top < 0) v.scrollIntoView(); return; }
+  const bp = e.target.closest("[data-partido]");
+  if (bp) { PARTIDO = bp.dataset.partido; pintar(); }
+});
 function pintar(){
   const T = GUIA ? GUIA.temas : [];
   const S = window.SECCIONES || [];
-  document.getElementById("indiceTemas").innerHTML = T.map(t => `<a href="#${t.id}">${esc(t.nombre)}</a>`).join("") + `<a href="#partidos">Los partidos</a><a href="#como">Cómo la hacemos</a>`;
   const P = PROG ? PROG.partidos : [];
   const conPrograma = P.filter(p => p.programa).length;
   if (PROG) {
@@ -845,31 +914,25 @@ function pintar(){
     document.getElementById("criterio").textContent = "Criterio: " + PROG.criterio;
     if (conPrograma) document.getElementById("estadoProgramas").textContent = `${conPrograma} de ${P.length} partidos han publicado ya su programa. Los demás aparecen como pendientes hasta que lo presenten.`;
   }
-  document.getElementById("temasElec").innerHTML = T.map((t, i) => {
-    const s = S.find(x => x.id === t.id);
-    const hoy = s ? HIST.filter(h => window.seccionesDe(h).includes(s.id)).slice(0, 3) : [];
-    return `<section id="${t.id}" class="tema-elec">
-      <div class="tema-cab"><span class="num">${i + 1}</span><div><h2>${esc(t.nombre)}</h2>
-        ${s ? `<p class="cis"><span class="cis-barra"><i style="width:${Math.min(100, s.cis * 2)}%"></i></span>Preocupa al <b>${String(s.cis).replace(".", ",")} %</b> de los españoles · ${s.cisNota} · CIS, septiembre de 2026</p>` : ""}</div></div>
-      <div class="g-parte"><h3><span class="n">1</span>El problema, en datos</h3>
-        <div class="g-datos">${t.datos.map(d => `<div class="g-dato"><span class="c">${esc(d.cifra)}</span><span class="q">${esc(d.que)}</span><span class="f">${esc(d.fuente)} · ${esc(d.periodo)} · <a href="${esc(d.url)}" target="_blank" rel="noopener">fuente</a></span></div>`).join("")}</div></div>
-      <div class="g-parte"><h3><span class="n">2</span>Las visiones</h3>
-        ${(t.visiones || []).length ? "" : `<p class="g-vacio">Se completará cuando los partidos publiquen sus programas: agruparemos a los que proponen cosas parecidas, describiendo cada visión solo con sus citas.</p>`}</div>
-      <div class="g-parte"><h3><span class="n">3</span>Qué propone cada partido${POST ? info(esc(POST.criterio), "De dónde sale") : ""}</h3>
-      ${P.some(p => p.programa) ? `<div class="partidos-grid">${P.filter(p => p.programa).map(p => {
-        const lista = (p.propuestas || {})[t.id] || [];
-        return `<div class="p-card"><h3>${esc(p.nombre)}</h3>${lista.length
-          ? `<ul>${lista.map(x => `<li>«${esc(x.texto)}» <a href="${esc(x.url || p.programa.url)}" target="_blank" rel="noopener">pág. ${esc(x.pagina)}</a></li>`).join("")}</ul>`
-          : `<p class="pend">Su programa no incluye propuestas sobre este tema.</p>`}</div>`;
-      }).join("")}</div>` : ""}
-      ${!P.some(p => p.programa) ? posturas(t.id)
-        : P.some(p => !p.programa) ? `<p class="pendientes"><span class="eti">Programa pendiente</span>${P.filter(p => !p.programa).map(p => `<span class="chip-p">${esc(p.nombre)}</span>`).join("")}</p>` : ""}</div>
-      <div class="g-parte" id="${t.id}-votos"><h3><span class="n">4</span>Qué ha votado cada partido${info(`Leyes, decretos y proposiciones de ley votados en el Pleno del Congreso en esta legislatura, de lo más reciente a lo más antiguo. Mostramos lo que votó la mayoría de los diputados de cada partido. Las elegimos por las palabras de su título, así que puede colarse alguna de otro tema: si la ves, <a href="https://github.com/juandoga/vistaplena/issues/new" target="_blank" rel="noopener">avísanos</a>.`, "Qué votaciones salen")}</h3>
-
-        ${votaciones(t.id)}</div>
-      ${hoy.length ? `<div class="hoy"><span class="eti">Noticias de estos días sobre ${esc(t.nombre.toLowerCase())}</span>${hoy.map(h => `<a class="hoy-item" href="${enlace(h)}">${esc(h.t)}${barra(h)}<span class="m">${h.tot} medios</span></a>`).join("")}<a class="mas-sec" href="./?seccion=${s.id}">Más noticias de ${esc(t.nombre.toLowerCase())} →</a></div>` : ""}
-    </section>`;
-  }).join("");
+  if (!T.length) return;
+  if (!T.some(t => t.id === TEMA)) TEMA = T[0].id;
+  // Fila fija de temas: siempre se ve en cuál estás
+  document.getElementById("gvTemas").innerHTML = T.map(t => `<button type="button" data-tema="${t.id}" aria-pressed="${t.id === TEMA}">${esc(t.nombre)}</button>`).join("");
+  const t = T.find(x => x.id === TEMA), s = S.find(x => x.id === t.id);
+  const hoy = s ? HIST.filter(h => window.seccionesDe(h).includes(s.id)).slice(0, 3) : [];
+  const nVot = VOT ? VOT.filter(v => v.temas.includes(t.id)).length : null;
+  document.getElementById("gvVista").innerHTML = `
+    <div class="gv-cab" id="${t.id}"><h2>${esc(t.nombre)}</h2>${s ? `<p class="gv-cis">Le preocupa al<b>${String(s.cis).replace(".", ",")} %</b>de los españoles${info(`${esc(s.cisNota)} · CIS, septiembre de 2026`, "De dónde sale")}</p>` : ""}</div>
+    <div class="gv-cols">
+      <section class="gv-caja gv-datos-caja"><span class="eti">El problema, en datos</span>
+        <div class="gv-datos">${t.datos.map(d => `<div class="gv-dato"><span class="c">${esc(d.cifra)}</span><span class="q">${esc(d.que)}</span><span class="f">${esc(d.fuente)} · ${esc(d.periodo)} · <a href="${esc(d.url)}" target="_blank" rel="noopener">fuente</a></span></div>`).join("")}</div></section>
+      <div class="gv-princ">
+        <section class="gv-caja"><span class="eti">Qué propone cada partido${POST ? info(esc(POST.criterio), "De dónde sale") : ""}</span>${propuestas(t.id, P)}</section>
+        <details class="gv-caja gv-plegable" id="${t.id}-votos"${location.hash === "#" + t.id + "-votos" ? " open" : ""}><summary><span>Qué ha votado cada partido</span><span class="gv-n">${nVot === null ? "" : nVot === 1 ? "1 votación" : nVot + " votaciones"}</span></summary>
+          <p class="aparte">${"Leyes, decretos y proposiciones de ley votados en el Pleno del Congreso en esta legislatura, de lo más reciente a lo más antiguo. Mostramos lo que votó la mayoría de los diputados de cada partido."}</p>${votaciones(t.id)}</details>
+        ${hoy.length ? `<details class="gv-caja gv-plegable"><summary><span>Noticias de estos días</span><span class="gv-n">${hoy.length}</span></summary><div class="hoy">${hoy.map(h => `<a class="hoy-item" href="${enlace(h)}">${esc(h.t)}${barra(h)}<span class="m">${h.tot} medios</span></a>`).join("")}<a class="mas-sec" href="./?seccion=${s.id}">Más noticias de ${esc(t.nombre.toLowerCase())} →</a></div></details>` : ""}
+      </div>
+    </div>`;
   document.getElementById("filasPartidos").innerHTML = P.map(p => `<tr><td><strong>${esc(p.nombre)}</strong></td>
     <td>${p.programa ? `<a href="${esc(p.programa.url)}" target="_blank" rel="noopener">Publicado el ${fechaLarga(p.programa.fecha)}</a>` : '<span class="pend">Pendiente</span>'}</td>
     <td><a href="${esc(p.web)}" target="_blank" rel="noopener">${esc(p.web.replace(/^https?:\/\/(www\.)?/, ""))}</a></td></tr>`).join("");
@@ -878,7 +941,7 @@ function pintar(){
 (() => { const d = Math.ceil((new Date("2026-11-29T09:00:00+01:00") - Date.now()) / 864e5); document.getElementById("dias").textContent = d > 0 ? d : "Hoy"; })();
 pintar();
 Promise.all([fetch("programas.json").then(r => r.json()), fetch("guia.json").then(r => r.json()), fetch("posturas.json").then(r => r.json()).catch(() => null)])
-  .then(([p, g, q]) => { PROG = p; GUIA = g; POST = q; pintar(); if (location.hash) document.querySelector(location.hash)?.scrollIntoView(); }).catch(() => {});
+  .then(([p, g, q]) => { PROG = p; GUIA = g; POST = q; pintar(); if (location.hash && location.hash !== "#" + TEMA) document.querySelector(location.hash)?.scrollIntoView(); }).catch(() => {});
 // La campaña hoy: noticias electorales de las últimas 48 horas, ordenadas como la portada, y su cobertura sumada
 const ELECTORAL = /(\b(?:re)?elecci|\b29-?n\b|campaña|candidat|debates? electoral|cara a cara|encuesta|sondeo|listas electorales|frente amplio|voto por correo|junta electoral|mitin|programa electoral|interventores)/i;
 // …y que sea de la política española (si no, entran mítines de Trump o el Brexit)
