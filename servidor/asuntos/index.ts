@@ -22,7 +22,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 const CLAVE = Deno.env.get("GEMINI_API_KEY") ?? "";
-const H = 3600e3, LOTE = 40;
+const H = 3600e3, LOTE = 20;
 
 async function esInterna(req: Request): Promise<boolean> {
   const v = req.headers.get("x-interna") ?? "";
@@ -45,7 +45,7 @@ async function gemini(modelo: string, sistema: string, texto: string): Promise<a
   if (modelo.startsWith("gemini-2.5")) config.thinkingConfig = { thinkingBudget: 0 };
   else if (modelo.startsWith("gemini-3")) config.thinkingConfig = { thinkingLevel: "minimal" };
   const llamada = (cfg: Record<string, unknown>) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
-    method: "POST", headers: { "x-goog-api-key": CLAVE, "Content-Type": "application/json" }, signal: AbortSignal.timeout(80000),
+    method: "POST", headers: { "x-goog-api-key": CLAVE, "Content-Type": "application/json" }, signal: AbortSignal.timeout(100000),
     body: JSON.stringify({ systemInstruction: { parts: [{ text: sistema }] }, contents: [{ role: "user", parts: [{ text: texto }] }], generationConfig: cfg }),
   });
   let r = await llamada(config);
@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
     // Contexto: otras noticias recientes sin asunto (4 o más medios), para poder crear un asunto con ellas y las nuevas
     const enLote = new Set(lote.map((h) => h.id));
     const contexto = H_.filter((h) => valeComoCandidata(h) && !enLote.has(h.id) && h.medios >= 4 &&
-      ahora - +new Date(h.actualizada) < 72 * H).sort((a, b) => b.medios - a.medios).slice(0, 40);
+      ahora - +new Date(h.actualizada) < 72 * H).sort((a, b) => b.medios - a.medios).slice(0, 25);
     const lista = [...lote, ...contexto];
     const textoAsuntos = [...asuntos.values()].map((a) => {
       const u = ultimas(a.id, 4);
@@ -164,7 +164,8 @@ Deno.serve(async (req) => {
     const texto = `ASUNTOS ABIERTOS:\n${textoAsuntos || "(ninguno)"}\n\nNOTICIAS:\n` +
       lista.map((h, i) => `${i + 1}) [${cuando(h.creada)} · ${h.medios} medios] ${h.titulo}`).join("\n");
     let res: any;
-    try { res = await gemini(modelo, AGRUPAR, texto); } catch (e) { informe.errores.push(String(e).slice(0, 200)); break; }
+    const t0 = Date.now();
+    try { res = await gemini(modelo, AGRUPAR, texto); informe.segundos = [...(informe.segundos ?? []), Math.round((Date.now() - t0) / 1000)]; } catch (e) { informe.errores.push(String(e).slice(0, 200)); break; }
     informe.preguntadas += lote.length;
     lote.forEach((h) => revisadas.push(h.id));
     const codigo = (c: string) => { const m = String(c).match(/^A(N?)(\d+)$/i); return m ? (m[1] ? -Number(m[2]) : Number(m[2])) : NaN; };
