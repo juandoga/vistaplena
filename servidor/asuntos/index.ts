@@ -148,7 +148,8 @@ Deno.serve(async (req) => {
   const veto = new Set((vs ?? []).map((v: any) => `${v.historia_id}:${v.asunto_id}`));
   const sinAsunto = new Set((vs ?? []).filter((v: any) => v.asunto_id === 0).map((v: any) => v.historia_id));
   const vetado = (h: number, a: number) => sinAsunto.has(h) || veto.has(`${h}:${a}`);
-  const { data: as } = await db.from("asuntos").select("id, nombre, nombre_manual, descripcion").eq("activo", true).eq("oculto", false);
+  // Abiertos y también los apagados hace poco (8 días): si la historia vuelve, se retoma el mismo asunto en vez de abrir otro
+  const { data: as } = await db.from("asuntos").select("id, nombre, nombre_manual, descripcion").eq("oculto", false).gte("actualizado", new Date(ahora - 8 * 24 * H).toISOString());
   const asuntos = new Map<number, { id: number; nombre: string; descripcion: string; nuevo?: boolean }>(
     (as ?? []).map((a: any) => [a.id, { id: a.id, nombre: a.nombre_manual || a.nombre, descripcion: a.descripcion ?? "" }]));
 
