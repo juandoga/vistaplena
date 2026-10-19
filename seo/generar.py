@@ -383,16 +383,18 @@ def fichas_medios(historias, tpl_t):
                     f'De las 30 historias que más medios contaron, ha publicado <b>{en_grandes}</b>.</p>'
                   + (f'<p>Grandes historias que no ha publicado: {"; ".join(f"<a href='{url_noticia(h["id"], h["titulo"])}'>{esc(h["titulo"])}</a>" for h in faltan)}.</p>' if faltan else "")
                   + "</section>")
-        pagina_lista(tpl_t, url=url, titulo=f"{m['nombre']}: etiqueta y cobertura · Vista Plena", h1=m["nombre"],
-                     sub=f"{ETIQUETA[m['orientacion']]} · {len(suyas)} historias en los últimos {DIAS} días",
+        # Título en forma de pregunta: es como lo busca la gente en Google («¿X es de izquierdas o de derechas?»)
+        pagina_lista(tpl_t, url=url, titulo=f"¿{m['nombre']} es de izquierdas o de derechas? Lo que dicen los datos · Vista Plena",
+                     h1=f"¿{m['nombre']} es de izquierdas o de derechas?",
+                     sub=f"{ETIQUETA[m['orientacion']]}, según la ideología de su audiencia · {len(suyas)} historias en los últimos {DIAS} días",
                      cuerpo_extra=bloque + "<h2 style='margin-top:32px'>Sus historias más recientes</h2>",
-                     desc=f"Etiqueta de {m['nombre']} ({ETIQUETA[m['orientacion']].lower()}), de dónde sale y qué historias publica y cuáles no.",
+                     desc=f"{m['nombre']}: {ETIQUETA[m['orientacion']].lower()}, según encuestas del CIS y estudios de su audiencia. De dónde sale la etiqueta, qué publica y qué grandes noticias no ha contado.",
                      items=lista_html(suyas[:20]))
         mapa.append((url, None))
         filas_indice.append(f'<li><div><a href="{url}">{esc(m["nombre"])}</a><span class="m">{ETIQUETA[m["orientacion"]]} · confianza {m.get("confianza") or "baja"}</span></div></li>')
-    pagina_lista(tpl_t, url="/medio/", titulo="Los medios que leemos · Vista Plena", h1="Los medios que leemos",
+    pagina_lista(tpl_t, url="/medio/", titulo="¿Qué periódicos son de izquierdas y cuáles de derechas? · Vista Plena", h1="Qué medios son de izquierdas, de centro y de derechas",
                  sub=f"{len(medios)} medios, de izquierda a derecha. Cada ficha explica su etiqueta y qué publica.", cuerpo_extra="",
-                 desc="Ficha de cada medio que compara Vista Plena: etiqueta, mediciones, confianza y cambios.", items="".join(filas_indice))
+                 desc="Los principales medios españoles ordenados de izquierda a derecha según la ideología de su audiencia (CIS y estudios), con la confianza de cada etiqueta.", items="".join(filas_indice))
     return mapa
 
 
