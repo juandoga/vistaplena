@@ -672,6 +672,10 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .tema-lado{position:sticky;top:88px;display:grid;gap:12px;padding:20px;border:1px solid var(--linea);border-radius:12px}
 .tema-lado p{margin:0;font-size:var(--t-s);line-height:1.5}
 @media (max-width:880px){.tema-lado{position:static}}
+.tema-desc{font-size:var(--t-m, 1.05rem);color:var(--gris);max-width:62ch;margin:.4em 0 0}
+.hilos{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 14px}
+.hilos .tema{border:1px solid var(--linea);border-radius:999px;padding:5px 12px;font-size:var(--t-s);text-decoration:none;color:var(--tinta)}
+.hilos .tema:hover{border-color:var(--tinta)}
 </style>
 </head>
 <body>
@@ -732,10 +736,13 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   </div>
   <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
-<script src="comun.js?v=68b34426"></script>
+<script src="comun.js?v=19ae567c"></script>
 <script>
 // Página de un tema: un asunto de varios días que reúne varias historias (cada historia es un hecho distinto, con su cobertura)
-const id = Number(new URLSearchParams(location.search).get("id") || document.body.dataset.id);
+// Un tema grande (asunto, lo agrupa la IA) lleva una «a» delante del número: /tema/protestas-en-francia-a12/
+const idCrudo = String(new URLSearchParams(location.search).get("id") || document.body.dataset.id || "");
+const esAsunto = /^a\d+$/.test(idCrudo);
+const id = Number(idCrudo.replace(/^a/, ""));
 const art = document.getElementById("art");
 const hora = iso => new Date(iso).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
 const dia = iso => {
@@ -774,6 +781,7 @@ function pintar(t, H, S = []){
     <header class="hist-cab">
       <div class="hist-etis"><span class="tema-eti">Tema</span>${t.activo ? `<span class="chip vivo">En desarrollo</span>` : `<span class="chip">Cerrado</span>`}</div>
       <h1>${esc(t.nombre)}</h1>
+      ${t.descripcion ? `<p class="tema-desc">${esc(t.descripcion)}</p>` : ""}
       <p class="tema-sub">${H.length} noticias desde ${dia(t.inicio).toLowerCase()} · última novedad ${haceCuanto(t.actualizado)}</p>
     </header>
     <div class="tema-cuerpo">
@@ -802,15 +810,31 @@ function pintar(t, H, S = []){
         <h2 class="eti">Cobertura de todo el tema</h2>
         ${barra(acum, true)}${pct(acum)}
         <p>Suma de las voces de las ${H.length} noticias.${ciegas ? ` ${ciegas === 1 ? "Una de ellas tiene" : `${ciegas} de ellas tienen`} cobertura desigual.` : ""}</p>
-        <p class="aparte">Un tema reúne varias noticias sobre el mismo asunto. Cada noticia es un hecho distinto, con su propia cobertura y sus propios titulares. <a href="metodologia.html#temas">Cómo formamos los temas</a>.</p>
+        ${(t.hilos || []).length ? `<h2 class="eti">Dentro de este tema</h2><p class="hilos">${t.hilos.map(x => `<a class="tema" href="${urlTema(x.id, x.nombre)}">${esc(x.nombre)}</a>`).join(" ")}</p>` : ""}
+        <p class="aparte">${esAsunto ? "Este tema lo agrupa una IA: junta las noticias que nacen del mismo origen aunque cambien de protagonista. " : ""}Un tema reúne varias noticias sobre el mismo asunto. Cada noticia es un hecho distinto, con su propia cobertura y sus propios titulares. <a href="metodologia.html#temas">Cómo formamos los temas</a>.</p>
       </aside>
     </div>`;
+}
+
+// Tema grande: sus noticias son las de asuntos_v.ids; los titulares sueltos, los de los temas que contiene
+async function cargarAsunto(){
+  const [a] = await pedir(`asuntos_v?select=id,nombre,descripcion,creado,actualizado,activo,historias,ids,temas&id=eq.${id}`);
+  if (!a || !a.ids.length) return document.body.dataset.id ? null : noEncontrado();
+  const [filas, hilos, sueltos] = await Promise.all([
+    pedir(`portada_m?select=${CAMPOS},izq,cen,der,peso&id=in.(${a.ids.join(",")})&order=creada.desc`),
+    a.temas.length ? pedir(`temas_v?select=id,nombre,historias&id=in.(${a.temas.join(",")})&historias=gte.2`).catch(() => []) : [],
+    a.temas.length ? pedir(`articulos?select=titulo,url,publicado,medios(nombre,orientacion)&tema_id=in.(${a.temas.join(",")})&order=publicado.desc&limit=40`).catch(() => []) : []]);
+  if (!filas.length) return document.body.dataset.id ? null : noEncontrado();
+  const H = filas.map(x => ({ ...mapear(x), izq: x.izq, cen: x.cen, der: x.der, peso: x.peso || 0 })).sort((p, q) => new Date(inicio(q)) - new Date(inicio(p)));
+  pintar({ ...a, inicio: H.length ? inicio(H[H.length - 1]) : a.creado, hilos: hilos.filter(x => x.nombre !== a.nombre) }, H, sueltos.filter(s => s.medios));
+  document.getElementById("estado").textContent = `Actualizado ${haceCuanto(a.actualizado)}`;
 }
 
 (async () => {
   if (document.body.dataset.id === "0") return; // página fija (archivo, fichas de medios): ya trae su contenido
   if (!id) return noEncontrado();
   try {
+    if (esAsunto) return cargarAsunto();
     const [temas, filas, sueltos] = await Promise.all([
       pedir(`temas_v?select=id,nombre,inicio,actualizado,historias,activo&id=eq.${id}`),
       pedir(`portada_m?select=${CAMPOS},izq,cen,der,peso&tema_id=eq.${id}&order=creada.desc`),

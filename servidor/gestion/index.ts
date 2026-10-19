@@ -170,7 +170,28 @@ Deno.serve(async (req) => {
       const { data } = await db.from("temas").select("id, nombre, nombre_manual, oculto, historias, actualizado").eq("activo", true).order("actualizado", { ascending: false });
       return json(data ?? []);
     }
+    if (req.method === "GET" && q === "asuntos") {
+      // Temas grandes (asuntos) activos con sus noticias, para revisarlos: renombrar, sacar una noticia o deshacerlo
+      const { data: as } = await db.from("asuntos").select("id, nombre, nombre_manual, descripcion, historias, actualizado, creado").eq("activo", true).eq("oculto", false).order("actualizado", { ascending: false });
+      const ids = (as ?? []).map((a) => a.id);
+      const { data: hs } = ids.length ? await db.from("historias").select("id, titulo, creada, asunto_id").in("asunto_id", ids).order("creada", { ascending: false }).limit(2000) : { data: [] as any[] };
+      return json((as ?? []).map((a) => ({ ...a, noticias: (hs ?? []).filter((h: any) => h.asunto_id === a.id).map((h: any) => ({ id: h.id, titulo: h.titulo, creada: h.creada })) })));
+    }
     if (req.method === "POST") {
+      if (b.accion === "asunto_nombre") {
+        const nombre = String(b.nombre_manual ?? "").trim().slice(0, 80) || null;
+        await db.from("asuntos").update({ nombre_manual: nombre }).eq("id", b.id);
+        await db.from("asuntos_registro").insert({ asunto_id: b.id, accion: "renombrar", detalle: nombre ?? "(nombre de la IA)" });
+        return json({ ok: true });
+      }
+      if (b.accion === "asunto_sacar") {
+        const { error } = await db.rpc("sacar_de_asunto", { h: Number(b.historia_id) });
+        return error ? json({ error: error.message }, 400) : json({ ok: true });
+      }
+      if (b.accion === "asunto_deshacer") {
+        const { data: n, error } = await db.rpc("deshacer_asunto", { a: Number(b.id) });
+        return error ? json({ error: error.message }, 400) : json({ ok: true, n });
+      }
       if (b.accion === "revisar") {
         await db.from("reportes").update({ revisado: !!b.revisado }).eq("id", b.id);
         return json({ ok: true });

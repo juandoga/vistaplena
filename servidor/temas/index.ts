@@ -164,10 +164,16 @@ Deno.serve(async (req) => {
     let mejor: Tema | null = null, mejorP = 0;
     for (const t of temas) {
       if (t.hs.length >= 30 || h.ini - t.fin > 72 * H) continue; // lleno o apagado
-      // Debe compartir un nombre poco habitual con el núcleo del tema (nombres en al menos el 40 % de sus historias)
-      const nucleo = [...t.nombres].filter(([w, c]) => !comodin(w) && c >= Math.max(1, t.hs.length * 0.4)).map(([w]) => w);
-      if (!nucleo.some((w) => h.nombres.has(w))) continue;
+      // Debe compartir un nombre poco habitual con el núcleo del tema. El núcleo evoluciona con la noticia (19/10):
+      // los nombres de al menos el 40 % de todas sus historias MÁS los que salen en 2 de sus 5 últimas
+      // (si las protestas en Francia pasan a hablar de «Macron», «Macron» entra en el núcleo y el tema no se parte).
       const ultimas = t.hs.slice(-5);
+      const recientes = new Map<string, number>();
+      for (const u of ultimas) u.nombres.forEach((w) => recientes.set(w, (recientes.get(w) ?? 0) + 1));
+      const nucleo = new Set([
+        ...[...t.nombres].filter(([w, c]) => !comodin(w) && c >= Math.max(1, t.hs.length * 0.4)).map(([w]) => w),
+        ...[...recientes].filter(([w, c]) => !comodin(w) && c >= 2).map(([w]) => w)]);
+      if (![...nucleo].some((w) => h.nombres.has(w))) continue;
       if (!ultimas.some((u) => enlazan(h, u))) continue;
       const media = ultimas.reduce((s, u) => s + parecido(h, u), 0) / ultimas.length;
       // Más exigente con la edad: +0,02 por cada día a partir del tercero

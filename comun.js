@@ -14,6 +14,8 @@ const slug = t => {
 };
 const urlNoticia = (id, titulo) => `/noticia/${slug(titulo)}-${id}/`;
 const urlTema = (id, nombre) => `/tema/${slug(nombre)}-${id}/`;
+// Asuntos: temas grandes que agrupa la IA («Protestas en Francia»). Para el lector son temas; su dirección lleva una «a»
+const urlAsunto = (id, nombre) => `/tema/${slug(nombre)}-a${id}/`;
 const enlace = h => urlNoticia(h.id, h.t);
 
 // Convierte una fila de la base de datos en el formato corto que usan las páginas
