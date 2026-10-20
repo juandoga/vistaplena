@@ -81,5 +81,10 @@ create or replace view public.portada_v2 as
           ORDER BY (SELECT count(*) FROM unnest(h.palabras[1:12]) p(w) WHERE p.w = ANY (a.palabras)) DESC, abs(m.orientacion), a.publicado DESC LIMIT 1) f ON true
      LEFT JOIN LATERAL (SELECT a.resumen AS entradilla, m.nombre AS entradilla_medio FROM articulos a JOIN medios m ON m.id = a.medio_id
           WHERE a.historia_id = h.id AND char_length(a.resumen) >= 80
-          ORDER BY (SELECT count(*) FROM unnest(h.palabras[1:12]) p(w) WHERE p.w = ANY (a.palabras)) DESC, abs(m.orientacion), a.publicado DESC LIMIT 1) e ON true
+          -- Entradilla (20/10): primero las que no abren con una frase corta de gancho («Crecen los problemas en Ferraz.»);
+          -- luego las que nombran el hecho en su arranque (palabras clave de la historia en los primeros 300 caracteres de la
+          -- propia entradilla, no del titular; con 5 basta) y, a igualdad, la del medio más cercano al centro
+          ORDER BY (a.resumen ~ '^[^.!?]{0,50}[.!?]\s'),
+                   LEAST((SELECT count(*) FROM unnest(h.palabras[1:12]) p(w) WHERE unaccent(lower(left(a.resumen, 300))) ~ ('\m' || p.w)), 5) DESC,
+                   abs(m.orientacion), a.publicado DESC LIMIT 1) e ON true
   WHERE c.total >= 3 AND COALESCE(h.ia_tipo, 'publica') <> 'ligera';
