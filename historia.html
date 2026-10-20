@@ -646,6 +646,23 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .rel .barra{height:6px}
 .rel-m{font-size:var(--t-xs);color:var(--gris)}
 .rel-m b{color:var(--aviso)}
+
+/* Rediseño 20/10, paso 1: esquinas rectas, sin sombras y filetes de tinta (lienzo «Vista Plena — rediseño», mesa Sistema) */
+*,*::before,*::after{border-radius:0!important}
+.menu,.info-p{box-shadow:none!important}
+.menu{border-bottom:2px solid var(--tinta)}
+.info-p{border-color:var(--tinta)!important}
+.top{border-bottom:2px solid var(--tinta)}
+.cab-seccion{border-top:4px solid var(--tinta);padding-top:12px}
+.pieza,.ultimo-lista li{border-top-color:var(--tinta)}
+/* Fila de los 38: solo en la página de la noticia */
+.fila38{display:flex;gap:8px;margin-top:16px}
+.fila38 > span{display:flex;gap:2px;min-width:0}
+.fila38 i{flex:1 1 0;min-width:0;height:18px;border:1.5px solid currentColor;opacity:.6}
+.fila38 i.si{opacity:1;background:currentColor}
+.fila38 .f-i{color:var(--izq)}.fila38 .f-c{color:var(--tinta)}.fila38 .f-d{color:var(--der)}
+.fila38 .f-c i.si{background:repeating-linear-gradient(135deg,currentColor 0 1.5px,transparent 1.5px 4px)}
+.fila38-pie{margin:8px 0 0;font-size:var(--t-xs);color:var(--gris)}
 </style>
 </head>
 <body>
@@ -825,6 +842,7 @@ function pintar(h){
         <h2 id="cob-t">Quién la cuenta${info(`${lectura(h).replace(/<\/?strong>/g, "")} La publican ${h.tot} medios: ${n("izq")} de izquierda o centroizquierda, ${n("cen")} de centro y ${n("der")} de derecha o centroderecha.${h.voces && h.voces < h.tot ? ` Los medios de un mismo grupo y del mismo lado cuentan como una sola voz, por eso el porcentaje se calcula sobre ${h.voces} voces.` : ""} Cada lado se compara con lo que suele publicar. La barra no dice si la noticia es verdad ni a quién beneficia: solo quién la está contando. <a href='metodologia.html#que'>Cómo se calcula</a>`, "Cómo leer la barra")}</h2>
         ${barra(h, true)}
         <div id="pctHist">${pct(h)}</div>
+        <div id="filaHist">${fila38(h, totalesGuardados())}</div>
         ${h.ciego ? `<p class="resumen">${lectura(h)}<span id="ctxCiego"></span></p>` : ""}
       </section>
     </header>
@@ -844,7 +862,7 @@ function pintar(h){
       </section>
     </div>`;
   // Con el total de medios de cada lado, la frase se vuelve comparable entre bloques de distinto tamaño
-  totalesMedios().then(T => { const el = document.getElementById("pctHist"); if (el) el.innerHTML = pctCuentas(h, T); }).catch(() => {});
+  totalesMedios().then(T => { const el = document.getElementById("pctHist"); if (el) el.innerHTML = pctCuentas(h, T); const fl = document.getElementById("filaHist"); if (fl) fl.innerHTML = fila38(h, T); }).catch(() => {});
   const nativo = document.getElementById("cNativo");
   if (nativo) nativo.addEventListener("click", () => navigator.share({ title: h.t, text: "Quién la cuenta y quién no, en Vista Plena", url: direccion() }).catch(() => {}));
   document.getElementById("cCopiar").addEventListener("click", async () => {

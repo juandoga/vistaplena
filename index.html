@@ -451,6 +451,15 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .ir-historia{display:inline-block;margin-top:16px;font-size:var(--t-s);font-weight:700;color:var(--tinta);text-underline-offset:3px}
 .ciego .ctx{border-top:1px solid var(--linea);padding-top:10px}
 .ciego .ctx a{color:var(--tinta)}
+
+/* Rediseño 20/10, paso 1: esquinas rectas, sin sombras y filetes de tinta (lienzo «Vista Plena — rediseño», mesa Sistema) */
+*,*::before,*::after{border-radius:0!important}
+.menu,.info-p{box-shadow:none!important}
+.menu{border-bottom:2px solid var(--tinta)}
+.info-p{border-color:var(--tinta)!important}
+.top{border-bottom:2px solid var(--tinta)}
+.cab-seccion{border-top:4px solid var(--tinta);padding-top:12px}
+.pieza,.ultimo-lista li{border-top-color:var(--tinta)}
 </style>
 </head>
 <body>

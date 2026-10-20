@@ -187,6 +187,22 @@ function pctCuentas(h, T){
   const c = (k, cls, nom, v) => `<span${cls ? ` class="${cls}"` : ""}><span>${nom} <b>${v} %</b></span><small>${n[k].size} de ${T[k]} medios</small></span>`;
   return `<div class="pct cuentas">${c("izq", "i", "Izquierda", h.pi)}${c("cen", "", "Centro", h.pc)}${c("der", "d", "Derecha", h.pd)}</div>`;
 }
+// La fila de los 38 (20/10): un cuadro por cada medio que leemos, relleno si ha publicado la noticia. Es el dato exacto,
+// sin compensar, así que solo va en la página de la noticia: la barra, la portada y los puntos ciegos comparan cada lado
+// con lo que suele publicar (los medios de derecha publican más noticias en general).
+function totalesGuardados(){
+  try { const c = JSON.parse(localStorage.getItem("vp-totales") || "null"); if (c && c.v) return c.v; } catch (e) {}
+  return null;
+}
+function fila38(h, T){
+  if (!T || !h.a || !h.a.length) return "";
+  const n = { izq: new Set(), cen: new Set(), der: new Set() };
+  for (const a of h.a) n[lado(a.o)].add(a.m);
+  const tot = k => Math.max(T[k] || 0, n[k].size);
+  const g = (k, cls) => `<span class="f-${cls}" style="flex-grow:${tot(k)}">${Array.from({ length: tot(k) }, (_, i) => `<i${i < n[k].size ? ' class="si"' : ""}></i>`).join("")}</span>`;
+  return `<div class="fila38" role="img" aria-label="La publican ${n.izq.size} de los ${tot("izq")} medios de izquierda, ${n.cen.size} de los ${tot("cen")} de centro y ${n.der.size} de los ${tot("der")} de derecha">${g("izq", "i")}${g("cen", "c")}${g("der", "d")}</div>`
+    + `<p class="fila38-pie">Cada cuadro es uno de los ${tot("izq") + tot("cen") + tot("der")} medios que leemos. Relleno: la ha publicado.</p>`;
+}
 
 // Aspecto: automático (el del móvil), claro u oscuro. Se guarda en este navegador.
 (() => {

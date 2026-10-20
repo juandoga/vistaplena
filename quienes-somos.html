@@ -549,6 +549,15 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .gris{color:var(--gris)}
 .boton{display:inline-block;background:var(--tinta);color:var(--fondo)!important;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:700;font-size:var(--t-s)}
 .aparte{color:var(--gris);font-size:var(--t-s)}
+
+/* Rediseño 20/10, paso 1: esquinas rectas, sin sombras y filetes de tinta (lienzo «Vista Plena — rediseño», mesa Sistema) */
+*,*::before,*::after{border-radius:0!important}
+.menu,.info-p{box-shadow:none!important}
+.menu{border-bottom:2px solid var(--tinta)}
+.info-p{border-color:var(--tinta)!important}
+.top{border-bottom:2px solid var(--tinta)}
+.cab-seccion{border-top:4px solid var(--tinta);padding-top:12px}
+.pieza,.ultimo-lista li{border-top-color:var(--tinta)}
 </style>
 </head>
 <body>
