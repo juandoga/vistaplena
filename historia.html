@@ -663,6 +663,44 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .fila38 .f-i{color:var(--izq)}.fila38 .f-c{color:var(--tinta)}.fila38 .f-d{color:var(--der)}
 .fila38 .f-c i.si{background:repeating-linear-gradient(135deg,currentColor 0 1.5px,transparent 1.5px 4px)}
 .fila38-pie{margin:8px 0 0;font-size:var(--t-xs);color:var(--gris)}
+/* Noticia reordenada (20/10): qué ha pasado, quién la cuenta, titulares distintos primero, lo demás plegado */
+.hist-cab h1{margin-bottom:10px}
+.hist-sub{margin:0;font-size:var(--t-s);color:var(--gris)}
+.hist-intro{margin-top:20px}
+.hist-intro.con-foto{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:32px;align-items:start}
+@media (max-width:760px){.hist-intro.con-foto{grid-template-columns:1fr;gap:16px}}
+.hist-intro .hist-foto{margin:0}
+.hist-intro.con-foto:not(:has(.hist-foto)){display:block}
+.hist-que{margin:0}
+.hist-que p{margin:6px 0 0;font-family:var(--titular);font-size:1.2rem;line-height:1.5;color:var(--tinta)}
+.hist-que .fuente{font-family:var(--ui);font-size:var(--t-s);color:var(--gris);white-space:nowrap}
+.hist-que .fuente a{color:var(--gris);text-underline-offset:3px}
+.hist-cab .hist-cob{margin-top:26px;padding-top:12px;border-top:4px solid var(--tinta)}
+.cuentas3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;font-size:var(--t-s);color:var(--tinta);line-height:1.3}
+.cuentas3 > span:nth-child(2){text-align:center}.cuentas3 > span:nth-child(3){text-align:right}
+.cuentas3 b{font-size:1.6rem;font-weight:700;margin-right:5px;font-variant-numeric:tabular-nums}
+.cuentas3 .i b{color:var(--izq)}.cuentas3 .d b{color:var(--der)}
+.cuentas3 small{display:block;font-size:var(--t-xs);color:var(--gris)}
+.fila38{margin-top:10px}
+.hist-titulares{margin-top:8px}
+.hist-titulares > h2{margin:0 0 16px;font-weight:900;font-size:var(--t-l);letter-spacing:-.02em;color:var(--tinta)}
+.lados{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 32px;align-items:start}
+@media (max-width:880px){.lados{grid-template-columns:1fr;gap:22px}}
+.lados .bloque.l-izq,.lados .bloque.l-cen,.lados .bloque.l-der{border-top:4px solid var(--izq);padding-top:10px}
+.lados .bloque.l-cen{border-top-color:var(--cen)}.lados .bloque.l-der{border-top-color:var(--der)}
+.lados .bloque .lado{color:var(--tinta)}
+.lados .bloque ul{gap:0}
+.lados .bloque li{padding:10px 0 12px;border-bottom:1px solid var(--linea)}
+.lados .bloque li a{font-size:1.08rem}
+.iguales{margin:10px 0 0;font-size:var(--t-s);line-height:1.45;color:var(--gris)}
+.iguales a{color:var(--gris);text-underline-offset:3px}
+.hist-titulares + .hilo,.hist-titulares + .en-tema{margin-top:32px}
+.hist-mas{margin-top:36px;max-width:720px;border-top:1px solid var(--tinta)}
+.hist-mas > details{margin:0;padding:14px 0;border-top:0;border-bottom:1px solid var(--linea)}
+.hist-mas > details > summary{cursor:pointer;font-size:var(--t-m);font-weight:700;color:var(--tinta)}
+.hist-mas .primero{margin-top:12px}
+.hist-mas .compartir{margin-top:12px;padding-top:0;border-top:0}
+.hist-mas .compartir .eti{display:none}
 </style>
 </head>
 <body>
@@ -782,31 +820,73 @@ function cronologia(h){
     return `<li><i style="background:${COLOR[k]}"></i><span><b>${k === "cen" ? "Centro" : LADO[k][0].toUpperCase() + LADO[k].slice(1)}:</b> ${a ? `${esc(a.m)}, ${diaHora(a.p)}` : "ningún medio la ha publicado"}</span></li>`;
   }).join("");
   const filas = lista.map(a => `<li><time datetime="${a.p}">${hora(a.p)}</time><i style="background:${COLOR[lado(a.o)]}"></i><span>${esc(a.m)}</span></li>`).join("");
-  return `<section class="hist-crono" aria-labelledby="cro-t">
-    <h2 id="cro-t">Quién la contó primero</h2>
+  return `<details class="hist-crono"><summary>Quién la contó primero</summary>
     <p class="primero">La publicó primero <b>${esc(primero.m)}</b> (${ETIQUETA[primero.o].toLowerCase()}), ${diaHora(primero.p)}.</p>
     <ul class="crono-lados">${resumen}</ul>
     <details class="crono-todo"><summary>Ver el orden de todos los medios (${lista.length})</summary><ol>${filas}</ol>
       <p class="aparte">Hora de publicación que indica cada medio. En los medios sin canal de noticias propio es la hora a la que la detectamos.</p></details>
-  </section>`;
+  </details>`;
 }
 
-// Titulares por lado, con la etiqueta y el grupo propietario de cada medio
+// Titulares por lado (20/10). Primero los que cuentan la noticia de otra manera: es lo que el lector no ve en su periódico.
+// Los que repiten el título de la noticia, o casi (titulares de agencia), van juntos en una línea con el nombre de cada medio.
+const _pal = t => new Set(_norm(t).split(/[^a-z0-9ñ]+/).filter(w => w.length >= 4 && !_VACIAS.has(w)));
+const enComun = (t, base) => [..._pal(t)].filter(w => base.has(w)).length;
+// Casi igual: como mucho una palabra nueva y dos que faltan respecto al título («Dimite» por «Renuncia» sigue siendo igual)
+function casiIgual(t, base){
+  const a = _pal(t);
+  return [...a].filter(w => !base.has(w)).length <= 1 && [...base].filter(w => !a.has(w)).length <= 2;
+}
 function fuentes(h){
+  const base = _pal(h.t);
   const g = { izq: [], cen: [], der: [] };
-  for (const a of recientes(h)) g[lado(a.o)].push(a);
-  // Titulares de este lado que hablan de lo mismo con otro enfoque: no entran en el porcentaje, pero se muestran
+  for (const a of porMedio(h)) g[lado(a.o)].push(a);
+  // Titulares de este lado que hablan de lo mismo con otro enfoque: no entran en el reparto, pero se muestran
   const otros = k => (h.tb || []).filter(a => lado(a.o) === k);
-  const li = a => `<li><span class="medio">${esc(a.m)} <span class="ficha">${ETIQUETA[a.o]}${a.g && a.g !== a.m ? ` · ${/^grupo /i.test(a.g) ? "" : "Grupo "}${esc(a.g)}` : ""}${a.p ? ` · ${hora(a.p)}` : ""}</span></span><a href="${esc(a.u)}" target="_blank" rel="noopener">${esc(a.t)}</a></li>`;
-  // Se ven 3 titulares por lado; el resto, plegado (si no, en el ordenador la columna de titulares es mucho más larga que la otra)
+  const li = a => `<li><span class="medio">${esc(a.m)}${a.p ? ` · ${hora(a.p)}` : ""}</span><a href="${esc(a.u)}" target="_blank" rel="noopener">${esc(a.t)}</a></li>`;
+  const medio = a => `<a href="${esc(a.u)}" target="_blank" rel="noopener">${esc(a.m)}</a>`;
+  const y = l => l.length < 2 ? l.join("") : `${l.slice(0, -1).join(", ")} y ${l[l.length - 1]}`;
   const VISIBLES = 3;
   const nombre = k => k === "cen" ? "Centro" : LADO[k][0].toUpperCase() + LADO[k].slice(1);
-  const del = k => k === "cen" ? "del centro" : `de la ${LADO[k]}`;
-  const col = k => `<div class="bloque"><div class="lado eti"><i style="background:${COLOR[k]}"></i>${nombre(k)} · ${g[k].length}</div>
-    ${g[k].length ? `<ul>${g[k].slice(0, VISIBLES).map(li).join("")}</ul>` : `<p class="vacio">Ningún medio de este lado ha publicado este mismo hecho.</p>`}
-    ${g[k].length > VISIBLES ? `<details class="mas-lado"><summary>Ver ${g[k].length - VISIBLES === 1 ? "1 titular más" : `${g[k].length - VISIBLES} titulares más`} ${del(k)}</summary><ul>${g[k].slice(VISIBLES).map(li).join("")}</ul></details>` : ""}
-    ${otros(k).length ? `<details class="otro-enfoque"><summary class="eti">Con otro enfoque · ${otros(k).length}</summary><p class="aparte">Medios de este lado que hablan de lo mismo, pero su titular cuenta otro aspecto. No entran en el porcentaje, pero sí cuentan para no marcar la noticia como de cobertura desigual.</p><ul>${otros(k).map(li).join("")}</ul></details>` : ""}</div>`;
+  const distinto = a => _pal(a.t).size - enComun(a.t, base);
+  const minimo = Math.max(3, Math.ceil(base.size * 0.4));
+  const col = k => {
+    const todos = g[k];
+    const cab = `<div class="lado eti">${nombre(k)} · ${todos.length}</div>`;
+    if (!todos.length) return `<div class="bloque l-${k}">${cab}<p class="vacio">Ningún medio de este lado la ha publicado.</p></div>`;
+    const iguales = todos.filter(a => casiIgual(a.t, base));
+    // Los que comparten al menos el 40 % de las palabras del título (y 3 como mínimo) van antes: si no, puede ser un titular mal agrupado. Luego, los más distintos
+    const ordenados = todos.filter(a => !iguales.includes(a))
+      .sort((p, q) => ((enComun(q.t, base) >= minimo) - (enComun(p.t, base) >= minimo)) || (distinto(q) - distinto(p)));
+    // Variedad: un titular que repite casi todas las palabras de otro ya elegido (mismo grupo, misma agencia) va al final
+    const parecido = (a, b) => { const x = _pal(a.t), z = _pal(b.t), m = Math.min(x.size, z.size); return m && [...x].filter(w => z.has(w)).length / m >= 0.75; };
+    const distintos = [], repetidos = [];
+    for (const a of ordenados) (distintos.some(b => parecido(a, b)) ? repetidos : distintos).push(a);
+    distintos.push(...repetidos);
+    const resto = distintos.length - VISIBLES;
+    return `<div class="bloque l-${k}">${cab}
+      ${distintos.length ? `<ul>${distintos.slice(0, VISIBLES).map(li).join("")}</ul>` : ""}
+      ${resto > 0 ? `<details class="mas-lado"><summary>Ver ${resto === 1 ? "1 titular distinto más" : `${resto} titulares distintos más`}</summary><ul>${distintos.slice(VISIBLES).map(li).join("")}</ul></details>` : ""}
+      ${iguales.length ? `<p class="iguales">${distintos.length ? "Con el mismo titular que arriba, o casi" : "Todos con el mismo titular que arriba, o casi"}: ${y(iguales.map(medio))}.</p>` : ""}
+      ${otros(k).length ? `<details class="otro-enfoque"><summary class="eti">Con otro enfoque · ${otros(k).length}</summary><ul>${otros(k).map(li).join("")}</ul></details>` : ""}</div>`;
+  };
   return col("izq") + col("cen") + col("der");
+}
+
+// «Qué ha pasado»: la entradilla literal del medio, cortada al final de su primera frase
+function resumenCorto(t){
+  t = String(t || "").replace(/\s+/g, " ").replace(/^(El contexto|Los detalles|Lo que sabemos|Claves)\s+(?=[A-ZÁÉÍÓÚÑ¿])/, "").replace(/\s*Más información\s*:.*$/i, "").trim();
+  const m = t.slice(60).match(/[.!?]»?(?=\s|$)/);
+  if (m) return t.slice(0, 60 + m.index + m[0].length);
+  return t.length >= 390 ? t.replace(/\s+\S*$/, "") + "…" : t;
+}
+
+// Cuántos medios de cada lado la publican, y la fila de los 38
+function cuentas(h, T){
+  const n = { izq: new Set(), cen: new Set(), der: new Set() };
+  for (const a of h.a) n[lado(a.o)].add(a.m);
+  const c = (k, cls, nom) => `<span class="${cls}"><b>${n[k].size}</b>${T ? `de ${Math.max(T[k] || 0, n[k].size)}` : ""}<small>${nom}</small></span>`;
+  return `<div class="cuentas3">${c("izq", "i", "medios de izquierda")}${c("cen", "c", "de centro")}${c("der", "d", "de derecha")}</div>${fila38(h, T)}`;
 }
 
 function avisar(){
@@ -827,42 +907,39 @@ function avisar(){
 
 function pintar(h){
   const secciones = (window.seccionesDe ? window.seccionesDe(h) : []).map(s => window.SECCIONES.find(x => x.id === s)).filter(Boolean);
-  const voces = porMedio(h);
-  const n = k => voces.filter(a => lado(a.o) === k).length;
-  const ent = h.ent ? voces.find(a => a.m === h.entm) : null;
+  const ent = h.ent ? porMedio(h).find(a => a.m === h.entm) : null;
+  const fuenteEnt = ent ? `<a href="${esc(ent.u)}" target="_blank" rel="noopener">${esc(h.entm)}</a>` : esc(h.entm || "");
   document.title = `${h.t} · Vista Plena`;
+  // Orden (20/10): qué ha pasado, quién la cuenta, cómo la titula cada lado; lo demás, plegado al final
   art.innerHTML = `
     <header class="hist-cab">
       <div id="novedad"></div>
       <div class="hist-etis">${secciones.map(s => `<a class="tema" href="./?seccion=${s.id}">${s.nombre}</a>`).join("")}${h.ciego ? `<span class="chip">La ${h.ciego} apenas la cuenta</span>` : ""}</div>
       <h1>${esc(h.t)}</h1>
-      ${meta(h)}
-      <p class="hilo" id="hilo" hidden></p>
+      <p class="hist-sub">${h.tot} medios · ${haceCuanto(h.act)}</p>
+      <div class="hist-intro${h.f ? " con-foto" : ""}">
+        ${h.ent ? `<section class="hist-que" aria-labelledby="que-t"><span class="eti" id="que-t">Qué ha pasado</span>
+          <p>${esc(resumenCorto(h.ent))} <span class="fuente">— Según ${fuenteEnt}</span></p></section>` : "<div></div>"}
+        ${foto(h, "hist-foto")}
+      </div>
       <section class="hist-cob" aria-labelledby="cob-t">
-        <h2 id="cob-t">Quién la cuenta${info(`${lectura(h).replace(/<\/?strong>/g, "")} La publican ${h.tot} medios: ${n("izq")} de izquierda o centroizquierda, ${n("cen")} de centro y ${n("der")} de derecha o centroderecha.${h.voces && h.voces < h.tot ? ` Los medios de un mismo grupo y del mismo lado cuentan como una sola voz, por eso el porcentaje se calcula sobre ${h.voces} voces.` : ""} Cada lado se compara con lo que suele publicar. La barra no dice si la noticia es verdad ni a quién beneficia: solo quién la está contando. <a href='metodologia.html#que'>Cómo se calcula</a>`, "Cómo leer la barra")}</h2>
-        ${barra(h, true)}
-        <div id="pctHist">${pct(h)}</div>
-        <div id="filaHist">${fila38(h, totalesGuardados())}</div>
+        <h2 id="cob-t">Quién la cuenta${info(`Cada cuadro es uno de los medios que leemos; relleno, si ha publicado la noticia. La portada y los puntos ciegos comparan además cada lado con lo que suele publicar, porque los medios de derecha publican más noticias en general. <a href='metodologia.html#que'>Cómo se calcula</a>`, "Cómo leer quién la cuenta")}</h2>
+        <div id="cuentasHist">${cuentas(h, totalesGuardados())}</div>
         ${h.ciego ? `<p class="resumen">${lectura(h)}<span id="ctxCiego"></span></p>` : ""}
       </section>
     </header>
-    <div class="hist-cuerpo">
-      <div class="hist-izq">
-        ${foto(h, "hist-foto")}
-        ${h.ent ? `<section class="hist-que" aria-labelledby="que-t"><h2 id="que-t">Qué ha pasado</h2>
-          <blockquote>${esc(h.ent)}${h.ent.length >= 395 ? "…" : ""}</blockquote>
-          <p class="aparte">Entradilla de ${esc(h.entm)}, el medio más cercano al centro que la publica.${ent ? ` <a href="${esc(ent.u)}" target="_blank" rel="noopener">Leer la noticia completa</a>` : ""}</p></section>` : ""}
-        ${cronologia(h)}
-        ${compartir(h)}
-      </div>
-      <section class="hist-asi" aria-labelledby="asi-t">
-        <h2 id="asi-t">Así la titula cada lado${info("Cada titular enlaza a la noticia original. Junto al medio, su etiqueta, su grupo propietario y la hora de publicación. <a href='metodologia.html#etiquetas'>De dónde sale cada etiqueta</a>", "Cómo leer los titulares")}</h2>
-        ${fuentes(h)}
-        ${avisar()}
-      </section>
-    </div>`;
-  // Con el total de medios de cada lado, la frase se vuelve comparable entre bloques de distinto tamaño
-  totalesMedios().then(T => { const el = document.getElementById("pctHist"); if (el) el.innerHTML = pctCuentas(h, T); const fl = document.getElementById("filaHist"); if (fl) fl.innerHTML = fila38(h, T); }).catch(() => {});
+    <section class="hist-titulares" aria-labelledby="asi-t">
+      <h2 id="asi-t">Cómo la titula cada lado${info("Cada titular enlaza a la noticia original. Primero van los que cuentan la noticia de otra manera; los que repiten el título de arriba, o casi, se juntan en una línea. <a href='metodologia.html#etiquetas'>De dónde sale la etiqueta de cada medio</a>", "Cómo leer los titulares")}</h2>
+      <div class="lados">${fuentes(h)}</div>
+    </section>
+    <p class="hilo" id="hilo" hidden></p>
+    <section class="hist-mas" aria-label="Más sobre esta noticia">
+      ${cronologia(h)}
+      <details class="hist-comp"><summary>Compartir</summary>${compartir(h)}</details>
+      ${avisar()}
+    </section>`;
+  // Con el total de medios de cada lado: «5 de 13»
+  totalesMedios().then(T => { const el = document.getElementById("cuentasHist"); if (el) el.innerHTML = cuentas(h, T); }).catch(() => {});
   const nativo = document.getElementById("cNativo");
   if (nativo) nativo.addEventListener("click", () => navigator.share({ title: h.t, text: "Quién la cuenta y quién no, en Vista Plena", url: direccion() }).catch(() => {}));
   document.getElementById("cCopiar").addEventListener("click", async () => {

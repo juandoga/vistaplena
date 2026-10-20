@@ -200,8 +200,7 @@ function fila38(h, T){
   for (const a of h.a) n[lado(a.o)].add(a.m);
   const tot = k => Math.max(T[k] || 0, n[k].size);
   const g = (k, cls) => `<span class="f-${cls}" style="flex-grow:${tot(k)}">${Array.from({ length: tot(k) }, (_, i) => `<i${i < n[k].size ? ' class="si"' : ""}></i>`).join("")}</span>`;
-  return `<div class="fila38" role="img" aria-label="La publican ${n.izq.size} de los ${tot("izq")} medios de izquierda, ${n.cen.size} de los ${tot("cen")} de centro y ${n.der.size} de los ${tot("der")} de derecha">${g("izq", "i")}${g("cen", "c")}${g("der", "d")}</div>`
-    + `<p class="fila38-pie">Cada cuadro es uno de los ${tot("izq") + tot("cen") + tot("der")} medios que leemos. Relleno: la ha publicado.</p>`;
+  return `<div class="fila38" role="img" aria-label="La publican ${n.izq.size} de los ${tot("izq")} medios de izquierda, ${n.cen.size} de los ${tot("cen")} de centro y ${n.der.size} de los ${tot("der")} de derecha">${g("izq", "i")}${g("cen", "c")}${g("der", "d")}</div>`;
 }
 
 // Aspecto: automático (el del móvil), claro u oscuro. Se guarda en este navegador.
