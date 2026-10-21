@@ -11,7 +11,8 @@ create or replace view public.portada_v2 as
            FROM articulos a JOIN medios m ON m.id = a.medio_id
           WHERE a.historia_id IS NOT NULL
         ), voces AS (
-         SELECT DISTINCT historia_id, grupo, lado FROM por_medio
+         -- 21/10: cada medio cuenta por separado (antes, dos del mismo grupo y lado eran una «voz»). La columna sigue llamándose voces
+         SELECT DISTINCT historia_id, medio_id::text AS grupo, lado FROM por_medio
         ), cuentas AS (
          SELECT v.historia_id, count(*) AS voces,
             count(*) FILTER (WHERE v.lado = 'izq') AS izq,
@@ -56,9 +57,9 @@ create or replace view public.portada_v2 as
     100 - coalesce(c.p_izq, 0) - coalesce(c.p_der, 0) AS pct_cen,
         CASE
             WHEN COALESCE(t.ligera, false) THEN NULL::text
-            WHEN c.voces >= 5 AND h.creada < now() - interval '6 hours' AND coalesce(c.p_izq, 0) < 10 AND coalesce(c.p_der, 0) >= 50
+            WHEN c.voces >= 6 AND h.ia_politica IS TRUE AND h.creada < now() - interval '6 hours' AND coalesce(c.p_izq, 0) < 10 AND coalesce(c.p_der, 0) >= 50
               AND NOT EXISTS (SELECT 1 FROM jsonb_array_elements(h.tambien) x(value) WHERE (x.value ->> 'orientacion')::integer < 0) THEN 'izquierda'::text
-            WHEN c.voces >= 5 AND h.creada < now() - interval '6 hours' AND coalesce(c.p_der, 0) < 10 AND coalesce(c.p_izq, 0) >= 50
+            WHEN c.voces >= 6 AND h.ia_politica IS TRUE AND h.creada < now() - interval '6 hours' AND coalesce(c.p_der, 0) < 10 AND coalesce(c.p_izq, 0) >= 50
               AND NOT EXISTS (SELECT 1 FROM jsonb_array_elements(h.tambien) x(value) WHERE (x.value ->> 'orientacion')::integer > 0) THEN 'derecha'::text
             ELSE NULL::text
         END AS punto_ciego,
