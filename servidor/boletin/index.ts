@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
       const { data: H } = await db.from("portada_v2").select("titulo,total,voces,pct_izq,pct_cen,pct_der,punto_ciego,imagen,articulos,actualizada")
         .gte("actualizada", new Date(Date.now() - 7 * 864e5).toISOString()).order("voces", { ascending: false }).limit(80);
       const top = (H ?? []).slice(0, 7);
-      const ciegos = (H ?? []).filter((h) => h.punto_ciego && (h.voces ?? 0) >= 5 && !top.includes(h)).slice(0, 4);
+      const ciegos = (H ?? []).filter((h) => h.punto_ciego && (h.total ?? 0) >= 6 && !top.includes(h)).slice(0, 4);
       if (top.length < 3) return json({ ok: false, error: "No hay suficientes historias para el resumen" });
       const fecha = new Date().toLocaleDateString("es-ES", { day: "numeric", month: "long", timeZone: "Europe/Madrid" });
       const asunto = `La semana en Vista Plena · ${top[0].titulo.slice(0, 70)}`;

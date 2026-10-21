@@ -174,7 +174,7 @@ def cuerpo_noticia(h, tema, archivada=False):
     aviso = (f'<p class="hilo"><span><b>Archivo:</b> historia del {fecha(h["creada"])}. Se guarda porque la contaron {h["total"]} medios. '
              f'<a href="/archivo/">Ver todo el archivo</a></span></p>') if archivada else ""
     return (f'<header class="hist-cab"><h1>{esc(h["titulo"])}</h1>'
-            f'<div class="meta"><span>{h["total"]} medios · {h["voces"]} voces</span></div>{tema_html}{aviso}</header>'
+            f'<div class="meta"><span>{h["total"]} medios</span></div>{tema_html}{aviso}</header>'
             f'<div class="hist-cuerpo"><div class="hist-izq">{ent}'
             f'<section class="hist-cob"><h2>Quién la cuenta</h2><p class="resumen">{esc(lectura(h))}</p>'
             f'<p class="cuenta">La publican <b>{h["total"]} medios</b>: {n["izq"]} de izquierda o centroizquierda, {n["cen"]} de centro '

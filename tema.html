@@ -818,7 +818,7 @@ function pintar(t, H, S = []){
       <aside class="tema-lado">
         <h2 class="eti">Cobertura de todo el tema</h2>
         ${barra(acum, true)}${pct(acum)}
-        <p>Suma de las voces de las ${H.length} noticias.${ciegas ? ` ${ciegas === 1 ? "Una de ellas tiene" : `${ciegas} de ellas tienen`} cobertura desigual.` : ""}</p>
+        <p>Suma de los medios de las ${H.length} noticias.${ciegas ? ` ${ciegas === 1 ? "Una de ellas tiene" : `${ciegas} de ellas tienen`} cobertura desigual.` : ""}</p>
         ${(t.hilos || []).length ? `<h2 class="eti">Dentro de este tema</h2><p class="hilos">${t.hilos.map(x => `<a class="tema" href="${urlTema(x.id, x.nombre)}">${esc(x.nombre)}</a>`).join(" ")}</p>` : ""}
         <p class="aparte">${esAsunto ? "Este tema lo agrupa una IA: junta las noticias que nacen del mismo origen aunque cambien de protagonista. " : ""}Un tema reúne varias noticias sobre el mismo asunto. Cada noticia es un hecho distinto, con su propia cobertura y sus propios titulares. <a href="metodologia.html#temas">Cómo formamos los temas</a>.</p>
       </aside>

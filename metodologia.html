@@ -613,7 +613,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   </header>
 
   <nav class="indice" aria-label="En esta página">
-    <a href="#como">Cuatro pasos</a><a href="#que">Qué medimos</a><a href="#etiquetas">Las etiquetas</a><a href="#voces">Medios y voces</a><a href="#agrupar">Cómo agrupamos</a><a href="#ciegos">Cobertura desigual</a><a href="#limites">Límites</a><a href="#medios">Los medios</a><a href="#datos">Datos abiertos</a><a href="#cambios">Proponer un cambio</a>
+    <a href="#como">Cuatro pasos</a><a href="#que">Qué medimos</a><a href="#etiquetas">Las etiquetas</a><a href="#voces">Cada medio cuenta</a><a href="#agrupar">Cómo agrupamos</a><a href="#ciegos">Cobertura desigual</a><a href="#limites">Límites</a><a href="#medios">Los medios</a><a href="#datos">Datos abiertos</a><a href="#cambios">Proponer un cambio</a>
   </nav>
 
   <section class="premisa" id="premisa" style="padding-top:8px">
@@ -674,20 +674,16 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <p>Cada medio tiene su <a href="/medio/">ficha</a> con su etiqueta, sus cifras, su grado de confianza, sus cambios de etiqueta y qué grandes historias ha publicado y cuáles no.</p>
     <h3>Cambios</h3>
     <ul class="lista">
+      <li><strong>21 de octubre de 2026.</strong> Cada medio cuenta por separado (antes, dos del mismo grupo y lado eran una voz). La cobertura desigual pide ahora al menos 6 medios (antes 5) y que la noticia sea política. Con 5 medios salían muchas noticias en el límite, casi todas no políticas, y casi siempre de poca cobertura en la izquierda.</li>
       <li><strong>9 de octubre de 2026.</strong> Lo que llamábamos «punto ciego» pasa a llamarse «cobertura desigual» o «poca cobertura en la izquierda / en la derecha»: describe mejor lo que medimos.</li>
       <li><strong>9 de octubre de 2026.</strong> Primera clasificación con mediciones públicas. RTVE pasa de centro a centroizquierda; ABC y La Razón, de derecha a centroderecha.</li>
     </ul>
   </section>
 
   <section id="voces">
-    <h2>Medios y voces</h2>
-    <p>Varios medios pertenecen al mismo grupo editorial y a menudo comparten noticias. Si contáramos cada cabecera por separado, un grupo con dos periódicos pesaría el doble.</p>
-    <p>Por eso los porcentajes no se calculan sobre medios, sino sobre <strong>voces</strong>. <strong>Dos medios del mismo grupo y del mismo lado cuentan como una sola voz.</strong></p>
-    <div class="ejemplos">
-      <div><strong>Cuentan como una voz</strong><span>El País y Cadena SER (PRISA, ambos de centroizquierda)</span><span>20minutos y Heraldo de Aragón (Henneo, ambos de centro)</span></div>
-      <div><strong>Cuentan por separado</strong><span>Antena 3 Noticias y laSexta (Atresmedia, pero de centro y de centroizquierda)</span><span>ABC y El Correo (Vocento, pero de derecha y de centro)</span></div>
-    </div>
-    <p>En cada noticia verás las dos cifras cuando no coinciden; por ejemplo, «12 medios · 11 voces».</p>
+    <h2>Cada medio cuenta por separado</h2>
+    <p>Varios medios pertenecen al mismo grupo editorial, como El País y la Cadena SER (PRISA) o 20minutos y Heraldo de Aragón (Henneo). Cada uno cuenta como un medio, porque cada redacción decide qué publica y cómo lo titula: en una semana de octubre de 2026, de 183 noticias que publicaron dos medios del mismo grupo, solo en 3 usaron el mismo titular.</p>
+    <p>Hasta el 21 de octubre de 2026, dos medios del mismo grupo y del mismo lado contaban como una sola «voz». Lo quitamos porque castigaba a redacciones que trabajan por su cuenta y no cambiaba el reparto medio (31 % izquierda, 33 % centro y 36 % derecha, igual con las dos formas de contar). De quién es cada medio lo verás en su <a href="/medio/">ficha</a>.</p>
   </section>
 
   <section id="agrupar">
@@ -725,19 +721,20 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 
   <section id="ciegos">
     <h2>Qué es la cobertura desigual</h2>
-    <p>Una noticia tiene <strong>poca cobertura en la izquierda</strong> cuando se cumplen cinco condiciones a la vez:</p>
+    <p>Una noticia tiene <strong>poca cobertura en la izquierda</strong> cuando se cumplen seis condiciones a la vez:</p>
     <ul class="lista">
-      <li>La cuentan al menos 5 voces. Con menos, la diferencia puede ser casualidad.</li>
+      <li>Es una <strong>noticia política</strong>: toca el poder público o un debate político (gobierno, partidos, leyes, tribunales en casos políticos, políticas públicas, huelgas y protestas, relaciones internacionales). Lo decide una revisión con IA; ante la duda, no se marca. Un terremoto o los resultados de una empresa no son cobertura desigual aunque un lado no los cuente.</li>
+      <li>La cuentan al menos 6 medios. Con menos, la diferencia puede ser casualidad.</li>
       <li>Lleva publicada al menos 6 horas, para que los medios del otro lado hayan tenido tiempo de contarla.</li>
       <li>La mitad o más son de derechas.</li>
-      <li>Las de izquierdas son menos del 10 %. Con menos de 10 voces, eso significa que no la ha publicado ningún medio de izquierdas.</li>
+      <li>Las de izquierdas son menos del 10 %. Con menos de 10 medios, eso significa que no la ha publicado ningún medio de izquierdas.</li>
       <li>Ningún medio de izquierdas la ha contado <strong>con otro enfoque</strong>. Antes de marcarla buscamos, entre los titulares de ese lado de las 12 horas anteriores y posteriores, alguno que comparta con la historia al menos tres palabras clave, dos de ellas poco frecuentes (un nombre, un lugar, un dato). Si lo hay, no se marca: ese lado sí lo ha contado, aunque con otro titular. Esos titulares aparecen en la noticia como «con otro enfoque» y no entran en el porcentaje.</li>
     </ul>
     <p>La poca cobertura en la derecha es lo mismo al revés. No decimos que un lado oculte la noticia: solo medimos que, entre los medios que leemos, casi ninguno de ese lado la ha publicado. Otros servicios, como Ground News, lo llaman «punto ciego». La regla está inspirada en la de <a href="https://ground.news/rating-system" target="_blank" rel="noopener">Ground News</a>, adaptada al menor número de medios que hay en España.</p>
     <p><strong>Por noticia, no por tema.</strong> Medimos la cobertura de cada hecho y no de cada tema porque lo habitual no es que un lado ignore un tema entero, sino que lo cuente sin un hecho concreto que le resulta incómodo. Si medimos por temas, eso desaparecería. Cuando el lado que apenas cuenta una noticia sí ha contado otras del mismo tema grande, lo decimos junto a la noticia: lo que falta es ese hecho, no el tema.</p>
     <h3>Qué noticias no se marcan</h3>
     <p>Las de <strong>deportes, prensa del corazón, televisión, tiempo, sorteos y ocio</strong> no salen en Vista Plena, salvo que tengan una dimensión política: que un lado publique más fútbol o más crónica social no dice nada sobre qué información le falta a sus lectores. Tampoco entran los <strong>artículos de opinión</strong> (columnas, tribunas, editoriales): no informan de un hecho. Los reconocemos por la sección del medio en la dirección de la noticia (por ejemplo, <code>/deportes/</code> u <code>/opinion/</code>), por palabras del titular y, desde octubre de 2026, por una revisión con IA que solo responde si una noticia es un asunto público o no.</p>
-    <p>Estas reglas (5 voces, 6 horas, 10 % y 50 %) son un punto de partida razonable, no un estándar científico. Revisamos cada mes una muestra de noticias marcadas para comprobar si la marca se sostiene y ajustarlas.</p>
+    <p>Estas reglas (noticia política, 6 medios, 6 horas, 10 % y 50 %) son un punto de partida razonable, no un estándar científico. Revisamos cada mes una muestra de noticias marcadas para comprobar si la marca se sostiene y ajustarlas.</p>
     <p class="aviso">Algunos medios publican muchos más titulares que otros, y hoy los de derecha publican en conjunto más del doble que los de izquierda. Por eso aparecen más noticias con poca cobertura en la izquierda que en la derecha. Estamos ampliando las fuentes de los medios de izquierda y limitando las secciones regionales y de ocio de los más prolíficos para equilibrarlo.</p>
   </section>
 
@@ -800,7 +797,7 @@ const ETI = { "-2": "Izquierda", "-1": "Centroizquierda", "0": "Centro", "1": "C
 const COL = { "-2": "var(--izq)", "-1": "var(--izq)", "0": "var(--cen)", "1": "var(--der)", "2": "var(--der)" };
 const fecha = d => d ? new Date(d + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }) : "";
 document.getElementById("d-medios").href = `${SUPA.url}/rest/v1/estado_medios?select=*&apikey=${SUPA.key}`;
-document.getElementById("d-historias").href = `${SUPA.url}/rest/v1/portada_m?select=*&order=voces.desc&apikey=${SUPA.key}`;
+document.getElementById("d-historias").href = `${SUPA.url}/rest/v1/portada_m?select=*&order=total.desc&apikey=${SUPA.key}`;
 document.getElementById("d-archivo").href = `${SUPA.url}/rest/v1/archivo?select=*&fusionada=eq.false&order=creada.desc&apikey=${SUPA.key}`;
 const coma = n => Number(n).toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const medicion = m => {
