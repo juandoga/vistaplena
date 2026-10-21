@@ -94,6 +94,15 @@ Para cada noticia (por su título) decide:
 - "ligera": es deporte, famosos o prensa del corazón, cine, series, música o espectáculos, ocio y planes, horarios o festivos o compras, sorteos, previsión del tiempo corriente, curiosidades, o un suceso sin dimensión pública (un accidente aislado, una detención de un famoso). Si una de estas noticias tiene dimensión política o pública clara (una ley, una decisión de gobierno, un juicio, dinero público), es "publica".
 Responde solo con JSON, una clave por número: {"1":"publica","2":"ligera"}.`;
 
+// Solo una noticia política puede tener cobertura desigual (punto ciego), como en Ground News («political undertones»).
+// Decidido por Juan el 21/10: un terremoto o los resultados de una empresa no son un punto ciego aunque un lado no los cuente.
+const POLITICA = `Eres el editor de una web que señala qué noticias políticas cuenta solo un lado del espectro ideológico.
+Para cada noticia (por su título) decide si es política:
+- "si": toca el poder público o un debate político: gobierno y administración, partidos y elecciones, leyes y decretos, tribunales en casos con dimensión política (cargos públicos, partidos, leyes), políticas públicas (vivienda, impuestos, inmigración, sanidad o educación públicas, energía, clima), conflictos sociales organizados (huelgas, protestas, sindicatos y patronal frente al Gobierno), relaciones internacionales, guerras y política de otros países.
+- "no": empresas y mercados sin una decisión pública de por medio, sucesos y crímenes sin cargo público ni debate político, catástrofes naturales, ciencia, salud o cultura sin una decisión pública, tecnología, consumo.
+Ante la duda, "no".
+Responde solo con JSON, una clave por número: {"1":"si","2":"no"}.`;
+
 Deno.serve(async (req) => {
   if (!(await esInterna(req))) return json({ error: "Solo para tareas internas" }, 401);
   if (!CLAVE) return json({ ok: true, hecho: 0, motivo: "Falta el secreto GEMINI_API_KEY" });
@@ -259,6 +268,21 @@ Deno.serve(async (req) => {
       if (t === "ligera") { ligeras++; informe.push({ ligera: lote[j].titulo }); }
     }
   }
-  if (juntadas || ligeras || sacados || enlazadas) await db.rpc("refrescar_portada");
-  return json({ ok: true, modelo, automatico: auto, consultas: informe.length, revisados, sacados, juntadas, enlazadas, ligeras, detalle: informe.filter((x) => !x.respuestas || x.respuestas.length).slice(0, 60) });
+  // Fase 4: ¿es política? Solo las políticas pueden salir como cobertura desigual (ver la vista portada_v2_calculo)
+  let politicas = 0;
+  const { data: sinPol } = (vis ?? []).length ? await db.from("historias").select("id, titulo").is("ia_politica", null).eq("ia_tipo", "publica").in("id", vis!.map((x) => x.id)) : { data: [] as any[] };
+  for (let i = 0; i < (sinPol ?? []).length && quedan > 0 && Date.now() - inicio < 118e3; i += 25) {
+    const lote = sinPol!.slice(i, i + 25);
+    quedan--;
+    let res: Record<string, string>;
+    try { res = await gemini(modelo, POLITICA, lote.map((h: any, j: number) => `${j + 1}) ${h.titulo}`).join("\n")); } catch (e) { informe.push({ error: String(e).slice(0, 200) }); break; }
+    for (let j = 0; j < lote.length; j++) {
+      const t = res[String(j + 1)];
+      if (t !== "si" && t !== "no") continue;
+      await db.from("historias").update({ ia_politica: t === "si" }).eq("id", lote[j].id);
+      if (t === "si") politicas++;
+    }
+  }
+  if (juntadas || ligeras || sacados || enlazadas || politicas) await db.rpc("refrescar_portada");
+  return json({ ok: true, modelo, automatico: auto, consultas: informe.length, revisados, sacados, juntadas, enlazadas, ligeras, politicas, detalle: informe.filter((x) => !x.respuestas || x.respuestas.length).slice(0, 60) });
 });
