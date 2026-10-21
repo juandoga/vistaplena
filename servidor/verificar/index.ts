@@ -270,7 +270,9 @@ Deno.serve(async (req) => {
   }
   // Fase 4: ¿es política? Solo las políticas pueden salir como cobertura desigual (ver la vista portada_v2_calculo)
   let politicas = 0;
-  const { data: sinPol } = (vis ?? []).length ? await db.from("historias").select("id, titulo").is("ia_politica", null).eq("ia_tipo", "publica").in("id", vis!.map((x) => x.id)) : { data: [] as any[] };
+  // Solo las de 6 medios o más pueden ser cobertura desigual: esas primero (si una crece, entra en la siguiente pasada)
+  const { data: vis6 } = await db.from("portada_m").select("id").gte("total", 6).gt("actualizada", new Date(Date.now() - 2 * 864e5).toISOString()).limit(1000);
+  const { data: sinPol } = (vis6 ?? []).length ? await db.from("historias").select("id, titulo").is("ia_politica", null).eq("ia_tipo", "publica").in("id", vis6!.map((x) => x.id)) : { data: [] as any[] };
   for (let i = 0; i < (sinPol ?? []).length && quedan > 0 && Date.now() - inicio < 118e3; i += 25) {
     const lote = sinPol!.slice(i, i + 25);
     quedan--;
