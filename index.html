@@ -460,6 +460,9 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .top{border-bottom:2px solid var(--tinta)}
 .cab-seccion{border-top:4px solid var(--tinta);padding-top:12px}
 .pieza,.ultimo-lista li{border-top-color:var(--tinta)}
+
+/* 21/10: una cifra por tarjeta. La barra ya no lleva porcentajes dentro, así que la grande es más fina */
+.barra.grande{height:14px!important}
 </style>
 </head>
 <body>
@@ -523,7 +526,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <div class="guia-cols" id="guiaCols" hidden>
       <div>
         <h3>La barra</h3>
-        <div class="barra grande" aria-hidden="true"><div class="b-izq" style="flex-grow:40">40 %</div><div class="b-cen" style="flex-grow:30">30 %</div><div class="b-der" style="flex-grow:30">30 %</div></div>
+        <div class="barra grande" aria-hidden="true"><div class="b-izq" style="flex-grow:40"></div><div class="b-cen" style="flex-grow:30"></div><div class="b-der" style="flex-grow:30"></div></div>
         <div class="leyenda"><span>Izquierda</span><span>Centro</span><span>Derecha</span></div>
         <p style="margin-top:14px">Compara cada lado con lo que suele publicar. Los medios de derecha que leemos sacan más del doble de titulares que los de izquierda; si solo contáramos medios, casi todo parecería «de derechas». Por eso una noticia normal sale repartida, y el tramo rojo crece cuando la izquierda la cuenta más de lo habitual.</p>
         <p class="aparte">No dice si la noticia es verdad ni a quién beneficia. Solo quién la está contando.</p>
@@ -538,7 +541,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
       </div>
       <div>
         <h3>Puntos ciegos</h3>
-        <div class="barra grande" aria-hidden="true"><div class="b-cen" style="flex-grow:25">25 %</div><div class="b-der" style="flex-grow:75">75 %</div></div>
+        <div class="barra grande" aria-hidden="true"><div class="b-cen" style="flex-grow:25"></div><div class="b-der" style="flex-grow:75"></div></div>
         <div class="leyenda"><span></span><span></span><span>sin medios de izquierda</span></div>
         <p style="margin-top:14px">Una noticia con <strong>cobertura desigual</strong>: una noticia política que publican al menos 6 medios, la mitad o más del mismo lado, y casi ninguno del otro tras 6 horas.</p>
         <p class="aparte">Quien solo lee prensa de ese lado no se entera.</p>
@@ -612,7 +615,7 @@ document.getElementById("fechaHoy").textContent = fh.charAt(0).toUpperCase() + f
 function pieza(h){
   const el = document.createElement("article");
   el.className = "pieza"; el.id = "h-" + (h.idx ?? "");
-  el.innerHTML = `${foto(h)}${meta(h)}<h3><a href="${enlace(h)}">${esc(h.t)}</a></h3>${barra(h)}${pct(h)}${h.ciego ? `<p class="nota">${lectura(h)} ${contextoCiego(CIEGO_CTX.get(h.id), h)}</p>` : ""}${masTema(h)}
+  el.innerHTML = `${foto(h)}${meta(h)}<h3><a href="${enlace(h)}">${esc(h.t)}</a></h3>${barra(h)}${h.ciego ? `<p class="nota">${lectura(h)} ${contextoCiego(CIEGO_CTX.get(h.id), h)}</p>` : ""}${masTema(h)}
     <button class="ver" aria-expanded="false">Cómo la titula cada lado</button><div hidden>${bloques(h)}</div>`;
   const b = el.querySelector(".ver"), d = b.nextElementSibling;
   b.addEventListener("click", () => { d.hidden = !d.hidden; b.setAttribute("aria-expanded", !d.hidden); });
@@ -766,10 +769,9 @@ function render(){
       const vistas = new Set([lead, ...hoy]);
             c.insertAdjacentHTML("beforeend", `
         <section class="principal" id="h-0">
-          <div>${lead.f ? `<figure class="foto hero"><img src="${esc(lead.f)}" alt="" referrerpolicy="no-referrer" onload="this.classList.add('ok')" onerror="this.closest('figure').classList.add('sinfoto')"><div class="sombra"></div><figcaption>Foto: ${esc(lead.fm)}</figcaption><div class="sobre">${porque(lead)}${meta(lead)}<h1><a href="${enlace(lead)}">${esc(lead.t)}</a></h1>${barra(lead, true)}</div></figure>` : `${porque(lead)}${meta(lead)}<h1><a href="${enlace(lead)}">${esc(lead.t)}</a></h1>${barra(lead, true)}`}<div id="leadPct">${pct(lead)}</div>${lead.ciego ? `<p class="resumen">${lectura(lead)}</p>` : ""}${masTema(lead)}</div>
+          <div>${lead.f ? `<figure class="foto hero"><img src="${esc(lead.f)}" alt="" referrerpolicy="no-referrer" onload="this.classList.add('ok')" onerror="this.closest('figure').classList.add('sinfoto')"><div class="sombra"></div><figcaption>Foto: ${esc(lead.fm)}</figcaption><div class="sobre">${porque(lead)}${meta(lead)}<h1><a href="${enlace(lead)}">${esc(lead.t)}</a></h1>${barra(lead, true)}</div></figure>` : `${porque(lead)}${meta(lead)}<h1><a href="${enlace(lead)}">${esc(lead.t)}</a></h1>${barra(lead, true)}`}${lead.ciego ? `<p class="resumen">${lectura(lead)}</p>` : ""}${masTema(lead)}</div>
           <div class="asi"><button type="button" class="desplegar asi-bot" aria-expanded="false">Cómo la titula cada lado</button><h3>Así la titula cada lado</h3>${bloques(lead, 2)}<a class="ver-todos boton secundario" href="${enlace(lead)}">Comparar los ${lead.tot} titulares</a></div>
         </section>`);
-      totalesMedios().then(T => { const el = document.getElementById("leadPct"); if (el) el.innerHTML = pctCuentas(lead, T); }).catch(() => {});
       const yaVistas = new Set([...vistas].map(h => h.id));
       // Lo más contado, todo junto: la principal y justo debajo las siguientes. Después, los puntos ciegos
       c.insertAdjacentHTML("beforeend", resumenDia([lead, ...hoy], hoy));

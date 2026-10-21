@@ -701,6 +701,22 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .hist-mas .primero{margin-top:12px}
 .hist-mas .compartir{margin-top:12px;padding-top:0;border-top:0}
 .hist-mas .compartir .eti{display:none}
+
+/* 21/10: una cifra por tarjeta. La barra ya no lleva porcentajes dentro, así que la grande es más fina */
+.barra.grande{height:14px!important}
+
+/* Pestañas de titulares en el móvil (21/10). En escritorio se ven las tres columnas a la vez */
+.lado-tabs{display:none}
+@media (max-width:880px){
+  .lado-tabs{display:flex;gap:0;margin:0 0 16px;border-bottom:2px solid var(--tinta);overflow-x:auto;scrollbar-width:none}
+  .lado-tabs::-webkit-scrollbar{display:none}
+  .lado-tabs button{flex:1 0 auto;min-height:44px;padding:0 14px;background:none;border:0;border-bottom:4px solid transparent;margin-bottom:-2px;font-size:var(--t-s);font-weight:700;color:var(--gris)}
+  .lado-tabs button[data-lado="izq"][aria-pressed="true"]{border-bottom-color:var(--izq)}
+  .lado-tabs button[data-lado="cen"][aria-pressed="true"]{border-bottom-color:var(--cen)}
+  .lado-tabs button[data-lado="der"][aria-pressed="true"]{border-bottom-color:var(--der)}
+  .lado-tabs button[aria-pressed="true"]{color:var(--tinta);border-bottom-color:var(--tinta)}
+  .lados[data-ver="izq"] > .bloque:not(.l-izq),.lados[data-ver="cen"] > .bloque:not(.l-cen),.lados[data-ver="der"] > .bloque:not(.l-der){display:none}
+}
 </style>
 </head>
 <body>
@@ -930,7 +946,8 @@ function pintar(h){
     </header>
     <section class="hist-titulares" aria-labelledby="asi-t">
       <h2 id="asi-t">Cómo la titula cada lado${info("Cada titular enlaza a la noticia original. Primero van los que cuentan la noticia de otra manera; los que repiten el título de arriba, o casi, se juntan en una línea. <a href='metodologia.html#etiquetas'>De dónde sale la etiqueta de cada medio</a>", "Cómo leer los titulares")}</h2>
-      <div class="lados">${fuentes(h)}</div>
+      <div class="lado-tabs" role="group" aria-label="Ver los titulares de un lado"><button type="button" data-lado="todos" aria-pressed="true">Todos</button><button type="button" data-lado="izq" aria-pressed="false">Izquierda</button><button type="button" data-lado="cen" aria-pressed="false">Centro</button><button type="button" data-lado="der" aria-pressed="false">Derecha</button></div>
+      <div class="lados" data-ver="todos">${fuentes(h)}</div>
     </section>
     <p class="hilo" id="hilo" hidden></p>
     <section class="hist-mas" aria-label="Más sobre esta noticia">
@@ -940,6 +957,12 @@ function pintar(h){
     </section>`;
   // Con el total de medios de cada lado: «5 de 13»
   totalesMedios().then(T => { const el = document.getElementById("cuentasHist"); if (el) el.innerHTML = cuentas(h, T); }).catch(() => {});
+  // Pestañas (solo se ven en el móvil): enseñan un lado o todos
+  document.querySelectorAll(".lado-tabs button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".lado-tabs button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    document.querySelector(".lados").dataset.ver = b.dataset.lado;
+    if (b.dataset.lado !== "todos") evento("compara");
+  }));
   const nativo = document.getElementById("cNativo");
   if (nativo) nativo.addEventListener("click", () => navigator.share({ title: h.t, text: "Quién la cuenta y quién no, en Vista Plena", url: direccion() }).catch(() => {}));
   document.getElementById("cCopiar").addEventListener("click", async () => {

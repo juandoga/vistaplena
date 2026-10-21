@@ -685,6 +685,9 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .top{border-bottom:2px solid var(--tinta)}
 .cab-seccion{border-top:4px solid var(--tinta);padding-top:12px}
 .pieza,.ultimo-lista li{border-top-color:var(--tinta)}
+
+/* 21/10: una cifra por tarjeta. La barra ya no lleva porcentajes dentro, así que la grande es más fina */
+.barra.grande{height:14px!important}
 </style>
 </head>
 <body>
@@ -798,7 +801,7 @@ function pintar(t, H, S = []){
         <section class="tema-ultimo" aria-labelledby="ul-t">
           <h2 id="ul-t" class="eti">Lo principal ahora${info("La noticia de este tema que más medios cuentan y que más portadas ocupan en las últimas 24 horas.", "Cómo se elige")}</h2>
           <a class="tema-lead" href="${enlace(principal)}">${foto(principal)}<span class="t">${esc(principal.t)}</span></a>
-          ${barra(principal)}${pct(principal)}
+          ${barra(principal)}
           <p class="aparte">${principal.tot} medios · empezó ${haceCuanto(inicio(principal))}${principal.ciego ? ` · <b>poca cobertura en la ${principal.ciego}</b>` : ""}</p>
           ${ultima !== principal ? `<p class="tema-recien">Lo más reciente: <a href="${enlace(ultima)}">${esc(ultima.t)}</a> <span class="gris">· ${haceCuanto(inicio(ultima))}</span></p>` : ""}
         </section>
@@ -817,7 +820,7 @@ function pintar(t, H, S = []){
       </div>
       <aside class="tema-lado">
         <h2 class="eti">Cobertura de todo el tema</h2>
-        ${barra(acum, true)}${pct(acum)}
+        ${barra(acum, true)}
         <p>Suma de los medios de las ${H.length} noticias.${ciegas ? ` ${ciegas === 1 ? "Una de ellas tiene" : `${ciegas} de ellas tienen`} cobertura desigual.` : ""}</p>
         ${(t.hilos || []).length ? `<h2 class="eti">Dentro de este tema</h2><p class="hilos">${t.hilos.map(x => `<a class="tema" href="${urlTema(x.id, x.nombre)}">${esc(x.nombre)}</a>`).join(" ")}</p>` : ""}
         <p class="aparte">${esAsunto ? "Este tema lo agrupa una IA: junta las noticias que nacen del mismo origen aunque cambien de protagonista. " : ""}Un tema reúne varias noticias sobre el mismo asunto. Cada noticia es un hecho distinto, con su propia cobertura y sus propios titulares. <a href="metodologia.html#temas">Cómo formamos los temas</a>.</p>

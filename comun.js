@@ -52,11 +52,11 @@ function contextoCiego(c, h){
   return `Los medios de ${h.ciego === "izquierda" ? "izquierdas" : "derechas"} sí han contado otras noticias del tema <a href="${urlAsunto(c.asunto_id, c.asunto)}">${esc(c.asunto)}</a> (${c.medios_lado} medios). Lo que apenas cuentan es este hecho concreto.`;
 }
 function barra(h, grande){
-  const seg = (cls, v, et) => v ? `<div class="${cls}" style="flex-grow:${v}" title="${et}: ${v} %">${grande && v >= 12 ? v + " %" : ""}</div>` : "";
+  const seg = (cls, v, et) => v ? `<div class="${cls}" style="flex-grow:${v}" title="${et}: ${v} %"></div>` : "";
   return `<div class="barra${grande ? " grande" : ""}" role="img" aria-label="Izquierda ${h.pi} %, centro ${h.pc} %, derecha ${h.pd} %">${seg("b-izq",h.pi,"Izquierda")}${seg("b-cen",h.pc,"Centro")}${seg("b-der",h.pd,"Derecha")}</div>`;
 }
 const pct = h => `<div class="pct"><span class="i">Izquierda <b>${h.pi} %</b></span><span>Centro <b>${h.pc} %</b></span><span class="d">Derecha <b>${h.pd} %</b></span></div>`;
-const meta = h => `<div class="meta"><span>${h.tot} medios</span><span>${haceCuanto(h.act)}</span>${h.port >= 2 ? `<span title="Medios que la llevan ahora entre los 15 primeros titulares de su web">En ${h.port} portadas</span>` : ""}${h.ciego ? `<span class="chip">La ${h.ciego} apenas la cuenta</span>` : ""}</div>`;
+const meta = h => `<div class="meta"><span>${h.tot} medios</span><span>${haceCuanto(h.act)}</span>${h.ciego ? `<span class="chip">La ${h.ciego} apenas la cuenta</span>` : ""}</div>`;
 // Un titular por medio. Dentro de cada lado, primero los que mejor cuentan el hecho de la noticia (los que comparten
 // más palabras con su título) y, a igualdad, los más recientes. Así arriba sale el hecho y no la última reacción.
 const _norm = t => String(t || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
