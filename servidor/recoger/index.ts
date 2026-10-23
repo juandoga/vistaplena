@@ -370,6 +370,8 @@ Deno.serve(async (req) => {
   }
   // Una historia solo admite titulares nuevos si se ha movido en las últimas 12 horas
   const VIVA = 12 * 3600e3;
+  // Ni se añaden titulares ni se juntan historias con más de 24 horas de diferencia desde su primer titular
+  const DIA = 24 * 3600e3;
   // Titulares sacados a mano de una historia (gestión): nunca vuelven a ella
   const vetos = new Set<string>();
   {
@@ -428,9 +430,12 @@ Deno.serve(async (req) => {
     // no entra en la historia vieja, sino en una nueva que queda enlazada a ella.
     // Solo se mira cuando la historia ya lleva 6 horas abierta: en las primeras horas, cada medio cuenta
     // el mismo hecho con palabras y detalles distintos, y separarlos partiría la noticia en trozos.
+    // Y si el titular llega más de 24 horas después del primero de la historia, también va a una historia nueva enlazada:
+    // al día siguiente suele ser otra fase del hecho (se anuncia una entrevista; al otro día se emite) y, si entrara,
+    // la historia vieja seguiría con el título del principio («será entrevistado»). Es la misma regla que usa verificar.
     if (!antigua && mejor && t - mejor.primero > 6 * 3600e3) {
       const novedad = a.palabras.filter((w: string) => peso(w) >= RARA && !mejor!.palabras.has(w)).length;
-      if (novedad >= 2) {
+      if (novedad >= 2 || t - mejor.primero > DIA) {
         const viejo = mejor;
         let alt: Grupo | null = null, altScore = 0;
         // ¿Hay ya una historia joven (menos de 6 horas) o una que salió de esta con la misma novedad?
@@ -458,7 +463,7 @@ Deno.serve(async (req) => {
       const A = vivos[i]; if (fuera.has(A)) continue;
       for (let j = i + 1; j < vivos.length; j++) {
         const B = vivos[j]; if (fuera.has(B)) continue;
-        if (!antigua && (Math.abs(A.ultimo - B.ultimo) > VIVA || A.padre === B || B.padre === A)) continue;
+        if (!antigua && (Math.abs(A.ultimo - B.ultimo) > VIVA || Math.abs(A.primero - B.primero) > DIA || A.padre === B || B.padre === A)) continue;
         let comun = 0, n = 0, raras = 0;
         for (const w of nuc.get(A)!) if (nuc.get(B)!.has(w)) { comun += peso(w); n++; if (peso(w) >= RARA) raras++; }
         if (n >= 3 && raras >= 2 && comun / (Math.min(sum(A), sum(B)) || 1) >= 0.45) {
@@ -535,7 +540,8 @@ Deno.serve(async (req) => {
     for (let j = i + 1; j < conId.length; j++) {
       const B = conId[j]; if (absorbido.has(B)) continue;
       // Solo se juntan historias vivas a la vez (menos de 12 horas entre sus últimos titulares) y que no se separaron a propósito
-      if (Math.abs(A.ultimo - B.ultimo) > VIVA || hermanas(A, B)) continue;
+      // ni las que empezaron con más de 24 horas de diferencia (anuncio de un día y hecho del siguiente)
+      if (Math.abs(A.ultimo - B.ultimo) > VIVA || Math.abs(A.primero - B.primero) > DIA || hermanas(A, B)) continue;
       // Solo se fusionan si comparten casi todo su núcleo (al menos 3 palabras clave y el 45 % de su peso)
       let comun = 0, n = 0, raras = 0;
       for (const w of nucleos.get(A)!) if (nucleos.get(B)!.has(w)) { comun += peso(w); n++; if (peso(w) >= RARA) raras++; }
