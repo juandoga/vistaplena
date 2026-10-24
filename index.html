@@ -528,7 +528,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
         <h3>La barra</h3>
         <div class="barra grande" aria-hidden="true"><div class="b-izq" style="flex-grow:40"></div><div class="b-cen" style="flex-grow:30"></div><div class="b-der" style="flex-grow:30"></div></div>
         <div class="leyenda"><span>Izquierda</span><span>Centro</span><span>Derecha</span></div>
-        <p style="margin-top:14px">Compara cada lado con lo que suele publicar. Los medios de derecha que leemos sacan más del doble de titulares que los de izquierda; si solo contáramos medios, casi todo parecería «de derechas». Por eso una noticia normal sale repartida, y el tramo rojo crece cuando la izquierda la cuenta más de lo habitual.</p>
+        <p style="margin-top:14px">Muestra qué parte de los medios de cada lado la publica. Si la publican 7 de los 13 de izquierda y 7 de los 14 de derecha, los tramos rojo y azul salen casi iguales.</p>
         <p class="aparte">No dice si la noticia es verdad ni a quién beneficia. Solo quién la está contando.</p>
       </div>
       <div>
@@ -666,7 +666,7 @@ function desarrolloBloque(conCabecera){
     <div class="cab-seccion"${conCabecera ? "" : ' style="display:none"'}><h2 id="des-t">Temas del momento${info("Temas con titulares nuevos en las últimas 12 horas, aunque cada medio cuente un aspecto distinto y no lleguen a formar una noticia común. La barra muestra qué medios los mueven. <a href='metodologia.html#temas'>Qué es un tema</a>", "Qué son los temas")}</h2></div>
     <div class="desarrollo-lista">${T.map(t => {
       const n = t.izq_12h + t.cen_12h + t.der_12h || 1;
-      const reparto = { pi: Math.round(100 * t.izq_12h / n), pd: Math.round(100 * t.der_12h / n) }; reparto.pc = 100 - reparto.pi - reparto.pd;
+      const reparto = repartoLados(t.izq_12h, t.cen_12h, t.der_12h);
       // Si el tema está dentro de un tema grande (asunto), se enlaza y se nombra el grande
       const g = [...ASUNTOS.values()].find(x => (x.temas || []).includes(t.id));
       const destino = g ? urlAsunto(g.id, g.nombre) : urlTema(t.id, t.nombre), nombreT = g ? g.nombre : t.nombre;

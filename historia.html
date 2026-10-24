@@ -939,7 +939,7 @@ function pintar(h){
         ${foto(h, "hist-foto")}
       </div>
       <section class="hist-cob" aria-labelledby="cob-t">
-        <h2 id="cob-t">Quién la cuenta${info(`Cada cuadro es uno de los medios que leemos; relleno, si ha publicado la noticia. La portada y los puntos ciegos comparan además cada lado con lo que suele publicar, porque los medios de derecha publican más noticias en general. <a href='metodologia.html#que'>Cómo se calcula</a>`, "Cómo leer quién la cuenta")}</h2>
+        <h2 id="cob-t">Quién la cuenta${info(`Cada cuadro es uno de los medios que leemos; relleno, si ha publicado la noticia. La barra de la portada reparte qué parte de cada lado la publica. <a href='metodologia.html#que'>Cómo se calcula</a>`, "Cómo leer quién la cuenta")}</h2>
         <div id="cuentasHist">${cuentas(h, totalesGuardados())}</div>
         ${h.ciego ? `<p class="resumen">${lectura(h)}<span id="ctxCiego"></span></p>` : ""}
       </section>

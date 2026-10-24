@@ -772,11 +772,9 @@ function noEncontrado(){
 
 function pintar(t, H, S = []){
   document.title = `${t.nombre} · Vista Plena`;
-  // Cobertura acumulada: voces de cada lado sumando todas las historias del tema
+  // Cobertura acumulada: medios de cada lado sumando todas las historias del tema, repartidos como la barra
   const s = H.reduce((o, x) => ({ i: o.i + (x.izq || 0), c: o.c + (x.cen || 0), d: o.d + (x.der || 0) }), { i: 0, c: 0, d: 0 });
-  const tot = s.i + s.c + s.d || 1;
-  const pi = Math.round(100 * s.i / tot), pd = Math.round(100 * s.d / tot);
-  const acum = { pi, pd, pc: 100 - pi - pd };
+  const acum = repartoLados(s.i, s.c, s.d);
   const ciegas = H.filter(h => h.ciego).length;
   const ultima = H[0];
   // Lo principal: la noticia del tema más contada y más destacada en portadas en las últimas 24 horas

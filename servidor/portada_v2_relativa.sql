@@ -52,9 +52,12 @@ create or replace view public.portada_v2 as
           GROUP BY a.historia_id
         )
  SELECT h.id, h.titulo, h.creada, h.actualizada, c.total, c.voces, c.izq, c.cen, c.der,
-    coalesce(c.p_izq, 0) AS pct_izq,
-    coalesce(c.p_der, 0) AS pct_der,
-    100 - coalesce(c.p_izq, 0) - coalesce(c.p_der, 0) AS pct_cen,
+    -- 24/10: la barra es qué parte de cada lado publica («7 de 13» = 54 %), normalizada a 100. c.p_* (comparación con lo
+    -- que suele publicar cada lado) queda solo para la cobertura desigual
+    coalesce(round(100.0 * (c.izq / ml.ti) / nullif(c.izq / ml.ti + c.cen / ml.tc + c.der / ml.td, 0))::int, 0) AS pct_izq,
+    coalesce(round(100.0 * (c.der / ml.td) / nullif(c.izq / ml.ti + c.cen / ml.tc + c.der / ml.td, 0))::int, 0) AS pct_der,
+    100 - coalesce(round(100.0 * (c.izq / ml.ti) / nullif(c.izq / ml.ti + c.cen / ml.tc + c.der / ml.td, 0))::int, 0)
+        - coalesce(round(100.0 * (c.der / ml.td) / nullif(c.izq / ml.ti + c.cen / ml.tc + c.der / ml.td, 0))::int, 0) AS pct_cen,
         CASE
             WHEN COALESCE(t.ligera, false) THEN NULL::text
             WHEN c.voces >= 6 AND h.ia_politica IS TRUE AND h.creada < now() - interval '6 hours' AND coalesce(c.p_izq, 0) < 10 AND coalesce(c.p_der, 0) >= 50
@@ -74,6 +77,10 @@ create or replace view public.portada_v2 as
          + COALESCE(m12.d, 0) * (c.b_izq + c.b_cen + c.b_der) / 3 / c.b_der))::bigint + 2 * COALESCE(pt.en_portadas, 0::bigint) AS peso
    FROM historias h
      JOIN pct c ON c.historia_id = h.id
+     CROSS JOIN (SELECT greatest(count(*) FILTER (WHERE orientacion < 0), 1)::numeric AS ti,
+                        greatest(count(*) FILTER (WHERE orientacion = 0), 1)::numeric AS tc,
+                        greatest(count(*) FILTER (WHERE orientacion > 0), 1)::numeric AS td
+                 FROM medios WHERE activo) ml
      LEFT JOIN tipo t ON t.historia_id = h.id
      LEFT JOIN portada pt ON pt.historia_id = h.id
      LEFT JOIN m12 ON m12.historia_id = h.id

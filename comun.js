@@ -188,8 +188,15 @@ function pctCuentas(h, T){
   return `<div class="pct cuentas">${c("izq", "i", "Izquierda", h.pi)}${c("cen", "", "Centro", h.pc)}${c("der", "d", "Derecha", h.pd)}</div>`;
 }
 // La fila de los 38 (20/10): un cuadro por cada medio que leemos, relleno si ha publicado la noticia. Es el dato exacto,
-// sin compensar, así que solo va en la página de la noticia: la barra, la portada y los puntos ciegos comparan cada lado
+// sin compensar. Desde el 24/10 la barra también reparte medios reales (qué parte de cada lado); solo los puntos ciegos comparan cada lado
 // con lo que suele publicar (los medios de derecha publican más noticias en general).
+// Reparto de la barra (24/10): qué parte de cada lado publica, normalizado a 100 («7 de 13», «4 de 11», «7 de 14» → 39/26/36)
+function repartoLados(i, c, d){
+  const T = totalesGuardados() || { izq: 13, cen: 11, der: 14 };
+  const a = i / (T.izq || 1), b = c / (T.cen || 1), e = d / (T.der || 1), s = a + b + e || 1;
+  const pi = Math.round(100 * a / s), pd = Math.round(100 * e / s);
+  return { pi, pd, pc: 100 - pi - pd };
+}
 function totalesGuardados(){
   try { const c = JSON.parse(localStorage.getItem("vp-totales") || "null"); if (c && c.v) return c.v; } catch (e) {}
   return null;
