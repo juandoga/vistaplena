@@ -563,7 +563,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <div>
       <span class="eti">Boletín gratuito</span>
       <h2 id="bol-t">La semana en Vista Plena, cada viernes en tu correo</h2>
-      <p>Los viernes a las 8:00, las siete historias que más medios contaron en la semana, cómo las tituló cada lado y cuáles contó casi solo un lado. Cinco minutos de lectura.</p>
+      <p>Los viernes a las 8:00, las siete historias que más medios contaron en la semana, cómo las tituló cada lado y cuáles contó casi solo un lado. Cinco minutos de lectura. <a href="/boletin/">Ver un ejemplo</a></p>
     </div>
     <form id="formBoletin" novalidate>
       <label for="correo" class="eti">Tu correo</label>
@@ -745,6 +745,9 @@ function render(){
   pintarTemas();
   const ci = H.filter(h => h.ciego === "izquierda"), cd = H.filter(h => h.ciego === "derecha");
   const c = document.getElementById("contenido");
+  // La copia ya escrita de la portada (seo/generar.py) se queda mientras cargan los datos o si fallan
+  if (c.dataset.estatica && !H.length && vista === "portada" && !seccion && CARGA !== "ok") return;
+  delete c.dataset.estatica;
   c.innerHTML = "";
   if (vista === "portada" && seccion) {
     const s = window.SECCIONES.find(x => x.id === seccion);

@@ -18,6 +18,7 @@ Uso: python seo/generar.py _site   (copia la web a _site y añade lo generado). 
 la web se publica igual, sin las páginas generadas.
 """
 import datetime as dt
+from zoneinfo import ZoneInfo
 import hashlib
 import html
 import json
@@ -39,7 +40,7 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SALIDA = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else "_site")
 NO_COPIAR = {".git", ".github", "seo", "servidor", "README.md", "_site"}
 CAMPOS = ("id,creada,titulo,total,voces,izq,cen,der,imagen,imagen_medio,pct_izq,pct_cen,pct_der,punto_ciego,"
-          "actualizada,articulos,entradilla,entradilla_medio,tema_id")
+          "actualizada,articulos,entradilla,entradilla_medio,tema_id,peso")
 MESES = "enero febrero marzo abril mayo junio julio agosto septiembre octubre noviembre diciembre".split()
 fecha = lambda iso: (lambda d: f"{d.day} de {MESES[d.month - 1]}")(dt.datetime.fromisoformat(iso.replace("Z", "+00:00")))
 ETIQUETA = {-2: "Izquierda", -1: "Centroizquierda", 0: "Centro", 1: "Centroderecha", 2: "Derecha"}
@@ -398,6 +399,93 @@ def fichas_medios(historias, tpl_t):
     return mapa
 
 
+def barra_html(h):
+    seg = lambda cls, v: f'<div class="{cls}" style="flex-grow:{v}"></div>' if v else ""
+    return (f'<div class="barra" role="img" aria-label="Izquierda {h["pct_izq"]} %, centro {h["pct_cen"]} %, derecha {h["pct_der"]} %">'
+            f'{seg("b-izq", h["pct_izq"])}{seg("b-cen", h["pct_cen"])}{seg("b-der", h["pct_der"])}</div>')
+
+
+def portada_estatica(historias, ahora):
+    """La portada se monta en el navegador. Para Google y para las vistas previas de WhatsApp o X (que no ejecutan
+    JavaScript), y por si falla la conexión con la base de datos, se escribe cada hora una copia ya hecha con las noticias
+    más contadas y las de cobertura desigual. En cuanto llegan los datos, el navegador la sustituye por la de siempre."""
+    ruta = os.path.join(SALIDA, "index.html")
+    t = open(ruta, encoding="utf-8").read()
+    if '<main id="contenido"></main>' not in t:
+        print("Portada estática sin generar: no se encuentra el contenedor")
+        return
+    mad = ZoneInfo("Europe/Madrid")
+    hace = lambda h: dt.datetime.fromisoformat(h["actualizada"].replace("Z", "+00:00"))
+    recientes = [h for h in historias if (ahora - hace(h)).total_seconds() < 36 * 3600]
+    top = sorted(recientes, key=lambda h: (h.get("peso") or 0, h.get("total") or 0), reverse=True)[:20]
+    ciegos = sorted([h for h in recientes if h.get("punto_ciego")], key=lambda h: h.get("total") or 0, reverse=True)[:6]
+    if not top:
+        return
+    def li(h):
+        ciego = f' · <b>la {h["punto_ciego"]} apenas la cuenta</b>' if h.get("punto_ciego") else ""
+        return (f'<li><time datetime="{h["actualizada"]}">{hace(h).astimezone(mad).strftime("%H:%M")}</time>'
+                f'<a href="{url_noticia(h["id"], h["titulo"])}"><span class="t">{esc(h["titulo"])}</span>'
+                f'<span class="m">{h["total"]} medios{ciego}</span>{barra_html(h)}</a></li>')
+    cuerpo = ('<section class="ultimo"><div class="cab-seccion"><h2>Lo más contado ahora</h2>'
+              '<p>Las noticias que más medios están contando. Toca una para ver cómo la titula cada lado.</p></div>'
+              f'<ol class="ultimo-lista">{"".join(li(h) for h in top)}</ol></section>')
+    if ciegos:
+        cuerpo += ('<section class="ultimo"><div class="cab-seccion"><h2>Cobertura desigual</h2>'
+                   '<p>Noticias políticas que un lado apenas cuenta.</p></div>'
+                   f'<ol class="ultimo-lista">{"".join(li(h) for h in ciegos)}</ol></section>')
+    t = t.replace('<main id="contenido"></main>', f'<main id="contenido" data-estatica="1">{cuerpo}</main>', 1)
+    t = t.replace('<span class="vivo" id="estado">Cargando…</span>',
+                  f'<span class="vivo" id="estado">Actualizado {ahora.astimezone(mad).strftime("%H:%M")}</span>', 1)
+    open(ruta, "w", encoding="utf-8").write(t)
+    print(f"Portada estática: {len(top)} noticias y {len(ciegos)} de cobertura desigual")
+
+
+def boletin_ejemplo(historias, tpl_t, ahora):
+    """/boletin/: cómo es el boletín, con la edición que saldría hoy (mismas reglas que servidor/boletin: las 7 noticias
+    con más medios de los últimos 7 días y hasta 4 de cobertura desigual). Así se ve lo que llega antes de dar el correo."""
+    hace = lambda h: dt.datetime.fromisoformat(h["actualizada"].replace("Z", "+00:00"))
+    semana = sorted([h for h in historias if (ahora - hace(h)).total_seconds() < 7 * 86400], key=lambda h: -(h.get("total") or 0))
+    top = semana[:7]
+    if len(top) < 3:
+        return []
+    ciegos = [h for h in semana[:80] if h.get("punto_ciego") and (h.get("total") or 0) >= 6 and h not in top][:4]
+    nombres = {"izq": "Izquierda", "cen": "Centro", "der": "Derecha"}
+    def por_lado(h):
+        uno = {}
+        for a in h.get("articulos") or []:
+            uno.setdefault(lado(a["orientacion"]), a)
+        return "".join(f'<li><b>{nombres[k]}</b> · {esc(uno[k]["medio"])}: <a href="{esc(uno[k]["url"])}" target="_blank" rel="noopener">{esc(uno[k]["titulo"])}</a></li>'
+                       for k in ("izq", "cen", "der") if k in uno)
+    piezas = "".join(
+        f'<li class="bol-pieza"><span class="m">{i + 1} · {h["total"]} medios</span>'
+        f'<a class="t" href="{url_noticia(h["id"], h["titulo"])}">{esc(h["titulo"])}</a>{barra_html(h)}<ul class="bol-lados">{por_lado(h)}</ul></li>'
+        for i, h in enumerate(top))
+    desig = "".join(
+        f'<li class="bol-pieza"><span class="chip">Poca cobertura en la {h["punto_ciego"]}</span>'
+        f'<a class="t" href="{url_noticia(h["id"], h["titulo"])}">{esc(h["titulo"])}</a>{barra_html(h)}</li>' for h in ciegos)
+    dia = ahora.astimezone(ZoneInfo("Europe/Madrid"))
+    cuerpo = (
+        '<header class="hist-cab"><div class="hist-etis"><span class="tema-eti">Boletín</span></div><h1>Así es el boletín</h1>'
+        '<p class="tema-sub">Cada viernes a las 8:00, gratis. Las siete noticias que más medios contaron en la semana, con un titular de cada lado, '
+        'y hasta cuatro que casi solo contó un lado. Se lee en cinco minutos.</p></header>'
+        '<div class="bol-corto"></div>'
+        f'<section class="bol-ejemplo"><h2>La edición de esta semana, tal como saldría hoy ({dia.day} de {MESES[dia.month - 1]})</h2>'
+        f'<ol class="bol-lista">{piezas}</ol>'
+        + (f'<h2>Cobertura desigual</h2><ol class="bol-lista">{desig}</ol>' if desig else "")
+        + '</section><style>.bol-ejemplo{margin-top:40px}.bol-ejemplo h2{margin:32px 0 6px;padding-top:12px;border-top:4px solid var(--tinta);font-weight:900;font-size:var(--t-l);color:var(--tinta)}'
+        '.bol-lista{list-style:none;margin:0;padding:0}.bol-pieza{display:grid;gap:8px;padding:18px 0;border-bottom:1px solid var(--linea)}'
+        '.bol-pieza .m{font-size:var(--t-xs);color:var(--gris)}.bol-pieza .t{font-family:var(--titular);font-weight:600;font-size:1.2rem;line-height:1.25;color:var(--tinta);text-decoration:none}'
+        '.bol-pieza .t:hover{text-decoration:underline}.bol-pieza .chip{justify-self:start}.bol-lados{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:4px;font-size:var(--t-s);color:var(--gris)}'
+        '.bol-lados b{color:var(--tinta)}.bol-lados a{color:var(--tinta)}</style>')
+    url = "/boletin/"
+    desc = "Cada viernes, las siete noticias que más medios contaron en la semana, con un titular de cada lado, y las que casi solo contó un lado."
+    jsonld = {"@context": "https://schema.org", "@type": "WebPage", "@id": BASE + url, "url": BASE + url, "name": "El boletín de Vista Plena",
+              "description": desc, "inLanguage": "es-ES", "isPartOf": {"@id": BASE + "/#web"}}
+    escribir(url, montar(tpl_t, titulo="El boletín de los viernes · Vista Plena", desc=desc, url=url, imagen=BASE + "/og.png",
+                         tipo="website", jsonld=jsonld, id_=0, cuerpo=cuerpo))
+    return [(url, ahora.isoformat())]
+
+
 # ---------- Programa principal ----------
 def main():
     copiar_web()
@@ -426,6 +514,10 @@ def main():
         for hid in a.get("ids") or []:
             asunto_de[hid] = {"id": f"a{a['id']}", "nombre": a["nombre"], "actualizado": a["actualizado"], "descripcion": a.get("descripcion")}
     tpl_h, tpl_t = plantilla("historia.html"), plantilla("tema.html")
+    try:
+        portada_estatica(historias, ahora)
+    except Exception as e:
+        print("Portada estática sin generar:", e)
     os.makedirs(os.path.join(SALIDA, "og"), exist_ok=True)
     mapa = []
     con_og = 0
@@ -489,6 +581,10 @@ def main():
         mapa += fichas_medios(historias, tpl_t)
     except Exception as e:
         print("Fichas de medios sin generar:", e)
+    try:
+        mapa += boletin_ejemplo(historias, tpl_t, ahora)
+    except Exception as e:
+        print("Ejemplo del boletín sin generar:", e)
     # Mapa del sitio y robots.txt
     fijas = [("/", ahora.isoformat()), ("/metodologia.html", None), ("/elecciones.html", None), ("/quienes-somos.html", None),
              ("/?vista=ciegos", ahora.isoformat()), ("/medio/", None), ("/archivo/", None)]

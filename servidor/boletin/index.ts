@@ -64,7 +64,7 @@ function pieza(h: any, n: number) {
     ${ciego}
     <div style="font:bold 20px/1.25 Georgia,serif;color:#111;margin:4px 0 12px">${esc(h.titulo)}</div>
     ${barra(h)}
-    <div style="font:12px Arial,sans-serif;color:#888;margin:6px 0 10px">Izquierda ${h.pct_izq} % · Centro ${h.pct_cen} % · Derecha ${h.pct_der} %</div>
+    <div style="height:10px"></div>
     ${porLado(h)}
   </td></tr>`;
 }

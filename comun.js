@@ -170,7 +170,7 @@ async function apuntarBoletin(correo){
   } catch (err) { return "No hemos podido apuntarte ahora mismo. Inténtalo de nuevo en unos minutos."; }
 }
 document.querySelectorAll(".bol-corto").forEach((caja, i) => {
-  caja.innerHTML = `<form novalidate><label for="bolc${i}"><b>La semana en Vista Plena.</b> Cada viernes, las historias que más medios contaron y las que solo contó un lado.</label>
+  caja.innerHTML = `<form novalidate><label for="bolc${i}"><b>La semana en Vista Plena.</b> Cada viernes, las historias que más medios contaron y las que solo contó un lado.${location.pathname.startsWith("/boletin") ? "" : ' <a href="/boletin/">Ver un ejemplo</a>'}</label>
     <div class="fila"><input id="bolc${i}" type="email" autocomplete="email" placeholder="nombre@ejemplo.com" required><button type="submit">Suscribirme</button></div>
     <p class="msg" role="status" aria-live="polite"></p><p class="legal">Gratis. Te pediremos confirmarlo por correo y puedes darte de baja con un clic. <a href="/privacidad.html">Privacidad</a>.</p></form>`;
   const f = caja.querySelector("form"), msg = caja.querySelector(".msg"), btn = caja.querySelector("button");
