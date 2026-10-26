@@ -818,12 +818,12 @@ function titularPorLado(h){
   }
   return out;
 }
-function textoCompartir(h, corto){
-  const t = titularPorLado(h), cortar = (x, n) => x.length <= n ? x : x.slice(0, n - 1).replace(/\s+\S*$/, "") + "…";
-  // En la versión corta (X) el color del punto ya dice el lado: solo el medio
-  const fila = (k, punto, nom) => !t[k] ? `${punto} ${nom}: ningún medio la ha publicado`
-    : corto ? `${punto} ${t[k].m}: ${comillas(cortar(t[k].t, 62))}` : `${punto} ${nom} (${t[k].m}): ${comillas(t[k].t)}`;
-  return `${h.t}\n\nAsí la titula cada lado:\n${fila("izq", "🔴", "Izquierda")}\n${fila("cen", "⚪", "Centro")}\n${fila("der", "🔵", "Derecha")}`;
+function textoCompartir(h){
+  const t = titularPorLado(h);
+  const fila = (k, punto, nom) => t[k] ? `${punto} ${nom} (${t[k].m}): ${comillas(t[k].t)}` : `${punto} ${nom}: ningún medio la ha publicado`;
+  // Resumen: la entradilla de «Qué ha pasado» (primera frase, literal) con su medio
+  const resumen = h.ent ? `\n\n${resumenCorto(h.ent).replace(/\s+([.,;:])/g, "$1")}${h.entm ? ` (${h.entm})` : ""}` : "";
+  return `${h.t}${resumen}\n\nAsí la titula cada lado:\n${fila("izq", "🔴", "Izquierda")}\n${fila("cen", "⚪", "Centro")}\n${fila("der", "🔵", "Derecha")}`;
 }
 const ICONO = {
   nativo: '<path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
@@ -834,7 +834,7 @@ const ICONO = {
 };
 const icono = k => `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">${ICONO[k]}</svg>`;
 function compartir(h){
-  const largo = textoCompartir(h, false), url = direccion();
+  const largo = textoCompartir(h), url = direccion();
   return `<div class="compartir" role="group" aria-label="Compartir esta noticia">
     <span class="c-eti">Compártela</span>
     ${navigator.share ? `<button type="button" class="c-btn" id="cNativo" aria-label="Compartir…" title="Compartir…">${icono("nativo")}</button>` : ""}
@@ -845,16 +845,20 @@ function compartir(h){
     <span class="c-ok" id="cOk" role="status"></span>
   </div>`;
 }
-// X: 280 caracteres, el enlace cuenta 23 y los emojis 2. Si no cabe, se acortan los titulares; si aún no, solo uno por lado sin título
+// X: 280 caracteres (el enlace cuenta 23). No caben tres titulares enteros y cortados no se entienden:
+// va el título, que dice de qué trata, y cuántos medios de cada lado la publican. Los titulares los enseña la imagen del enlace.
 function textoX(h){
-  const cabe = t => [...t].length + [...t].filter(c => c.codePointAt(0) > 0xffff).length + 24 <= 280;
-  const version = (n, titulo) => {
-    const t = textoCompartir(h, true).replace(/«([^»]*)»/g, (m, x) => comillas(x.length > n ? x.slice(0, n - 1).replace(/\s+\S*$/, "") + "…" : x));
-    return titulo ? t : t.split("\n").slice(2).join("\n");
-  };
-  // Mejor titulares largos sin el título que titulares cortados a media frase
-  for (const [n, titulo] of [[62, true], [52, true], [62, false], [52, false], [44, false], [36, false]]) { const t = version(n, titulo); if (cabe(t)) return t; }
-  return `${h.t}\n\nAsí la titula la izquierda, el centro y la derecha:`;
+  const n = { izq: new Set(), cen: new Set(), der: new Set() };
+  for (const a of h.a) n[lado(a.o)].add(a.m);
+  const T = totalesGuardados();
+  const de = k => T && T[k] ? `${n[k].size} de ${Math.max(T[k], n[k].size)}` : `${n[k].size}`;
+  const cuenta = `La publican ${de("izq")} medios de izquierda, ${de("cen")} de centro y ${de("der")} de derecha.`;
+  const gancho = h.ciego ? `La ${h.ciego} apenas la cuenta. Así la titula cada lado:` : "Misma noticia, distintos titulares. Así la titula cada lado:";
+  const largo = t => [...t].length + 24;
+  let titulo = h.t;
+  const armar = () => `${titulo}\n\n${cuenta}\n${gancho}`;
+  if (largo(armar()) > 280) titulo = h.t.slice(0, Math.max(40, h.t.length - (largo(armar()) - 280) - 1)).replace(/\s+\S*$/, "") + "…";
+  return armar();
 }
 
 // Un titular por medio: el primero que publicó
@@ -1003,7 +1007,7 @@ function pintar(h){
     if (b.dataset.lado !== "todos") evento("compara");
   }));
   const nativo = document.getElementById("cNativo");
-  if (nativo) nativo.addEventListener("click", () => navigator.share({ title: h.t, text: textoCompartir(h, false), url: direccion() }).catch(() => {}));
+  if (nativo) nativo.addEventListener("click", () => navigator.share({ title: h.t, text: textoCompartir(h), url: direccion() }).catch(() => {}));
   document.getElementById("cCopiar").addEventListener("click", async () => {
     const ok = document.getElementById("cOk");
     try { await navigator.clipboard.writeText(direccion()); ok.textContent = "Enlace copiado"; }
