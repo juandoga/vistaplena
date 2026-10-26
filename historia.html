@@ -845,20 +845,17 @@ function compartir(h){
     <span class="c-ok" id="cOk" role="status"></span>
   </div>`;
 }
-// X: 280 caracteres (el enlace cuenta 23). No caben tres titulares enteros y cortados no se entienden:
-// va el título, que dice de qué trata, y cuántos medios de cada lado la publican. Los titulares los enseña la imagen del enlace.
+// X: 280 caracteres (el enlace cuenta 23). El título y, si cabe, la primera frase de «Qué ha pasado»;
+// los titulares enteros los enseña la imagen del enlace
 function textoX(h){
-  const n = { izq: new Set(), cen: new Set(), der: new Set() };
-  for (const a of h.a) n[lado(a.o)].add(a.m);
-  const T = totalesGuardados();
-  const de = k => T && T[k] ? `${n[k].size} de ${Math.max(T[k], n[k].size)}` : `${n[k].size}`;
-  const cuenta = `La publican ${de("izq")} medios de izquierda, ${de("cen")} de centro y ${de("der")} de derecha.`;
   const gancho = h.ciego ? `La ${h.ciego} apenas la cuenta. Así la titula cada lado:` : "Misma noticia, distintos titulares. Así la titula cada lado:";
   const largo = t => [...t].length + 24;
+  const resumen = h.ent ? resumenCorto(h.ent).replace(/\s+([.,;:])/g, "$1") : "";
+  const conResumen = `${h.t}\n\n${resumen}\n\n${gancho}`;
+  if (resumen && largo(conResumen) <= 280) return conResumen;
   let titulo = h.t;
-  const armar = () => `${titulo}\n\n${cuenta}\n${gancho}`;
-  if (largo(armar()) > 280) titulo = h.t.slice(0, Math.max(40, h.t.length - (largo(armar()) - 280) - 1)).replace(/\s+\S*$/, "") + "…";
-  return armar();
+  if (largo(`${titulo}\n\n${gancho}`) > 280) titulo = h.t.slice(0, 280 - 24 - gancho.length - 3).replace(/\s+\S*$/, "") + "…";
+  return `${titulo}\n\n${gancho}`;
 }
 
 // Un titular por medio: el primero que publicó
