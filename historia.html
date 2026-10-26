@@ -586,10 +586,12 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .hist-cob .aparte a{color:var(--tinta);text-underline-offset:3px}
 .hist-asi{min-width:0}
 .hist-asi .bloque li a{font-size:1.08rem}
-.compartir{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:28px;padding-top:22px;border-top:1px solid var(--linea)}
-.compartir .eti{margin-right:6px;width:100%}
-.c-btn{border:1px solid var(--linea);background:var(--fondo);border-radius:999px;padding:8px 15px;font-size:var(--t-s);font-weight:500;color:var(--tinta);text-decoration:none}
-.c-btn:hover{border-color:var(--tinta)}
+.compartir{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:28px;padding:14px 0;border-top:1px solid var(--tinta);border-bottom:1px solid var(--linea)}
+.compartir .c-eti{margin-right:auto;font-size:var(--t-m);font-weight:700;color:var(--tinta)}
+.c-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid var(--linea);background:var(--fondo);color:var(--tinta);text-decoration:none;cursor:pointer}
+.c-btn:hover,.c-btn:focus-visible{border-color:var(--tinta)}
+.compartir .c-ok:empty{display:none}
+.compartir .c-ok{width:100%;text-align:right}
 .c-ok{font-size:var(--t-s);color:var(--gris);word-break:break-all}
 .hist-vacia{max-width:640px;margin:48px 0 40px}
 .hist-vacia p{margin:0 0 24px}
@@ -699,8 +701,6 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .hist-mas > details{margin:0;padding:14px 0;border-top:0;border-bottom:1px solid var(--linea)}
 .hist-mas > details > summary{cursor:pointer;font-size:var(--t-m);font-weight:700;color:var(--tinta)}
 .hist-mas .primero{margin-top:12px}
-.hist-mas .compartir{margin-top:12px;padding-top:0;border-top:0}
-.hist-mas .compartir .eti{display:none}
 
 /* 21/10: una cifra por tarjeta. La barra ya no lleva porcentajes dentro, así que la grande es más fina */
 .barra.grande{height:14px!important}
@@ -804,18 +804,57 @@ function noEncontrada(){
   document.title = "Historia no disponible · Vista Plena";
 }
 
+// Compartir (26/10): siempre a la vista, con iconos. El texto enseña cómo titula la noticia cada lado,
+// no solo cuántos medios la publican: es el gancho de la web.
+const comillas = t => "«" + String(t).replace(/«/g, "“").replace(/»/g, "”").trim() + "»";
+// El titular de cada lado que más palabras propias tiene sin dejar de hablar del hecho (como en «Cómo la titula cada lado»)
+function titularPorLado(h){
+  const base = _pal(h.t), minimo = Math.max(3, Math.ceil(base.size * 0.4)), out = {};
+  for (const k of ["izq", "cen", "der"]) {
+    const lista = h.a.filter(a => lado(a.o) === k);
+    // Si ninguno habla claramente del hecho (historia mal agrupada), el que más se le parece
+    const nota = a => enComun(a.t, base) >= minimo ? 1000 + _pal(a.t).size - enComun(a.t, base) : enComun(a.t, base);
+    out[k] = lista.length ? lista.reduce((m, a) => nota(a) > nota(m) ? a : m) : null;
+  }
+  return out;
+}
+function textoCompartir(h, corto){
+  const t = titularPorLado(h), cortar = (x, n) => x.length <= n ? x : x.slice(0, n - 1).replace(/\s+\S*$/, "") + "…";
+  // En la versión corta (X) el color del punto ya dice el lado: solo el medio
+  const fila = (k, punto, nom) => !t[k] ? `${punto} ${nom}: ningún medio la ha publicado`
+    : corto ? `${punto} ${t[k].m}: ${comillas(cortar(t[k].t, 62))}` : `${punto} ${nom} (${t[k].m}): ${comillas(t[k].t)}`;
+  return `${h.t}\n\nAsí la titula cada lado:\n${fila("izq", "🔴", "Izquierda")}\n${fila("cen", "⚪", "Centro")}\n${fila("der", "🔵", "Derecha")}`;
+}
+const ICONO = {
+  nativo: '<path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  whatsapp: '<path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.4.8 3.2.6a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/>',
+  x: '<path fill="currentColor" d="M17.8 3h3l-6.6 7.6L22 21h-6.1l-4.8-6.3L5.6 21h-3l7.1-8.1L2.3 3h6.2l4.4 5.8L17.8 3zm-1 16.2h1.7L7.3 4.7H5.5l11.3 14.5z"/>',
+  telegram: '<path fill="currentColor" d="M21.9 4.3 18.7 19.5c-.2 1-.9 1.3-1.7.8l-4.8-3.6-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.5 13.2l-4.7-1.5c-1-.3-1-1 .2-1.5L20.5 3c.9-.3 1.6.2 1.4 1.3z"/>',
+  copiar: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+};
+const icono = k => `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">${ICONO[k]}</svg>`;
 function compartir(h){
-  const texto = `${h.t} · Quién la cuenta y quién no, en Vista Plena`;
-  const url = direccion();
-  return `<div class="compartir" aria-label="Compartir">
-    <span class="eti">Compartir</span>
-    ${navigator.share ? `<button class="c-btn" id="cNativo">Compartir…</button>` : ""}
-    <a class="c-btn" href="https://wa.me/?text=${encodeURIComponent(texto + " " + url)}" target="_blank" rel="noopener">WhatsApp</a>
-    <a class="c-btn" href="https://x.com/intent/post?text=${encodeURIComponent(texto)}&url=${encodeURIComponent(url)}" target="_blank" rel="noopener">X</a>
-    <a class="c-btn" href="https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(texto)}" target="_blank" rel="noopener">Telegram</a>
-    <button class="c-btn" id="cCopiar">Copiar enlace</button>
+  const largo = textoCompartir(h, false), url = direccion();
+  return `<div class="compartir" role="group" aria-label="Compartir esta noticia">
+    <span class="c-eti">Compártela</span>
+    ${navigator.share ? `<button type="button" class="c-btn" id="cNativo" aria-label="Compartir…" title="Compartir…">${icono("nativo")}</button>` : ""}
+    <a class="c-btn" href="https://wa.me/?text=${encodeURIComponent(largo + "\n\n" + url)}" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp">${icono("whatsapp")}</a>
+    <a class="c-btn" href="https://x.com/intent/post?text=${encodeURIComponent(textoX(h))}&url=${encodeURIComponent(url)}" target="_blank" rel="noopener" aria-label="X" title="X">${icono("x")}</a>
+    <a class="c-btn" href="https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(largo)}" target="_blank" rel="noopener" aria-label="Telegram" title="Telegram">${icono("telegram")}</a>
+    <button type="button" class="c-btn" id="cCopiar" aria-label="Copiar enlace" title="Copiar enlace">${icono("copiar")}</button>
     <span class="c-ok" id="cOk" role="status"></span>
   </div>`;
+}
+// X: 280 caracteres, el enlace cuenta 23 y los emojis 2. Si no cabe, se acortan los titulares; si aún no, solo uno por lado sin título
+function textoX(h){
+  const cabe = t => [...t].length + [...t].filter(c => c.codePointAt(0) > 0xffff).length + 24 <= 280;
+  const version = (n, titulo) => {
+    const t = textoCompartir(h, true).replace(/«([^»]*)»/g, (m, x) => comillas(x.length > n ? x.slice(0, n - 1).replace(/\s+\S*$/, "") + "…" : x));
+    return titulo ? t : t.split("\n").slice(2).join("\n");
+  };
+  // Mejor titulares largos sin el título que titulares cortados a media frase
+  for (const [n, titulo] of [[62, true], [52, true], [62, false], [52, false], [44, false], [36, false]]) { const t = version(n, titulo); if (cabe(t)) return t; }
+  return `${h.t}\n\nAsí la titula la izquierda, el centro y la derecha:`;
 }
 
 // Un titular por medio: el primero que publicó
@@ -949,10 +988,10 @@ function pintar(h){
       <div class="lado-tabs" role="group" aria-label="Ver los titulares de un lado"><button type="button" data-lado="todos" aria-pressed="true">Todos</button><button type="button" data-lado="izq" aria-pressed="false">Izquierda</button><button type="button" data-lado="cen" aria-pressed="false">Centro</button><button type="button" data-lado="der" aria-pressed="false">Derecha</button></div>
       <div class="lados" data-ver="todos">${fuentes(h)}</div>
     </section>
+    ${compartir(h)}
     <p class="hilo" id="hilo" hidden></p>
     <section class="hist-mas" aria-label="Más sobre esta noticia">
       ${cronologia(h)}
-      <details class="hist-comp"><summary>Compartir</summary>${compartir(h)}</details>
       ${avisar()}
     </section>`;
   // Con el total de medios de cada lado: «5 de 13»
@@ -964,7 +1003,7 @@ function pintar(h){
     if (b.dataset.lado !== "todos") evento("compara");
   }));
   const nativo = document.getElementById("cNativo");
-  if (nativo) nativo.addEventListener("click", () => navigator.share({ title: h.t, text: "Quién la cuenta y quién no, en Vista Plena", url: direccion() }).catch(() => {}));
+  if (nativo) nativo.addEventListener("click", () => navigator.share({ title: h.t, text: textoCompartir(h, false), url: direccion() }).catch(() => {}));
   document.getElementById("cCopiar").addEventListener("click", async () => {
     const ok = document.getElementById("cOk");
     try { await navigator.clipboard.writeText(direccion()); ok.textContent = "Enlace copiado"; }

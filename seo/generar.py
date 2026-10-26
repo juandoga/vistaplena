@@ -151,10 +151,72 @@ def por_medio(h):
     return out
 
 
+# ---------- El titular más distinto de cada lado (lo mismo que hace historia.html) ----------
+VACIAS = set("para pero como sobre entre desde hasta tras ante contra segun esta este estos estas tiene tienen hace porque cuando donde sera seran sido".split())
+
+
+def palabras(t):
+    import unicodedata
+    t = "".join(c for c in unicodedata.normalize("NFD", str(t or "")) if unicodedata.category(c) != "Mn").lower()
+    return {w for w in re.split(r"[^a-z0-9ñ]+", t) if len(w) >= 4 and w not in VACIAS}
+
+
+def comillas(t):
+    """Un titular entre comillas españolas; las suyas pasan a ser inglesas"""
+    return "«" + str(t).replace("«", "“").replace("»", "”").strip() + "»"
+
+
+def titular_por_lado(h):
+    """Para cada lado, el titular que cuenta el hecho con más palabras propias sin dejar de hablar de él.
+    Si todos repiten el título, el primero. Ningún medio: None."""
+    base = palabras(h["titulo"])
+    minimo = max(3, -(-len(base) * 4 // 10))
+    out = {}
+    for k in ("izq", "cen", "der"):
+        lista = [a for a in (h["articulos"] or []) if lado(a["orientacion"]) == k]
+        if not lista:
+            out[k] = None
+            continue
+        def nota(a):
+            p = palabras(a["titulo"])
+            comun = len(p & base)
+            # Si ninguno habla claramente del hecho (historia mal agrupada), el que más se le parece
+            return 1000 + len(p) - comun if comun >= minimo else comun
+        out[k] = max(lista, key=nota)
+    return out
+
+
+TOTALES = {}
+
+
+def totales_medios():
+    """Cuántos medios activos hay de cada lado («5 de 13»)"""
+    if not TOTALES:
+        v = {"izq": 0, "cen": 0, "der": 0}
+        try:
+            for m in todo("medios?select=orientacion&activo=eq.true"):
+                v[lado(m["orientacion"])] += 1
+        except Exception as e:
+            print("Sin totales de medios:", e)
+        TOTALES.update(v)
+    return TOTALES
+
+
+def cuentas_lado(h):
+    n = {k: 0 for k in ("izq", "cen", "der")}
+    for a in por_medio(h):
+        n[lado(a["orientacion"])] += 1
+    return n
+
+
 def descripcion(h):
-    base = (f"La cuentan {h['total']} medios: izquierda {h['pct_izq']} %, centro {h['pct_cen']} %, derecha {h['pct_der']} %. "
-            f"{lectura(h)} Así la titula cada lado.")
-    return base[:300]
+    """Lo que se ve debajo del enlace al compartirlo: cómo la titula cada lado, no solo cuántos la publican"""
+    t = titular_por_lado(h)
+    partes = [f"{nom}: {comillas(t[k]['titulo'])}" for k, nom in (("izq", "Izquierda"), ("cen", "Centro"), ("der", "Derecha")) if t[k]]
+    calla = [nom.lower() for k, nom in (("izq", "Izquierda"), ("der", "Derecha")) if not t[k]]
+    base = " · ".join(partes) + (f" · Ningún medio de {calla[0]} la ha publicado." if calla else "")
+    base = f"Así la titula cada lado. {base}" if partes else f"La cuentan {h['total']} medios. Así la titula cada lado."
+    return base if len(base) <= 300 else base[:297].rstrip() + "…"
 
 
 def cuerpo_noticia(h, tema, archivada=False):
@@ -221,82 +283,97 @@ def fuentes():
 
 
 def imagen_og(h, ruta):
+    """Imagen para redes (26/10): el título y, debajo, cómo lo titula cada lado. Es el gancho:
+    no solo quién la cuenta, también con qué palabras. Al pie, cuántos medios de cada lado la publican."""
     from PIL import Image, ImageDraw, ImageFont
     F = fuentes()
     W, H = 1200, 630
-    TINTA, FONDO, GRIS = (17, 18, 19), (255, 255, 255), (122, 126, 134)
-    IZQ, CEN, DER = (192, 57, 43), (179, 181, 185), (44, 90, 160)
+    TINTA, FONDO, GRIS, LINEA = (17, 18, 19), (255, 255, 255), (122, 126, 134), (220, 220, 214)
+    IZQ, CEN, DER = (192, 57, 43), (110, 114, 122), (44, 90, 160)
     im = Image.new("RGB", (W, H), FONDO)
     d = ImageDraw.Draw(im)
+    M = 64
     # Logo: esquinas roja y azul y punto
-    x0, y0, s = 64, 52, 40
+    x0, y0, s = M, 40, 34
     g = max(4, s // 9)
-    d.line([(x0, y0 + s * 0.62), (x0, y0 + s), (x0 + s * 0.38, y0 + s)], fill=IZQ, width=g, joint="curve")
+    d.line([(x0, y0 + s * 0.62), (x0, y0 + s), (x0 + s * 0.38, y0 + s)], fill=(192, 57, 43), width=g, joint="curve")
     d.line([(x0 + s * 0.62, y0), (x0 + s, y0), (x0 + s, y0 + s * 0.38)], fill=DER, width=g, joint="curve")
     r = s * 0.16
     d.ellipse([x0 + s / 2 - r, y0 + s / 2 - r, x0 + s / 2 + r, y0 + s / 2 + r], fill=TINTA)
-    d.text((x0 + s + 16, y0 + s / 2), "Vista Plena", font=ImageFont.truetype(F["negra"], 34), fill=TINTA, anchor="lm")
-    d.text((W - 64, y0 + s / 2), "vistaplena.es", font=ImageFont.truetype(F["media"], 28), fill=TINTA, anchor="rm")
-    # Titular en serif, en hasta 3 líneas, bajando el tamaño si hace falta
-    for tam in (58, 52, 48, 44, 40):
-        fuente = ImageFont.truetype(F["titular"], tam)
-        try:
-            fuente.set_variation_by_axes([600, 48])  # peso y tamaño óptico de Newsreader
-        except Exception:
-            pass
+    d.text((x0 + s + 14, y0 + s / 2), "Vista Plena", font=ImageFont.truetype(F["negra"], 30), fill=TINTA, anchor="lm")
+    aviso = f"La {h['punto_ciego']} apenas la cuenta" if h.get("punto_ciego") else "Misma noticia, distintos titulares"
+    d.text((W - M, y0 + s / 2), aviso, font=ImageFont.truetype(F["media"], 22),
+           fill=(GRIS if not h.get("punto_ciego") else (IZQ if h["punto_ciego"] == "izquierda" else DER)), anchor="rm")
+
+    def partir(texto, fuente, ancho, maximo):
         lineas, actual = [], ""
-        for palabra in h["titulo"].split():
+        for palabra in texto.split():
             prueba = (actual + " " + palabra).strip()
-            if d.textlength(prueba, font=fuente) <= W - 128:
+            if d.textlength(prueba, font=fuente) <= ancho:
                 actual = prueba
             else:
-                lineas.append(actual)
+                if actual:
+                    lineas.append(actual)
                 actual = palabra
         lineas.append(actual)
-        if len(lineas) <= 3:
+        if len(lineas) > maximo:
+            lineas = lineas[:maximo]
+            ultima = lineas[-1]
+            while ultima and d.textlength(ultima + "…", font=fuente) > ancho:
+                ultima = ultima.rsplit(" ", 1)[0] if " " in ultima else ultima[:-1]
+            lineas[-1] = ultima.rstrip(".,;:«") + "…"
+        return lineas
+
+    # Título de la noticia, como mucho 2 líneas
+    for tam in (40, 36, 33, 30):
+        ft = ImageFont.truetype(F["negra"], tam)
+        lineas = partir(h["titulo"], ft, W - 2 * M, 99)
+        if len(lineas) <= 2:
             break
-    if len(lineas) > 3:
-        lineas = lineas[:3]
-        lineas[-1] = lineas[-1].rstrip(".,;:") + "…"
-    y = 130
+    lineas = partir(h["titulo"], ft, W - 2 * M, 2)
+    y = 100
     for l in lineas:
-        d.text((64, y), l, font=fuente, fill=TINTA)
-        y += int(tam * 1.12)
-    # Un titular de cada lado (el que mejor cuenta el hecho), en una línea cada uno
-    y = max(y + 18, 330)
-    chico = ImageFont.truetype(F["media"], 24)
-    vistos = {}
-    for a in por_medio(h):
-        vistos.setdefault(lado(a["orientacion"]), a)
-    for k, col, nom in (("izq", IZQ, "Izquierda"), ("cen", (110, 114, 122), "Centro"), ("der", DER, "Derecha")):
-        a = vistos.get(k)
-        texto = f'{a["medio"]}: «{a["titulo"]}»' if a else "Ningún medio de este lado la ha publicado"
-        d.rounded_rectangle([64, y + 4, 70, y + 28], radius=2, fill=col)
-        ancho = W - 128 - 22
-        if d.textlength(texto, font=chico) > ancho:
-            while texto and d.textlength(texto + "…»", font=chico) > ancho:
-                texto = texto[:-1]
-            texto = texto.rstrip(" ,.;:«") + "…»"
-        d.text((86, y), texto, font=chico, fill=TINTA if a else GRIS)
-        y += 36
-    # Barra de cobertura
-    yb, hb = H - 118, 40
-    total = max(1, h["pct_izq"] + h["pct_cen"] + h["pct_der"])
-    x = 64
-    num = ImageFont.truetype(F["num"], 26)
-    for pct, col, txt in ((h["pct_izq"], IZQ, FONDO), (h["pct_cen"], CEN, TINTA), (h["pct_der"], DER, FONDO)):
-        ancho = (W - 128) * pct / total
-        if ancho > 0:
-            d.rounded_rectangle([x, yb, x + ancho - 3, yb + hb], radius=6, fill=col)
-            if ancho > 90:
-                d.text((x + 16, yb + hb / 2), f"{pct} %", font=num, fill=txt, anchor="lm")
-        x += ancho
-    pie = ImageFont.truetype(F["media"], 26)
-    d.text((64, yb + hb + 14), "Izquierda", font=pie, fill=IZQ)
-    d.text((W / 2, yb + hb + 14), "Centro", font=pie, fill=GRIS, anchor="ma")
-    d.text((W - 64, yb + hb + 14), "Derecha", font=pie, fill=DER, anchor="ra")
-    resumen = f"La cuentan {h['total']} medios" + (f" · poca cobertura en la {h['punto_ciego']}" if h["punto_ciego"] else "")
-    d.text((W - 64, yb - 14), resumen, font=ImageFont.truetype(F["media"], 22), fill=GRIS, anchor="rs")
+        d.text((M, y), l, font=ft, fill=TINTA)
+        y += int(tam * 1.15)
+    y += 14
+    d.line([(M, y), (W - M, y)], fill=TINTA, width=2)
+    y += 20
+
+    # Cómo la titula cada lado: etiqueta y titular entre comillas, en serif
+    eti = ImageFont.truetype(F["num"], 19)
+    ftit = ImageFont.truetype(F["titular"], 27)
+    try:
+        ftit.set_variation_by_axes([500, 36])
+    except Exception:
+        pass
+    t = titular_por_lado(h)
+    hueco = (H - 86) - y  # lo que queda hasta el pie
+    lineas_max = 2 if hueco >= 3 * (28 + 2 * 33 + 10) else 1
+    for k, col, nom in (("izq", IZQ, "IZQUIERDA"), ("cen", CEN, "CENTRO"), ("der", DER, "DERECHA")):
+        a = t[k]
+        d.rectangle([M, y + 2, M + 6, y + 22], fill=col)
+        d.text((M + 18, y), f"{nom} · {a['medio'].upper()}" if a else nom, font=eti, fill=col)
+        y += 28
+        if a:
+            for l in partir(comillas(a['titulo']), ftit, W - 2 * M - 18, lineas_max):
+                d.text((M + 18, y), l, font=ftit, fill=TINTA)
+                y += 33
+        else:
+            d.text((M + 18, y), "Ningún medio de este lado la ha publicado", font=ftit, fill=GRIS)
+            y += 33
+        y += 10
+
+    # Pie: cuántos medios de cada lado la publican
+    yp = H - 46
+    d.line([(M, yp - 34), (W - M, yp - 34)], fill=LINEA, width=1)
+    n, T = cuentas_lado(h), totales_medios()
+    pie = ImageFont.truetype(F["media"], 22)
+    x = M
+    for k, col, nom in (("izq", IZQ, "de izquierda"), ("cen", CEN, "de centro"), ("der", DER, "de derecha")):
+        txt = f"{n[k]} de {max(T.get(k) or 0, n[k])} {nom}" if T.get(k) else f"{n[k]} {nom}"
+        d.text((x, yp), txt, font=pie, fill=col, anchor="ls")
+        x += d.textlength(txt, font=pie) + 34
+    d.text((W - M, yp), "vistaplena.es", font=ImageFont.truetype(F["negra"], 22), fill=TINTA, anchor="rs")
     im.save(ruta, optimize=True)
 
 
