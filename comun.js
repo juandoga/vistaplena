@@ -102,6 +102,8 @@ document.addEventListener("click", e => {
   document.addEventListener("keydown", e => { if (e.key === "Escape" && !menu.hidden) { poner(false); btn.focus(); } });
   document.addEventListener("click", e => { if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) poner(false); });
   menu.addEventListener("click", e => { if (e.target.closest("a")) poner(false); });
+  // En pantallas anchas los cajones van abiertos
+  if (matchMedia("(min-width:900px)").matches) menu.querySelectorAll(".m-cajon").forEach(d => d.open = true);
 })();
 
 // Información bajo demanda: un botón «i» que abre una explicación al tocarlo (funciona igual en móvil y con teclado).
