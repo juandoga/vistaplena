@@ -590,6 +590,8 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .compartir .c-eti{margin-right:auto;font-size:var(--t-m);font-weight:700;color:var(--tinta)}
 .c-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid var(--linea);background:var(--fondo);color:var(--tinta);text-decoration:none;cursor:pointer}
 .c-btn:hover,.c-btn:focus-visible{border-color:var(--tinta)}
+.compartir .c-iconos{display:flex;gap:8px}
+@media (max-width:520px){.compartir .c-eti{width:100%;margin:0 0 4px}.compartir .c-iconos{width:100%}.compartir .c-iconos .c-btn{flex:1;width:auto;height:48px}}
 .compartir .c-ok:empty{display:none}
 .compartir .c-ok{width:100%;text-align:right}
 .c-ok{font-size:var(--t-s);color:var(--gris);word-break:break-all}
@@ -836,12 +838,14 @@ const icono = k => `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden=
 function compartir(h){
   const largo = textoCompartir(h), url = direccion();
   return `<div class="compartir" role="group" aria-label="Compartir esta noticia">
-    <span class="c-eti">Compártela</span>
+    <span class="c-eti">Compartir</span>
+    <div class="c-iconos">
     ${navigator.share ? `<button type="button" class="c-btn" id="cNativo" aria-label="Compartir…" title="Compartir…">${icono("nativo")}</button>` : ""}
     <a class="c-btn" href="https://wa.me/?text=${encodeURIComponent(largo + "\n\n" + url)}" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp">${icono("whatsapp")}</a>
     <a class="c-btn" href="https://x.com/intent/post?text=${encodeURIComponent(textoX(h))}&url=${encodeURIComponent(url)}" target="_blank" rel="noopener" aria-label="X" title="X">${icono("x")}</a>
     <a class="c-btn" href="https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(largo)}" target="_blank" rel="noopener" aria-label="Telegram" title="Telegram">${icono("telegram")}</a>
     <button type="button" class="c-btn" id="cCopiar" aria-label="Copiar enlace" title="Copiar enlace">${icono("copiar")}</button>
+    </div>
     <span class="c-ok" id="cOk" role="status"></span>
   </div>`;
 }
