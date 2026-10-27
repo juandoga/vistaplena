@@ -753,6 +753,8 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .m-flecha{width:18px;height:18px;margin-left:auto;fill:none;stroke:currentColor;stroke-width:2;transition:transform .15s}
 .m-n+.m-flecha{margin-left:4px}
 .m-cajon[open] .m-flecha{transform:rotate(180deg)}
+.m-enlace{display:flex;align-items:center;gap:12px;padding:14px 0;font-weight:700;font-size:1.0625rem;color:var(--tinta);text-decoration:none}
+@media (min-width:900px){.m-enlace{align-self:start}.m-enlace .m-flecha{display:block!important}}
 .m-sub{display:flex;flex-direction:column;padding:0 0 12px 34px}
 .m-sub a{padding:9px 0;color:var(--tinta);text-decoration:none;font-weight:500;font-size:1rem}
 .m-sub a:hover{text-decoration:underline;text-underline-offset:3px}
@@ -805,9 +807,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
       <details class="m-cajon"><summary><svg class="m-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5"/><rect x="13.5" y="4" width="6.5" height="6.5"/><rect x="4" y="13.5" width="6.5" height="6.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5"/></svg>Secciones<span class="m-n">6</span><svg class="m-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
         <div class="m-sub"><a href="./?seccion=vivienda">Vivienda</a><a href="./?seccion=economia">Economía y precios</a><a href="./?seccion=inmigracion">Inmigración</a><a href="./?seccion=politica">Política</a><a href="./?seccion=empleo">Empleo</a><a href="./?seccion=sanidad">Sanidad</a></div>
       </details>
-      <details class="m-cajon"><summary><svg class="m-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16"/><path d="M8 12l3 3 5-6"/></svg>Guía de voto 29N<svg class="m-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
-        <div class="m-sub"><a href="elecciones.html">Comparar por tema</a><a href="elecciones.html#partidos">Ver un partido</a></div>
-      </details>
+      <a class="m-cajon m-enlace" href="elecciones.html"><svg class="m-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16"/><path d="M8 12l3 3 5-6"/></svg>Guía de voto 29N<svg class="m-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
       <details class="m-cajon"><summary><svg class="m-ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Sobre Vista Plena<svg class="m-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
         <div class="m-sub"><a href="./?guia=1">Cómo leer Vista Plena</a><a href="quienes-somos.html">Quiénes somos</a><a href="metodologia.html">Metodología</a><a href="metodologia.html#datos">Datos abiertos</a><a href="quienes-somos.html#correcciones">Correcciones</a></div>
       </details>
