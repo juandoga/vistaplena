@@ -762,6 +762,21 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .m-aspecto button[aria-pressed="true"]{background:var(--tinta);color:var(--fondo)}
 .m-aspecto button[aria-pressed="true"] .m-ic{color:var(--fondo)}
 @media (min-width:900px){.top .menu .menu-a{display:grid;justify-content:normal;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:32px;align-items:start}.m-atajos{grid-column:1/-1;grid-template-columns:repeat(4,minmax(0,1fr))}.m-cajon,.m-cajon:last-of-type{border-bottom:0}.m-cajon summary{pointer-events:none}.m-cajon .m-flecha,.m-n{display:none}.m-aspecto{grid-column:1/-1;max-width:360px}}
+/* Dos caminos y método plegado (28/10) */
+.gv-modos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:8px 0 4px;max-width:640px;scroll-margin-top:80px}
+.gv-modos button{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:14px;border:1px solid var(--linea);background:var(--fondo);color:var(--tinta);cursor:pointer;font:inherit}
+.gv-modos button[aria-pressed="true"]{border:2px solid var(--tinta);padding:13px}
+.gv-modos svg,.gv-metodo summary svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;color:var(--gris)}
+.gv-modos button[aria-pressed="true"] svg{color:var(--tinta)}
+.gv-modos b{font-size:1.05rem;font-weight:800}
+.gv-modos small{font-size:var(--t-s);color:var(--gris);line-height:1.35}
+#partidos{margin-top:24px}
+.gv-metodo{margin:40px 0 24px;border-top:1px solid var(--tinta);border-bottom:1px solid var(--linea)}
+.gv-metodo summary{list-style:none;display:flex;align-items:center;gap:10px;padding:16px 0;font-weight:800;font-size:var(--t-m);color:var(--tinta);cursor:pointer}
+.gv-metodo summary::-webkit-details-marker{display:none}
+.gv-metodo summary::after{content:"";margin-left:auto;width:9px;height:9px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .15s}
+.gv-metodo[open] summary::after{transform:rotate(-135deg)}
+.gv-metodo[open]{padding-bottom:12px}
 </style>
 </head>
 <body>
@@ -807,9 +822,13 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
   <header class="metodo-cab">
     <span class="eti">Elecciones generales · 29 de noviembre de 2026</span>
     <h1>Qué propone y qué ha votado cada partido</h1>
-    <p class="resumen">Elige un tema y compara lo que propone cada partido, si explica cómo lo haría y lo que ha votado en el Congreso. Sin opiniones.</p>
+    <p class="resumen">Compara lo que propone cada partido, si explica cómo lo haría y lo que ha votado en el Congreso. Sin opiniones.</p>
     <div class="cuenta"><b id="dias">—</b><span>días para votar</span></div>
   </header>
+  <div class="gv-modos" role="group" aria-label="Cómo quieres comparar">
+    <button type="button" data-modo="tema" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16"/><path d="M9 4v16M15 4v16"/></svg><b>Comparar por tema</b><small>Los 12 partidos, un tema cada vez</small></button>
+    <button type="button" data-modo="partido" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5a6.5 6.5 0 0 1 11 0"/></svg><b>Ver un partido</b><small>Todo lo que propone y vota uno</small></button>
+  </div>
 
 
 
@@ -826,8 +845,8 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <p class="aparte" id="criterio"></p>
   </section>
 
-  <section id="como">
-    <h2>Cómo construimos esta guía</h2>
+  <details id="como" class="gv-metodo">
+    <summary><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Cómo hacemos esta guía</summary>
     <ol class="pasos-m">
       <li><strong>Solo el programa oficial.</strong> Usamos el documento que publica cada partido, nunca resúmenes de otros medios.</li>
       <li><strong>Cita literal y página.</strong> Para cada tema extraemos sus propuestas con la frase exacta y la página donde aparece.</li>
@@ -841,7 +860,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
     <h3>Los datos de cada tema</h3>
     <p>Solo cifras de organismos oficiales (INE, Banco de España, ministerios, Eurostat, OCDE), con el periodo y un enlace a la página donde se publican. Están en <a href="guia.json">guia.json</a>.</p>
     <p class="aparte">Los datos de esta guía están en un archivo público, <a href="programas.json">programas.json</a>, con su historial de cambios en GitHub. Si ves un error, <a href="https://github.com/juandoga/vistaplena/issues/new?title=Gu%C3%ADa%2029N%3A%20">avísanos</a>.</p>
-  </section>
+  </details>
 
 </div>
 
@@ -944,7 +963,7 @@ function propuestas(tema, PR){
 // Tema y partido elegidos (el tema se guarda en la dirección: elecciones.html#vivienda)
 let TEMA = (location.hash.slice(1).split("-")[0]) || "vivienda", PARTIDO = "todos";
 document.addEventListener("click", e => {
-  const bt = e.target.closest("[data-tema]");
+  const bt = e.target.closest("#gvTemas [data-tema]");
   if (bt) { TEMA = bt.dataset.tema; PARTIDO = "todos"; history.replaceState(null, "", "#" + TEMA); pintar();
     bt.scrollIntoView({ inline: "center", block: "nearest" }); const v = document.getElementById("gvVista"); if (v.getBoundingClientRect().top < 0) v.scrollIntoView(); return; }
   const bp = e.target.closest("[data-partido]");
@@ -1050,13 +1069,36 @@ document.addEventListener("click", e => {
     document.querySelector(`[data-ficha="${FICHA}"]`)?.scrollIntoView({ inline: "center", block: "nearest" }); return; }
   const bi = e.target.closest("[data-ir-tema]");
   if (bi) { TEMA = bi.dataset.irTema; PARTIDO = bi.dataset.irPartido || "todos"; history.replaceState(null, "", "#" + TEMA); pintar();
-    document.getElementById("gvVista").scrollIntoView(); }
+    modo("tema"); document.getElementById("gvVista").scrollIntoView(); }
 });
+// Dos caminos: comparar por tema o ver un partido
+function modo(m, escribir = true){
+  const p = m === "partido";
+  document.querySelectorAll("[data-modo]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.modo === m)));
+  document.querySelector(".gv-fija").hidden = p;
+  document.getElementById("gvVista").hidden = p;
+  document.getElementById("estadoProgramas").hidden = p;
+  document.getElementById("partidos").hidden = !p;
+  if (escribir) history.replaceState(null, "", p ? "#partidos-" + FICHA : "#" + TEMA);
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-modo]"); if (!b) return;
+  modo(b.dataset.modo);
+  const m = document.querySelector(".gv-modos"); if (m.getBoundingClientRect().top < 0) m.scrollIntoView();
+});
+const modoDeDireccion = () => {
+  const h = location.hash;
+  if (h === "#como") { document.getElementById("como").open = true; return; }
+  if (h.startsWith("#partidos")) { const f = (h.match(/^#partidos-([a-z]+)/) || [])[1]; if (f && f !== FICHA) { FICHA = f; document.getElementById("fichaPartido").innerHTML = fichaPartido(); } modo("partido", false); }
+  else modo("tema", false);
+};
+window.addEventListener("hashchange", () => { modoDeDireccion(); document.querySelector(".gv-modos").scrollIntoView(); });
+modoDeDireccion();
 // Cuenta atrás
 (() => { const d = Math.ceil((new Date("2026-11-29T09:00:00+01:00") - Date.now()) / 864e5); document.getElementById("dias").textContent = d > 0 ? d : "Hoy"; })();
 pintar();
 Promise.all([fetch("programas.json").then(r => r.json()), fetch("guia.json").then(r => r.json()), fetch("posturas.json").then(r => r.json()).catch(() => null)])
-  .then(([p, g, q]) => { PROG = p; GUIA = g; POST = q; pintar(); if (location.hash.startsWith("#partidos")) document.getElementById("partidos").scrollIntoView(); else if (location.hash && location.hash !== "#" + TEMA) document.querySelector(location.hash)?.scrollIntoView(); }).catch(() => {});
+  .then(([p, g, q]) => { PROG = p; GUIA = g; POST = q; pintar(); if (location.hash.startsWith("#partidos")) document.querySelector(".gv-modos").scrollIntoView(); else if (location.hash && location.hash !== "#" + TEMA) document.querySelector(location.hash)?.scrollIntoView(); }).catch(() => {});
 (async () => {
   const h = { apikey: SUPA.key, Authorization: "Bearer " + SUPA.key };
   try {
