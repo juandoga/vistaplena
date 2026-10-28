@@ -488,6 +488,25 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .m-aspecto button[aria-pressed="true"]{background:var(--tinta);color:var(--fondo)}
 .m-aspecto button[aria-pressed="true"] .m-ic{color:var(--fondo)}
 @media (min-width:900px){.top .menu .menu-a{display:grid;justify-content:normal;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:32px;align-items:start}.m-atajos{grid-column:1/-1;grid-template-columns:repeat(4,minmax(0,1fr))}.m-cajon,.m-cajon:last-of-type{border-bottom:0}.m-cajon summary{pointer-events:none}.m-cajon .m-flecha,.m-n{display:none}.m-aspecto{grid-column:1/-1;max-width:360px}}
+/* Tipografía «Editorial moderno» (28/10): titulares de Vista Plena en DM Serif Display, texto en Bricolage Grotesque, etiquetas en cursiva */
+@font-face{font-family:"DM Serif Display";font-display:swap;src:url(fuentes/dm-serif-display-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Bricolage Grotesque";font-weight:200 800;font-display:swap;src:url(fuentes/bricolage-grotesque-latin-wght-normal.woff2) format("woff2-variations")}
+@font-face{font-family:"Newsreader";font-style:italic;font-weight:200 800;font-display:swap;src:url(fuentes/newsreader-latin-opsz-italic.woff2) format("woff2-variations")}
+:root{--ui:"Bricolage Grotesque",system-ui,sans-serif;--num:"Bricolage Grotesque",system-ui,sans-serif;--display:"DM Serif Display",Georgia,serif}
+.logo{font-family:var(--logo)!important}
+.hero .sobre h1,.hist-cab h1,.principal h1,.metodo-cab h1{font-family:var(--display)!important;font-weight:400!important;line-height:1.04!important;letter-spacing:-.012em!important}
+.hero .sobre h1,.hist-cab h1,.principal h1{font-size:clamp(2.3rem,6vw,3.6rem)!important}
+.resumen-dia .t,.pieza h3,.ciego h3{font-family:var(--display)!important;font-weight:400!important;font-size:1.4rem!important;line-height:1.1!important;letter-spacing:0!important}
+.cab-seccion h2,.hist-titulares > h2,.hist-cob h2,.hist-asi h2,.hist-crono h2,.hist-rel h2,.guia h2,.resumen-dia h2,section > h2,.metodo h2{font-family:var(--display)!important;font-weight:400!important;font-size:1.85rem!important;line-height:1.1!important;letter-spacing:-.005em!important}
+h2 .info{margin-left:6px;vertical-align:.25em}
+.eti,.antetitulo,.antetitulo b,.hist-cab .hist-cob h2,.lados .bloque .lado{font-family:var(--titular)!important;font-style:italic!important;font-weight:500!important;font-size:1.05rem!important;text-transform:none!important;letter-spacing:0!important;color:var(--gris)!important}
+.sobre .antetitulo,.sobre .antetitulo b{color:#fff!important}.boletin .eti{color:inherit!important;opacity:.9}
+.hist-cab .hist-cob,.hist-rel,.cab-seccion,.hist-titulares{border-top:0!important;padding-top:36px!important}
+.resumen-dia ol>li{border:0!important;padding-bottom:18px!important}
+.desplegar{border:0!important;background:var(--panel)!important;border-radius:999px!important;padding:6px 14px!important;font-weight:600!important}
+.top{border-bottom:1px solid var(--linea)!important}
+.lados .bloque.l-izq,.lados .bloque.l-cen,.lados .bloque.l-der{border-top-width:2px!important}
+.lados .bloque li{border-bottom:0!important}
 </style>
 </head>
 <body>
