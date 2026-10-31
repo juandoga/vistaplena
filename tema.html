@@ -657,8 +657,13 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .tema-lead{display:grid;gap:12px;text-decoration:none;color:var(--tinta)}
 .tema-lead .t{font-family:var(--titular);font-weight:600;font-size:var(--t-xl);line-height:1.12;letter-spacing:-.01em;text-wrap:balance}
 .tema-lead:hover .t{text-decoration:underline;text-underline-offset:4px}
-.tema-enfoques{margin-top:28px;padding-bottom:28px;border-bottom:1px solid var(--linea)}
-.tema-enfoques > h2{margin:0 0 12px;font-weight:900;font-size:var(--t-l);letter-spacing:-.02em}
+.tema-pest{display:flex;gap:4px;margin-top:28px;border-bottom:2px solid var(--tinta)}
+.tema-pest button{font:inherit;font-weight:700;font-size:var(--t-s);padding:10px 14px;border:0;background:none;color:var(--gris);cursor:pointer;margin-bottom:-2px;border-bottom:4px solid transparent}
+.tema-pest button[aria-selected="true"]{color:var(--tinta);border-bottom-color:var(--tinta)}
+.tema-pest button[hidden]{display:none}
+.tema-enfoques{margin-top:20px;padding-bottom:28px}
+.tema-enfoques .en-intro{margin:0 0 16px;font-size:var(--t-m);line-height:1.5;color:var(--texto)}
+.tema-enfoques > h2{margin:0 0 12px}
 .en-cols{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 .en-cols h3{margin:0 0 8px;font-size:var(--t-s);text-transform:uppercase;letter-spacing:.06em;padding-top:8px;border-top:3px solid}
 .en-i h3{color:var(--izq);border-color:var(--izq)} .en-d h3{color:var(--der);border-color:var(--der)}
@@ -666,7 +671,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .en-cols a{display:block;font-weight:700;line-height:1.3;color:inherit}
 .en-cols .m{display:block;margin-top:4px;font-size:var(--t-xs, .8rem);color:var(--gris, #666)}
 @media (max-width:640px){.en-cols{grid-template-columns:1fr}}
-.tema-crono{margin-top:28px}
+.tema-crono{margin-top:20px}
 .tema-crono > h2{margin:0 0 8px;font-weight:900;font-size:var(--t-l);letter-spacing:-.02em}
 .tc-dia h3{margin:20px 0 8px;font-size:var(--t-s);text-transform:uppercase;letter-spacing:.06em;color:var(--gris)}
 .tc-dia ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--linea)}
@@ -824,7 +829,7 @@ function pintar(t, H, S = []){
   const acum = repartoLados(s.i, s.c, s.d);
   const ciegas = H.filter(h => h.ciego).length;
   const ultima = H[0];
-  // Lo principal: la noticia del tema más contada y más destacada en portadas en las últimas 24 horas
+  // Lo más destacado hoy: la noticia del tema más contada y más destacada en portadas en las últimas 24 horas
   const recientes = H.filter(h => Date.now() - new Date(h.act) < 864e5);
   const principal = (recientes.length ? recientes : H).slice().sort((a, b) => (b.peso - a.peso) || (b.tot - a.tot))[0];
   // Cronología agrupada por día, lo más reciente arriba
@@ -844,13 +849,18 @@ function pintar(t, H, S = []){
     <div class="tema-cuerpo">
       <div>
         <section class="tema-ultimo" aria-labelledby="ul-t">
-          <h2 id="ul-t" class="eti">Lo principal ahora${info("La noticia de este tema que más medios cuentan y que más portadas ocupan en las últimas 24 horas.", "Cómo se elige")}</h2>
+          <h2 id="ul-t" class="eti">Lo más destacado hoy${info("De las noticias de este tema que se han movido en las últimas 24 horas, la que más portadas de medios ocupa (y, a igualdad, la que más medios publican). No es la última: la última sale debajo, en «Lo más reciente».", "Cómo se elige")}</h2>
           <a class="tema-lead" href="${enlace(principal)}">${foto(principal)}<span class="t">${esc(principal.t)}</span></a>
           ${barra(principal)}
           <p class="aparte">${principal.tot} medios · empezó ${haceCuanto(inicio(principal))}${principal.ciego ? ` · <b>poca cobertura en la ${principal.ciego}</b>` : ""}</p>
           ${ultima !== principal ? `<p class="tema-recien">Lo más reciente: <a href="${enlace(ultima)}">${esc(ultima.t)}</a> <span class="gris">· ${haceCuanto(inicio(ultima))}</span></p>` : ""}
         </section>
-        <section class="tema-enfoques" id="enfoques" aria-labelledby="en-t" hidden></section>
+        <div class="tema-pest" role="tablist" aria-label="Cómo ver el tema">
+          <button role="tab" id="pt-crono" aria-controls="crono" aria-selected="true">Día a día</button>
+          <button role="tab" id="pt-enfoques" aria-controls="enfoques" aria-selected="false" hidden>Cómo lo cuenta cada lado</button>
+        </div>
+        <section class="tema-enfoques" id="enfoques" role="tabpanel" aria-labelledby="pt-enfoques" data-nombre="${esc(t.nombre)}" hidden></section>
+        <div id="crono" role="tabpanel" aria-labelledby="pt-crono">
         <section class="tema-crono" aria-labelledby="cr-t">
           <h2 id="cr-t">Todas las noticias del tema, día a día</h2>
           ${dias.map(g => `<div class="tc-dia"><h3>${g.d}</h3><ol>${g.hs.map(h => `<li>
@@ -863,6 +873,7 @@ function pintar(t, H, S = []){
           <p class="aparte">Titulares que ningún otro medio ha contado igual, así que no forman una noticia propia ni entran en los porcentajes.</p>
           <ol>${S.slice(0, 15).map(a => `<li><time datetime="${a.publicado}">${hora(a.publicado)}</time><div><span class="md"><i style="background:${a.medios.orientacion < 0 ? "var(--izq)" : a.medios.orientacion > 0 ? "var(--der)" : "var(--cen)"}"></i>${esc(a.medios.nombre)} · ${ETIQUETA[a.medios.orientacion]}</span><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.titulo)}</a></div></li>`).join("")}</ol>
         </details>` : ""}
+        </div>
       </div>
       <aside class="tema-lado">
         <h2 class="eti">Cobertura de todo el tema</h2>
@@ -911,13 +922,22 @@ async function cargarEnfoques(ids){
     if (!izq.length || !der.length) return; // el contraste solo tiene sentido si los dos lados tienen algo propio
     const li = x => `<li><a href="${urlNoticia(x.id, x.t)}">${esc(x.t)}</a><span class="m">${x.i} de ${T.i} medios de izquierda · ${x.d} de ${T.d} de derecha</span></li>`;
     caja.innerHTML = `
-      <h2 id="en-t">Lo que más cuenta cada lado${info(`Dentro de este tema, las noticias que publica una parte de un lado al menos el doble de grande que la del otro (como mínimo 3 medios de ese lado y 5 en total). Los titulares de un mismo hecho suelen parecerse; donde se nota el enfoque es en qué partes del tema elige contar cada lado. No es un punto ciego: los dos lados cuentan el tema. <a href="metodologia.html#enfoques">Cómo se calcula</a>.`, "Cómo se elige")}</h2>
+      <p class="en-intro">Los titulares de un mismo hecho se parecen mucho. Donde se nota cada lado es en <b>qué partes de «${esc(caja.dataset.nombre)}» elige contar</b>: estas son las noticias del tema que publica sobre todo uno de los dos.</p>
+      <h2 id="en-t" class="eti">Qué noticias del tema publica más cada lado${info(`Dentro de este tema, las noticias que publica una parte de un lado al menos el doble de grande que la del otro (como mínimo 3 medios de ese lado y 5 en total). Los titulares de un mismo hecho suelen parecerse; donde se nota el enfoque es en qué partes del tema elige contar cada lado. No es un punto ciego: los dos lados cuentan el tema. <a href="metodologia.html#enfoques">Cómo se calcula</a>.`, "Cómo se elige")}</h2>
       <div class="en-cols">
         <div class="en-i"><h3>Más en la izquierda</h3><ol>${izq.map(li).join("")}</ol></div>
         <div class="en-d"><h3>Más en la derecha</h3><ol>${der.map(li).join("")}</ol></div>
       </div>`;
-    caja.hidden = false;
-    evento("enfoques");
+    const pest = document.getElementById("pt-enfoques"), crono = document.getElementById("crono"), pc = document.getElementById("pt-crono");
+    pest.hidden = false;
+    const ver = cual => {
+      const e = cual === "enfoques";
+      caja.hidden = !e; crono.hidden = e;
+      pest.setAttribute("aria-selected", e); pc.setAttribute("aria-selected", !e);
+      if (e) evento("enfoques");
+    };
+    pest.onclick = () => ver("enfoques"); pc.onclick = () => ver("crono");
+    if (location.hash === "#enfoques") ver("enfoques");
   } catch (e) {}
 }
 
