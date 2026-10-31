@@ -78,7 +78,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .saltos{display:flex;gap:5px;position:sticky;top:var(--alto-top,57px);z-index:4;background:var(--fondo);overflow-x:auto;scrollbar-width:none;padding:12px 0;border-bottom:1px solid var(--linea);font-size:var(--t-s);font-weight:600;white-space:nowrap}
 .saltos::-webkit-scrollbar{display:none}
 .saltos a{color:var(--tinta);text-decoration:none;border:1px solid var(--tinta);padding:7px 0;font-weight:700;font-size:.78rem;flex:1 0 auto;text-align:center;min-width:0}
-.saltos a:hover,.saltos a:focus-visible{background:var(--tinta);color:var(--fondo)}
+.saltos a{-webkit-tap-highlight-color:transparent}
+@media (hover:hover){.saltos a:hover{background:var(--panel)}}
+.saltos a:focus-visible{outline:2px solid var(--tinta);outline-offset:2px}
 .saltos a b{color:var(--aviso);font-weight:700;margin-left:4px}
 .saltos a[aria-current]{background:var(--tinta);color:var(--fondo)}
 .saltos a[aria-current] b{color:inherit}
@@ -790,8 +792,9 @@ function pintarTemas(){
   nav.innerHTML = `<span class="eti">Ir a un tema</span>` + fijo + T.map(t => `<a class="tema${temaNuevo(t) ? " nuevo" : ""}" href="${t.url}"${temaNuevo(t) ? ' title="Novedades desde tu última visita"' : ""}>${esc(t.nombre)}<span class="n">${t.historias}</span></a>`).join("");
 }
 // 31/10: el botón de la sección en la que está el lector queda marcado
+let _bloqueoSalto = 0;
 function marcarSalto(){
-  const S = document.getElementById("saltos"); if (!S || S.hidden) return;
+  const S = document.getElementById("saltos"); if (!S || S.hidden || Date.now() < _bloqueoSalto) return;
   const links = [...S.querySelectorAll("a")]; if (!links.length) return;
   const linea = S.getBoundingClientRect().bottom + 40;
   let actual = null;
@@ -903,6 +906,15 @@ function render(){
     .filter(([id]) => document.getElementById(id));
   S.hidden = vista !== "portada" || !!seccion || !destinos.length;
   S.innerHTML = destinos.map(([id, t]) => `<a href="#${id}">${t}${id === "s-ciegos" ? `<b>${document.querySelectorAll(".ciego").length}</b>` : ""}</a>`).join("");
+  // Al pulsar: se marca el botón pulsado y se espera a que termine el desplazamiento antes de volver a calcular
+  S.querySelectorAll("a").forEach(a => a.addEventListener("click", ev => {
+    const el = document.getElementById(a.hash.slice(1)); if (!el) return;
+    ev.preventDefault();
+    S.querySelectorAll("a").forEach(x => x === a ? x.setAttribute("aria-current", "true") : x.removeAttribute("aria-current"));
+    _bloqueoSalto = Date.now() + 1200;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    a.blur();
+  }));
   marcarSalto();
   const M = DATA.medios || [];
   document.getElementById("nMedios").textContent = M.length || 21;
