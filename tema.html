@@ -657,7 +657,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .tema-lead{display:grid;gap:12px;text-decoration:none;color:var(--tinta)}
 .tema-lead .t{font-family:var(--titular);font-weight:600;font-size:var(--t-xl);line-height:1.12;letter-spacing:-.01em;text-wrap:balance}
 .tema-lead:hover .t{text-decoration:underline;text-underline-offset:4px}
-.tema-pest{display:flex;gap:4px;margin-top:28px;border-bottom:2px solid var(--tinta)}
+.tema-pest{display:flex;gap:4px;margin-top:0;border-bottom:2px solid var(--tinta)}
 .tema-pest button{font:inherit;font-weight:700;font-size:var(--t-s);padding:10px 14px;border:0;background:none;color:var(--gris);cursor:pointer;margin-bottom:-2px;border-bottom:4px solid transparent}
 .tema-pest button[aria-selected="true"]{color:var(--tinta);border-bottom-color:var(--tinta)}
 .tema-pest button[hidden]{display:none}
@@ -683,6 +683,11 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .tc-dia li a:hover{text-decoration:underline;text-underline-offset:3px}
 .tc-dia .barra{height:6px;max-width:280px}
 .tc-dia .m{font-size:var(--t-xs);color:var(--gris)}
+.tc-dia li.dest{background:var(--panel);margin:4px 0;padding-right:12px}
+.tc-dia li.dest::before{background:var(--tinta)}
+.tc-dia li.dest a{font-weight:700;font-size:1.3rem;line-height:1.2}
+.tc-dia li.dest .barra{height:8px;max-width:none}
+.dest-eti{font-size:var(--t-xs);text-transform:uppercase;letter-spacing:.06em;font-weight:700;color:var(--tinta);display:flex;align-items:center;gap:6px}
 .tema-lado{position:sticky;top:88px;display:grid;gap:12px;padding:20px;border:1px solid var(--linea);border-radius:12px}
 .tema-lado p{margin:0;font-size:var(--t-s);line-height:1.5}
 @media (max-width:880px){.tema-lado{position:static}}
@@ -828,10 +833,10 @@ function pintar(t, H, S = []){
   const s = H.reduce((o, x) => ({ i: o.i + (x.izq || 0), c: o.c + (x.cen || 0), d: o.d + (x.der || 0) }), { i: 0, c: 0, d: 0 });
   const acum = repartoLados(s.i, s.c, s.d);
   const ciegas = H.filter(h => h.ciego).length;
-  const ultima = H[0];
-  // Lo más destacado hoy: la noticia del tema más contada y más destacada en portadas en las últimas 24 horas
+  // Más destacada hoy (se marca dentro de la cronología): la noticia del tema más contada y más destacada en portadas en las últimas 24 horas
+  // Solo se marca si hay movimiento en las últimas 24 horas y el tema tiene más de una noticia
   const recientes = H.filter(h => Date.now() - new Date(h.act) < 864e5);
-  const principal = (recientes.length ? recientes : H).slice().sort((a, b) => (b.peso - a.peso) || (b.tot - a.tot))[0];
+  const destacada = H.length > 1 && recientes.length ? recientes.slice().sort((a, b) => (b.peso - a.peso) || (b.tot - a.tot))[0] : null;
   // Cronología agrupada por día, lo más reciente arriba
   const dias = [];
   for (const h of H) {
@@ -848,24 +853,16 @@ function pintar(t, H, S = []){
     </header>
     <div class="tema-cuerpo">
       <div>
-        <section class="tema-ultimo" aria-labelledby="ul-t">
-          <h2 id="ul-t" class="eti">Lo más destacado hoy${info("De las noticias de este tema que se han movido en las últimas 24 horas, la que más portadas de medios ocupa (y, a igualdad, la que más medios publican). No es la última: la última sale debajo, en «Lo más reciente».", "Cómo se elige")}</h2>
-          <a class="tema-lead" href="${enlace(principal)}">${foto(principal)}<span class="t">${esc(principal.t)}</span></a>
-          ${barra(principal)}
-          <p class="aparte">${principal.tot} medios · empezó ${haceCuanto(inicio(principal))}${principal.ciego ? ` · <b>poca cobertura en la ${principal.ciego}</b>` : ""}</p>
-          ${ultima !== principal ? `<p class="tema-recien">Lo más reciente: <a href="${enlace(ultima)}">${esc(ultima.t)}</a> <span class="gris">· ${haceCuanto(inicio(ultima))}</span></p>` : ""}
-        </section>
         <div class="tema-pest" role="tablist" aria-label="Cómo ver el tema">
-          <button role="tab" id="pt-crono" aria-controls="crono" aria-selected="true">Día a día</button>
-          <button role="tab" id="pt-enfoques" aria-controls="enfoques" aria-selected="false" hidden>Cómo lo cuenta cada lado</button>
+          <button role="tab" id="pt-crono" aria-controls="crono" aria-selected="true">Cronología</button>
+          <button role="tab" id="pt-enfoques" aria-controls="enfoques" aria-selected="false" hidden>Cada lado</button>
         </div>
         <section class="tema-enfoques" id="enfoques" role="tabpanel" aria-labelledby="pt-enfoques" data-nombre="${esc(t.nombre)}" hidden></section>
         <div id="crono" role="tabpanel" aria-labelledby="pt-crono">
-        <section class="tema-crono" aria-labelledby="cr-t">
-          <h2 id="cr-t">Todas las noticias del tema, día a día</h2>
-          ${dias.map(g => `<div class="tc-dia"><h3>${g.d}</h3><ol>${g.hs.map(h => `<li>
+        <section class="tema-crono">
+          ${dias.map(g => `<div class="tc-dia"><h3>${g.d}</h3><ol>${g.hs.map(h => `<li${h === destacada ? ' class="dest"' : ""}>
             <time datetime="${inicio(h)}">${hora(inicio(h))}</time>
-            <div><a href="${enlace(h)}">${esc(h.t)}</a>${barra(h)}<span class="m">${h.tot} medios${h.ciego ? ` · <b>poca cobertura en la ${h.ciego}</b>` : ""}</span></div>
+            <div>${h === destacada ? `<span class="dest-eti">Más destacada hoy${info("De las noticias de este tema que se han movido en las últimas 24 horas, la que más portadas de medios ocupa (y, a igualdad, la que más medios publican).", "Cómo se elige")}</span>` : ""}<a href="${enlace(h)}">${esc(h.t)}</a>${barra(h)}<span class="m">${h.tot} medios${h.ciego ? ` · <b>poca cobertura en la ${h.ciego}</b>` : ""}</span></div>
           </li>`).join("")}</ol></div>`).join("")}
         </section>
         ${S.length ? `<details class="tema-sueltos">
