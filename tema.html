@@ -671,6 +671,7 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .en-cols a{display:block;font-weight:700;line-height:1.3;color:inherit}
 .en-cols .m{display:block;margin-top:4px;font-size:var(--t-xs, .8rem);color:var(--gris, #666)}
 @media (max-width:640px){.en-cols{grid-template-columns:1fr}}
+.en-nada{margin:0;font-size:var(--t-s);color:var(--gris);line-height:1.5}
 .tema-crono{margin-top:20px}
 .tema-crono > h2{margin:0 0 8px;font-weight:900;font-size:var(--t-l);letter-spacing:-.02em}
 .tc-dia h3{margin:20px 0 8px;font-size:var(--t-s);text-transform:uppercase;letter-spacing:.06em;color:var(--gris)}
@@ -890,7 +891,7 @@ function pintar(t, H, S = []){
 // las que ya no salen en la portada.
 async function cargarEnfoques(ids){
   const caja = document.getElementById("enfoques");
-  if (!caja || ids.length < 6) return;
+  if (!caja || ids.length < 3) return;
   try {
     const [medios, hist] = await Promise.all([
       pedir("medios?select=id,orientacion&activo=eq.true"),
@@ -916,14 +917,16 @@ async function cargarEnfoques(ids){
     const elige = (l, o) => filas.filter(x => x[l] >= 3 && x["p" + l] >= 2 * x["p" + o] && x["p" + l] - x["p" + o] >= .15)
       .sort((a, b) => (b["p" + l] - b["p" + o]) - (a["p" + l] - a["p" + o]) || b.tot - a.tot).slice(0, 3);
     const izq = elige("i", "d"), der = elige("d", "i");
-    if (!izq.length || !der.length) return; // el contraste solo tiene sentido si los dos lados tienen algo propio
+    // 31/10: la pestaña sale en todos los temas con al menos 3 noticias de 5 medios o más. Si un lado no tiene ninguna
+    // noticia propia, se dice: también es un dato (cuando ese lado cuenta el tema, cuenta lo mismo que el otro)
+    if (filas.length < 3) return;
     const li = x => `<li><a href="${urlNoticia(x.id, x.t)}">${esc(x.t)}</a><span class="m">${x.i} de ${T.i} medios de izquierda · ${x.d} de ${T.d} de derecha</span></li>`;
     caja.innerHTML = `
       <p class="en-intro">Los titulares de un mismo hecho se parecen mucho. Donde se nota cada lado es en <b>qué partes de «${esc(caja.dataset.nombre)}» elige contar</b>: estas son las noticias del tema que publica sobre todo uno de los dos.</p>
       <h2 id="en-t" class="eti">Qué noticias del tema publica más cada lado${info(`Dentro de este tema, las noticias que publica una parte de un lado al menos el doble de grande que la del otro (como mínimo 3 medios de ese lado y 5 en total). Los titulares de un mismo hecho suelen parecerse; donde se nota el enfoque es en qué partes del tema elige contar cada lado. No es un punto ciego: los dos lados cuentan el tema. <a href="metodologia.html#enfoques">Cómo se calcula</a>.`, "Cómo se elige")}</h2>
       <div class="en-cols">
-        <div class="en-i"><h3>Más en la izquierda</h3><ol>${izq.map(li).join("")}</ol></div>
-        <div class="en-d"><h3>Más en la derecha</h3><ol>${der.map(li).join("")}</ol></div>
+        <div class="en-i"><h3>Más en la izquierda</h3>${izq.length ? `<ol>${izq.map(li).join("")}</ol>` : `<p class="en-nada">Ninguna noticia de este tema la publica sobre todo la izquierda: lo que cuenta la izquierda también lo cuentan los demás.</p>`}</div>
+        <div class="en-d"><h3>Más en la derecha</h3>${der.length ? `<ol>${der.map(li).join("")}</ol>` : `<p class="en-nada">Ninguna noticia de este tema la publica sobre todo la derecha: lo que cuenta la derecha también lo cuentan los demás.</p>`}</div>
       </div>`;
     const pest = document.getElementById("pt-enfoques"), crono = document.getElementById("crono"), pc = document.getElementById("pt-crono");
     pest.hidden = false;

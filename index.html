@@ -75,11 +75,12 @@ button{font:inherit;color:inherit;cursor:pointer}
 .edicion .vivo{display:inline-flex;align-items:center;gap:7px;font-variant-numeric:tabular-nums}
 .edicion .vivo::before{content:"";width:7px;height:7px;border-radius:50%;background:#2e9d5b;box-shadow:0 0 0 3px color-mix(in srgb,#2e9d5b 25%,transparent)}
 /* Saltos dentro de la portada: llevan a cada bloque, no a otra página */
-.saltos{display:flex;gap:18px;overflow-x:auto;scrollbar-width:none;padding:12px 0;border-bottom:1px solid var(--linea);font-size:var(--t-s);font-weight:600;white-space:nowrap}
+.saltos{display:flex;gap:5px;position:sticky;top:var(--alto-top,57px);z-index:4;background:var(--fondo);overflow-x:auto;scrollbar-width:none;padding:12px 0;border-bottom:1px solid var(--linea);font-size:var(--t-s);font-weight:600;white-space:nowrap}
 .saltos::-webkit-scrollbar{display:none}
-.saltos a{color:var(--gris);text-decoration:none}
-.saltos a:hover,.saltos a:focus-visible{color:var(--tinta)}
+.saltos a{color:var(--tinta);text-decoration:none;border:1px solid var(--tinta);padding:7px 0;font-weight:700;font-size:.78rem;flex:1 0 auto;text-align:center;min-width:0}
+.saltos a:hover,.saltos a:focus-visible{background:var(--tinta);color:var(--fondo)}
 .saltos a b{color:var(--aviso);font-weight:700;margin-left:4px}
+@media (min-width:720px){.saltos a{flex:0 0 auto;padding:7px 14px;font-size:var(--t-s)}}
 [id^="s-"]{scroll-margin-top:80px}
 .subtop{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 16px;padding-block:14px 0;font-size:var(--t-s);color:var(--gris)}
 
@@ -233,6 +234,14 @@ a.tema:hover{border-color:var(--tinta)}
 .tema.fijo{font-weight:700}
 .temas-caja .temas{padding-top:0;flex-wrap:wrap;-webkit-mask-image:none;overflow:visible}
 .temas-caja .eti{display:none}
+/* 31/10: en la portada, cada tema es una fila grande que se ve pulsable */
+.temas-caja .temas{flex-direction:column;flex-wrap:nowrap;gap:0;padding-top:4px}
+.temas-caja a.tema{white-space:normal;border:0;border-top:1px solid var(--linea);border-radius:0;padding:14px 2px;justify-content:space-between;gap:12px;font-family:var(--titular);font-size:1.15rem;font-weight:600;line-height:1.25;background:none}
+.temas-caja a.tema:last-of-type{border-bottom:1px solid var(--linea)}
+.temas-caja a.tema .n{margin-left:auto;font-family:var(--num)}
+.temas-caja a.tema::after{content:"›";font-size:1.4rem;opacity:1;margin-left:4px}
+.temas-caja .sub{margin:4px 0 0;color:var(--gris);font-size:var(--t-s)}
+.ver-mas{display:block;margin:20px auto 0;font:inherit;font-weight:700;font-size:var(--t-s);background:var(--fondo);color:var(--tinta);border:1px solid var(--tinta);padding:12px 20px;cursor:pointer;width:100%;max-width:420px}
 .temas a.tema::after{content:"›";margin-left:6px;opacity:.55;font-weight:700}
 .tema{flex:none;border:1px solid var(--linea);background:var(--fondo);border-radius:999px;padding:7px 14px;font-size:var(--t-s);font-weight:500;color:var(--tinta);white-space:nowrap}
 .tema:hover{border-color:var(--tinta)}
@@ -777,7 +786,11 @@ function pintarTemas(){
   const fijo = Date.now() < new Date("2026-11-30").getTime() ? `<a class="tema fijo" href="elecciones.html">Elecciones 29N: qué propone cada partido</a>` : "";
   nav.innerHTML = `<span class="eti">Ir a un tema</span>` + fijo + T.map(t => `<a class="tema${temaNuevo(t) ? " nuevo" : ""}" href="${t.url}"${temaNuevo(t) ? ' title="Novedades desde tu última visita"' : ""}>${esc(t.nombre)}<span class="n">${t.historias}</span></a>`).join("");
 }
+// La fila de saltos se queda pegada justo debajo de la cabecera
+function altoTop(){ const t = document.querySelector(".top"); if (t) document.documentElement.style.setProperty("--alto-top", t.offsetHeight + "px"); }
+addEventListener("resize", altoTop);
 function render(){
+  altoTop();
   const H = DATA.historias || [];
   pintarSecciones(H);
   pintarTemas();
@@ -814,6 +827,9 @@ function render(){
           <div class="asi"><button type="button" class="desplegar asi-bot" aria-expanded="false">Cómo la titula cada lado</button><h3>Así la titula cada lado</h3>${bloques(lead, 2)}<a class="ver-todos boton secundario" href="${enlace(lead)}">Comparar los ${lead.tot} titulares</a></div>
         </section>`);
       const yaVistas = new Set([...vistas].map(h => h.id));
+      // 31/10: los temas, justo debajo de la principal (antes iban tras los puntos ciegos y no se encontraban en el móvil)
+      const temas = document.getElementById("temas");
+      if (temas && temas.children.length > 1) { const cajaT = document.createElement("section"); cajaT.className = "temas-caja"; cajaT.id = "s-temas"; cajaT.innerHTML = `<div class="cab-seccion"><h2>Temas del momento</h2><p class="sub">Cada tema reúne todas sus noticias, día a día, y qué cuenta más cada lado.</p></div>`; cajaT.appendChild(temas); c.appendChild(cajaT); }
       // Lo más contado, todo junto: la principal y justo debajo las siguientes. Después, los puntos ciegos
       c.insertAdjacentHTML("beforeend", resumenDia([lead, ...hoy], hoy));
       const rd = c.querySelector(".resumen-dia"); if (rd) rd.id = "s-hoy";
@@ -830,9 +846,6 @@ function render(){
       }
       c.firstElementChild.id = "s-principal";
       if (ciegos.length) c.querySelector(".ciegos").previousElementSibling.id = "s-ciegos";
-      // Los temas, como bloque propio debajo de lo más contado (arriba parecían pestañas)
-      const temas = document.getElementById("temas");
-      if (temas && temas.children.length > 1) { const cajaT = document.createElement("section"); cajaT.className = "temas-caja"; cajaT.id = "s-temas"; cajaT.innerHTML = `<div class="cab-seccion"><h2>Temas del momento</h2></div>`; cajaT.appendChild(temas); c.appendChild(cajaT); }
       const cajaTemas = c.querySelector(".temas-caja");
       if (cajaTemas) cajaTemas.insertAdjacentHTML("beforeend", desarrolloBloque(false)); else { c.insertAdjacentHTML("beforeend", desarrolloBloque(true)); const d = c.querySelector(".desarrollo"); if (d) d.id = "s-temas"; }
       // El resto, todo junto y de lo más reciente a lo más antiguo (por su último titular). Sustituye a «Lo último»
@@ -843,8 +856,15 @@ function render(){
       c.insertAdjacentHTML("beforeend", `<span id="s-mas"></span>`);
       c.insertAdjacentHTML("beforeend", cab("Lo último", "Todas las demás noticias, de la más reciente a la más antigua según su último titular.", true));
       const rej = document.createElement("div"); rej.className = "rejilla";
-      restoReciente.forEach(h => rej.appendChild(pieza(h)));
+      // 31/10: solo las 10 primeras; el resto, con un botón (antes eran unas 10 pantallas de móvil seguidas)
+      restoReciente.slice(0, 10).forEach(h => rej.appendChild(pieza(h)));
       c.appendChild(rej);
+      if (restoReciente.length > 10) {
+        const b = document.createElement("button"); b.type = "button"; b.className = "boton secundario ver-mas";
+        b.textContent = `Ver ${restoReciente.length - 10} noticias más`;
+        b.onclick = () => { restoReciente.slice(10).forEach(h => rej.appendChild(pieza(h))); b.remove(); };
+        c.appendChild(b);
+      }
     }
   } else {
     // Puntos ciegos: una sola página con filtro por lado (antes eran tres páginas)
@@ -865,7 +885,7 @@ function render(){
     }));
   }
   const S = document.getElementById("saltos");
-  const destinos = [["s-hoy", "Lo más contado hoy"], ["s-ciegos", "Puntos ciegos"], ["s-temas", "Temas"], ["s-mas", "Lo último"]]
+  const destinos = [["s-temas", "Temas"], ["s-hoy", "Más contado"], ["s-ciegos", "Puntos ciegos"], ["s-mas", "Último"]]
     .filter(([id]) => document.getElementById(id));
   S.hidden = vista !== "portada" || !!seccion || !destinos.length;
   S.innerHTML = destinos.map(([id, t]) => `<a href="#${id}">${t}${id === "s-ciegos" ? `<b>${document.querySelectorAll(".ciego").length}</b>` : ""}</a>`).join("");
