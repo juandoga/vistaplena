@@ -797,8 +797,9 @@ function marcarSalto(){
   const S = document.getElementById("saltos"); if (!S || S.hidden || Date.now() < _bloqueoSalto) return;
   const links = [...S.querySelectorAll("a")]; if (!links.length) return;
   const linea = S.getBoundingClientRect().bottom + 40;
-  let actual = null;
-  for (const a of links) { const el = document.getElementById(a.hash.slice(1)); if (el && el.getBoundingClientRect().top <= linea) actual = a; }
+  // La sección marcada es la que empieza más abajo de las que ya han pasado bajo los botones, sea cual sea el orden de los botones
+  let actual = null, mejor = -Infinity;
+  for (const a of links) { const el = document.getElementById(a.hash.slice(1)); const t = el ? el.getBoundingClientRect().top : Infinity; if (t <= linea && t > mejor) { mejor = t; actual = a; } }
   for (const a of links) { if (a === actual) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current"); }
 }
 let _salto = 0;
@@ -816,6 +817,10 @@ function render(){
   // La copia ya escrita de la portada (seo/generar.py) se queda mientras cargan los datos o si fallan
   if (c.dataset.estatica && !H.length && vista === "portada" && !seccion && CARGA !== "ok") return;
   delete c.dataset.estatica;
+  // 31/10: la fila de temas vive dentro de #contenido; se saca antes de vaciarlo para que no se pierda al volver a pintar
+  // (pasaba al llegar los datos en directo tras pintar los guardados: desaparecían los temas y su botón llevaba al final)
+  const navT = document.getElementById("temas");
+  if (navT && c.contains(navT)) { let casa = document.getElementById("temas-casa"); if (!casa) { casa = document.createElement("div"); casa.id = "temas-casa"; casa.hidden = true; document.body.appendChild(casa); } casa.appendChild(navT); }
   c.innerHTML = "";
   if (vista === "portada" && seccion) {
     const s = window.SECCIONES.find(x => x.id === seccion);
