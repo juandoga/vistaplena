@@ -80,6 +80,9 @@ button{font:inherit;color:inherit;cursor:pointer}
 .saltos a{color:var(--tinta);text-decoration:none;border:1px solid var(--tinta);padding:7px 0;font-weight:700;font-size:.78rem;flex:1 0 auto;text-align:center;min-width:0}
 .saltos a:hover,.saltos a:focus-visible{background:var(--tinta);color:var(--fondo)}
 .saltos a b{color:var(--aviso);font-weight:700;margin-left:4px}
+.saltos a[aria-current]{background:var(--tinta);color:var(--fondo)}
+.saltos a[aria-current] b{color:inherit}
+#contenido [id^="s-"]{scroll-margin-top:calc(var(--alto-top,57px) + 64px)}
 @media (min-width:720px){.saltos a{flex:0 0 auto;padding:7px 14px;font-size:var(--t-s)}}
 [id^="s-"]{scroll-margin-top:80px}
 .subtop{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 16px;padding-block:14px 0;font-size:var(--t-s);color:var(--gris)}
@@ -786,6 +789,17 @@ function pintarTemas(){
   const fijo = Date.now() < new Date("2026-11-30").getTime() ? `<a class="tema fijo" href="elecciones.html">Elecciones 29N: qué propone cada partido</a>` : "";
   nav.innerHTML = `<span class="eti">Ir a un tema</span>` + fijo + T.map(t => `<a class="tema${temaNuevo(t) ? " nuevo" : ""}" href="${t.url}"${temaNuevo(t) ? ' title="Novedades desde tu última visita"' : ""}>${esc(t.nombre)}<span class="n">${t.historias}</span></a>`).join("");
 }
+// 31/10: el botón de la sección en la que está el lector queda marcado
+function marcarSalto(){
+  const S = document.getElementById("saltos"); if (!S || S.hidden) return;
+  const links = [...S.querySelectorAll("a")]; if (!links.length) return;
+  const linea = S.getBoundingClientRect().bottom + 40;
+  let actual = null;
+  for (const a of links) { const el = document.getElementById(a.hash.slice(1)); if (el && el.getBoundingClientRect().top <= linea) actual = a; }
+  for (const a of links) { if (a === actual) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current"); }
+}
+let _salto = 0;
+addEventListener("scroll", () => { if (!_salto) _salto = requestAnimationFrame(() => { _salto = 0; marcarSalto(); }); }, { passive: true });
 // La fila de saltos se queda pegada justo debajo de la cabecera
 function altoTop(){ const t = document.querySelector(".top"); if (t) document.documentElement.style.setProperty("--alto-top", t.offsetHeight + "px"); }
 addEventListener("resize", altoTop);
@@ -827,12 +841,12 @@ function render(){
           <div class="asi"><button type="button" class="desplegar asi-bot" aria-expanded="false">Cómo la titula cada lado</button><h3>Así la titula cada lado</h3>${bloques(lead, 2)}<a class="ver-todos boton secundario" href="${enlace(lead)}">Comparar los ${lead.tot} titulares</a></div>
         </section>`);
       const yaVistas = new Set([...vistas].map(h => h.id));
-      // 31/10: los temas, justo debajo de la principal (antes iban tras los puntos ciegos y no se encontraban en el móvil)
-      const temas = document.getElementById("temas");
-      if (temas && temas.children.length > 1) { const cajaT = document.createElement("section"); cajaT.className = "temas-caja"; cajaT.id = "s-temas"; cajaT.innerHTML = `<div class="cab-seccion"><h2>Temas del momento</h2><p class="sub">Cada tema reúne todas sus noticias, día a día, y qué cuenta más cada lado.</p></div>`; cajaT.appendChild(temas); c.appendChild(cajaT); }
       // Lo más contado, todo junto: la principal y justo debajo las siguientes. Después, los puntos ciegos
       c.insertAdjacentHTML("beforeend", resumenDia([lead, ...hoy], hoy));
       const rd = c.querySelector(".resumen-dia"); if (rd) rd.id = "s-hoy";
+      // 31/10: los temas, justo después de lo más contado (antes iban tras los puntos ciegos y no se encontraban en el móvil)
+      const temas = document.getElementById("temas");
+      if (temas && temas.children.length > 1) { const cajaT = document.createElement("section"); cajaT.className = "temas-caja"; cajaT.id = "s-temas"; cajaT.innerHTML = `<div class="cab-seccion"><h2>Temas del momento</h2><p class="sub">Cada tema reúne todas sus noticias, día a día, y qué cuenta más cada lado.</p></div>`; cajaT.appendChild(temas); c.appendChild(cajaT); }
       const reciente = h => !yaVistas.has(h.id) && Date.now() - new Date(h.act) < 2 * 864e5;
       // Alternando lados: si hay de los dos, nunca salen solo los de un lado
       const ciI = ci.filter(reciente), ciD = cd.filter(reciente), ciegos = [];
@@ -885,10 +899,11 @@ function render(){
     }));
   }
   const S = document.getElementById("saltos");
-  const destinos = [["s-temas", "Temas"], ["s-hoy", "Más contado"], ["s-ciegos", "Puntos ciegos"], ["s-mas", "Último"]]
+  const destinos = [["s-principal", "Más contado"], ["s-temas", "Temas"], ["s-ciegos", "Puntos ciegos"], ["s-mas", "Último"]]
     .filter(([id]) => document.getElementById(id));
   S.hidden = vista !== "portada" || !!seccion || !destinos.length;
   S.innerHTML = destinos.map(([id, t]) => `<a href="#${id}">${t}${id === "s-ciegos" ? `<b>${document.querySelectorAll(".ciego").length}</b>` : ""}</a>`).join("");
+  marcarSalto();
   const M = DATA.medios || [];
   document.getElementById("nMedios").textContent = M.length || 21;
   document.getElementById("escala").innerHTML = NIVELES.map(([v, n, col]) =>
