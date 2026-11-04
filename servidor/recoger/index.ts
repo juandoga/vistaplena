@@ -368,6 +368,16 @@ Deno.serve(async (req) => {
     if (!g) { g = { ...grupoNuevo(), id: a.historia_id }; grupos.set(k, g); }
     anadir(g, a);
   }
+  // «primero» tiene que ser el comienzo real de la historia, no su titular más antiguo de la ventana de 48 horas:
+  // si no, una noticia grande que lleva días abierta (Urda, octubre de 2026) parece siempre recién empezada,
+  // la regla de las 24 horas no se aplica nunca y se va tragando los hechos de los días siguientes.
+  {
+    const ids = [...grupos.values()].map((g) => g.id!).filter(Boolean);
+    for (let i = 0; i < ids.length; i += 150) {
+      const { data } = await db.from("historias").select("id, creada").in("id", ids.slice(i, i + 150));
+      for (const h of data ?? []) { const g = grupos.get("h" + h.id); if (g && h.creada) g.primero = Math.min(g.primero, +new Date(h.creada)); }
+    }
+  }
   // Una historia solo admite titulares nuevos si se ha movido en las últimas 12 horas
   const VIVA = 12 * 3600e3;
   // Ni se añaden titulares ni se juntan historias con más de 24 horas de diferencia desde su primer titular
@@ -450,6 +460,18 @@ Deno.serve(async (req) => {
   }
 
   const porId = new Map(arts.map((a) => [a.id, a]));
+  // Una historia grande no absorbe en la fusión a una pequeña que trae su propio hecho: si la pequeña tiene 2 o más
+  // palabras clave poco frecuentes que la grande no tiene en su núcleo (un nombre, un lugar, un dato: «Bruselas»,
+  // «Copa», «Báñez»), es otra noticia del mismo tema, no la misma noticia. Es la misma regla de «novedad» que se aplica
+  // a cada titular suelto. Solo cuando una es mucho mayor (20 titulares o más y 4 veces la otra): entre historias
+  // parecidas de tamaño, la regla de núcleo común basta.
+  const tragaOtroHecho = (A: Grupo, B: Grupo, nA: Set<string>, nB: Set<string>) => {
+    const [g, p, ng, np] = A.ids.length >= B.ids.length ? [A, B, nA, nB] : [B, A, nB, nA];
+    if (g.ids.length < 20 || g.ids.length < 4 * p.ids.length) return false;
+    let novedad = 0;
+    for (const w of np) if (peso(w) >= RARA && !ng.has(w)) novedad++;
+    return novedad >= 2;
+  };
   // ?fase=simular: agrupa desde cero en memoria, sin guardar nada, y devuelve un informe para revisar el resultado
   if (simular) {
     const buscar = (new URL(req.url).searchParams.get("buscar") ?? "").split(",").filter(Boolean);
@@ -466,7 +488,7 @@ Deno.serve(async (req) => {
         if (!antigua && (Math.abs(A.ultimo - B.ultimo) > VIVA || Math.abs(A.primero - B.primero) > DIA || A.padre === B || B.padre === A)) continue;
         let comun = 0, n = 0, raras = 0;
         for (const w of nuc.get(A)!) if (nuc.get(B)!.has(w)) { comun += peso(w); n++; if (peso(w) >= RARA) raras++; }
-        if (n >= 3 && raras >= 2 && comun / (Math.min(sum(A), sum(B)) || 1) >= 0.45) {
+        if (n >= 3 && raras >= 2 && comun / (Math.min(sum(A), sum(B)) || 1) >= 0.45 && (antigua || !tragaOtroHecho(A, B, nuc.get(A)!, nuc.get(B)!))) {
           A.ids.push(...B.ids); B.medios.forEach((m) => A.medios.add(m)); A.primero = Math.min(A.primero, B.primero); A.ultimo = Math.max(A.ultimo, B.ultimo);
           fuera.add(B); fus++;
         }
@@ -534,6 +556,17 @@ Deno.serve(async (req) => {
   const separadas = new Set((enlaces ?? []).map((e: any) => e.id + "-" + e.anterior));
   for (const g of conId) if (g.padre?.id) separadas.add(g.id + "-" + g.padre.id);
   const hermanas = (x: Grupo, y: Grupo) => separadas.has(x.id + "-" + y.id) || separadas.has(y.id + "-" + x.id);
+  // Pares que la IA de verificar ya ha mirado y dice que NO son el mismo hecho («relacionada» o «distinta»): no se juntan aquí.
+  // Antes esta fase los juntaba igual (p. ej. «Bruselas advirtió en 2023 de la obsolescencia de la línea Madrid-Sevilla»
+  // acabó dentro de la noticia del accidente de Urda aunque la IA había dicho «distinta»).
+  const noJuntar = new Set<string>();
+  {
+    const ids = conId.map((g) => g.id!);
+    for (let i = 0; i < ids.length; i += 150) {
+      const { data } = await db.from("historias_pares").select("a, b, resultado").in("a", ids.slice(i, i + 150)).neq("resultado", "misma");
+      for (const p of data ?? []) { noJuntar.add(p.a + "-" + p.b); noJuntar.add(p.b + "-" + p.a); }
+    }
+  }
   conId.sort((x, y) => y.ids.length - x.ids.length);
   for (let i = 0; i < conId.length; i++) {
     const A = conId[i]; if (absorbido.has(A)) continue;
@@ -541,11 +574,11 @@ Deno.serve(async (req) => {
       const B = conId[j]; if (absorbido.has(B)) continue;
       // Solo se juntan historias vivas a la vez (menos de 12 horas entre sus últimos titulares) y que no se separaron a propósito
       // ni las que empezaron con más de 24 horas de diferencia (anuncio de un día y hecho del siguiente)
-      if (Math.abs(A.ultimo - B.ultimo) > VIVA || Math.abs(A.primero - B.primero) > DIA || hermanas(A, B)) continue;
+      if (Math.abs(A.ultimo - B.ultimo) > VIVA || Math.abs(A.primero - B.primero) > DIA || hermanas(A, B) || noJuntar.has(A.id + "-" + B.id)) continue;
       // Solo se fusionan si comparten casi todo su núcleo (al menos 3 palabras clave y el 45 % de su peso)
       let comun = 0, n = 0, raras = 0;
       for (const w of nucleos.get(A)!) if (nucleos.get(B)!.has(w)) { comun += peso(w); n++; if (peso(w) >= RARA) raras++; }
-      if (n >= 3 && raras >= 2 && comun / (Math.min(suma(A), suma(B)) || 1) >= 0.45) {
+      if (n >= 3 && raras >= 2 && comun / (Math.min(suma(A), suma(B)) || 1) >= 0.45 && !tragaOtroHecho(A, B, nucleos.get(A)!, nucleos.get(B)!)) {
         await db.from("articulos").update({ historia_id: A.id }).eq("historia_id", B.id);
         await db.from("historias").delete().eq("id", B.id);
         absorbido.add(B); fusiones++; // A no amplía sus palabras: así no se encadenan fusiones

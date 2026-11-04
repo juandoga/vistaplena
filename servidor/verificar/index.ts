@@ -75,10 +75,15 @@ const REPETIDAS = `Eres el editor de un agregador de noticias. Te doy pares de n
 - "misma": las dos cuentan exactamente el mismo hecho concreto (el mismo anuncio, suceso, decisión o dato), aunque con distintas palabras o cifras actualizadas.
 - "relacionada": una es la reacción a la otra, su consecuencia o su fase siguiente (otra persona u otro partido que opina sobre el hecho, una detención días después de un crimen, el resultado de unas primarias que se anunciaron antes).
 - "distinta": cuentan hechos distintos, aunque compartan tema (otro día, otra declaración, otro lugar).
+Cada noticia lleva entre corchetes cuándo empezó. Una declaración, un anuncio o una comparecencia de otro día es otro hecho, aunque sea de la misma persona y sobre el mismo asunto.
+Una noticia sobre una novedad dentro de un asunto grande (una víctima concreta, una consecuencia, una revelación posterior) no es la misma que la noticia general del asunto.
 Ejemplos:
 - «Dimite Montse Mínguez por los negocios de su pareja» / «El PP dice que la dimisión de Mínguez le da la razón» → "relacionada" (la segunda es una reacción).
 - «Dos detenidos en Irún investigados por terrorismo» / «Detenidos dos radicales en Irún con información sobre armas» → "misma".
 - «Investigan como homicidio la muerte de una anciana en Burgos» / «Dos menores detenidos por la muerte de la anciana de Burgos» → "relacionada" (la detención es una fase siguiente).
+- [28 oct 16:12] «Sánchez, desde Urda: "Vamos a llegar hasta el final"» / [29 oct 10:12] «Sánchez promete esclarecer hasta el último detalle la tragedia» → "relacionada" (otra comparecencia, otro día).
+- «El PP exige a Sánchez consecuencias por la tragedia de Urda» / «El PP se personará en la causa por el accidente de Urda» → "relacionada" (otra decisión posterior).
+- «Así se produjo el accidente de trenes en Urda» / «Aplazados los partidos de Copa del Rey por el accidente de Urda» → "relacionada" (una consecuencia).
 Si dudas entre "misma" y "relacionada", responde "relacionada".
 Responde solo con JSON, una clave por número de par: {"1":"misma","2":"relacionada","3":"distinta"}.`;
 
@@ -226,7 +231,7 @@ Deno.serve(async (req) => {
     const lote = pares.slice(i, i + 15);
     quedan--;
     let res: Record<string, string>;
-    try { res = await gemini(modelo, REPETIDAS, lote.map((p: any, j: number) => `${j + 1}) A: ${p.ta}\n   B: ${p.tb}`).join("\n")); } catch (e) { informe.push({ error: String(e).slice(0, 200) }); break; }
+    try { res = await gemini(modelo, REPETIDAS, lote.map((p: any, j: number) => `${j + 1}) A: [${cuando(new Date(creada.get(p.a) ?? 0).toISOString())}] ${p.ta}\n   B: [${cuando(new Date(creada.get(p.b) ?? 0).toISOString())}] ${p.tb}`).join("\n")); } catch (e) { informe.push({ error: String(e).slice(0, 200) }); break; }
     for (let j = 0; j < lote.length; j++) {
       const p = lote[j], r = res[String(j + 1)], misma = r === "misma";
       const resultado = misma ? "misma" : r === "relacionada" ? "relacionada" : "distinta";
