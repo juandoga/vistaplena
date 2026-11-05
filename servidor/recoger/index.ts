@@ -512,11 +512,13 @@ Deno.serve(async (req) => {
     } else {
       await db.from("historias").update({ titulo: ref.titulo, resumen: ref.resumen, palabras: top, actualizada: new Date().toISOString() }).eq("id", g.id);
     }
-    await db.from("articulos").update({ historia_id: g.id }).in("id", pendientes);
+    // ia_revisado vuelve a vacío: verificar mira cada titular que entra en una noticia, también uno viejo que la IA sacó
+    // de otra noticia y ahora se agrupa aquí (5/11: «Irán celebra la derrota de Trump» acabó en la noticia de Vance)
+    await db.from("articulos").update({ historia_id: g.id, ia_revisado: null }).in("id", pendientes);
     asignados += pendientes.length;
   }
   for (const [hid, ids] of devolver) {
-    await db.from("articulos").update({ historia_id: hid }).in("id", ids);
+    await db.from("articulos").update({ historia_id: hid, ia_revisado: null }).in("id", ids);
     await db.from("historias").update({ actualizada: new Date().toISOString() }).eq("id", hid);
     devueltos += ids.length;
   }

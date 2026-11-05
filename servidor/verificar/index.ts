@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
   if (rehacer.length && url.searchParams.get("reset") === "1") await db.from("articulos").update({ ia_revisado: null }).in("historia_id", rehacer);
   const desde = new Date(Date.now() - 3 * 864e5).toISOString();
   const { data: ds } = await db.from("historias_dudosas").select("articulo_id, historia_id").is("ia", null).is("decision", null).gt("creado", desde).limit(1000);
-  const { data: nuevos } = await db.from("articulos").select("id, historia_id").is("ia_revisado", null).not("historia_id", "is", null).gt("publicado", new Date(Date.now() - 864e5).toISOString()).limit(3000);
+  const { data: nuevos } = await db.from("articulos").select("id, historia_id").is("ia_revisado", null).not("historia_id", "is", null).gt("publicado", new Date(Date.now() - 2 * 864e5).toISOString()).limit(3000); // 48 h, la misma ventana con la que agrupa recoger
   const porH = new Map<number, Set<number>>();
   if (rehacer.length) {
     const { data: pendR } = await db.from("articulos").select("id, historia_id").is("ia_revisado", null).in("historia_id", rehacer).limit(3000);
