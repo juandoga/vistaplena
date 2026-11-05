@@ -28,10 +28,14 @@ const ajuste = async (n: string) => (await db.from("ajustes").select("valor").eq
 
 const INSTRUCCIONES = `Eres el verificador de un agregador de noticias. Te doy los titulares que definen una noticia (un hecho concreto) y unos titulares candidatos, marcados con letras.
 Para cada candidato decide:
-- "mismo": informa del MISMO hecho concreto (el mismo suceso, anuncio, decisión o dato), aunque lo cuente con otro enfoque, con otra fase del mismo hecho, con una reacción directa a él o con cifras actualizadas (más muertos, otro recuento): una cifra distinta no hace que sea otro hecho.
-- "otro": informa de un hecho distinto, aunque comparta tema, lugar, personas o palabras (por ejemplo, otra huelga, otro partido, otra sentencia u otro día).
-- "opinion": es una columna, un editorial o un análisis general (por ejemplo «29-N: ahora o nunca» o «Sánchez y Feijóo encaran su duelo electoral»), no la información de ese hecho concreto.
-Cada titular lleva entre corchetes cuándo se publicó: un candidato publicado días antes que la noticia no puede contar ese hecho (cuenta otro).
+- "mismo": informa del MISMO hecho concreto (el mismo suceso, anuncio, decisión o dato), aunque lo cuente con otro enfoque, con detalles del momento («así ha sido el anuncio», el vídeo, el discurso íntegro) o con cifras actualizadas (más muertos, otro recuento): una cifra distinta no hace que sea otro hecho.
+- "otro": informa de un hecho distinto, aunque comparta tema, lugar, personas o palabras. Son "otro":
+  · otra huelga, otro partido, otra sentencia u otro día;
+  · la reacción de OTRA persona, partido o país al hecho («Sánchez despide a Puente tras su dimisión», «Rufián: "Has sido un gran ministro"», «Irán celebra la derrota de Trump»);
+  · una consecuencia distinta del hecho («La Bolsa sube tras la victoria demócrata», «El petróleo cae tras las palabras de Vance»);
+  · lo que se publicó ANTES de que ocurriera el hecho: previas, encuestas, guías o «qué se juega» («Trump se juega el Congreso» no es «Los demócratas ganan la Cámara»).
+- "opinion": es una columna, un editorial, un análisis general, un perfil o una cronología de la persona («Óscar Puente, el político que aspiraba a suceder a Sánchez», «Los momentos clave de Puente como ministro»), no la información de ese hecho concreto.
+Cada titular lleva entre corchetes cuándo se publicó: un candidato publicado antes que el hecho no puede contarlo (es "otro").
 Responde solo con JSON, una clave por letra: {"A":"mismo","B":"otro","C":"opinion"}.`;
 // Fecha corta en hora de Madrid, para que la IA vea si un titular es de otro día («14 oct 21:05»)
 const cuando = (iso: string) => new Date(iso).toLocaleString("es-ES", { timeZone: "Europe/Madrid", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -116,10 +120,25 @@ Deno.serve(async (req) => {
   // Qué revisar, noticia a noticia:
   //  - los titulares dudosos (marcados por la revisión por palabras) sin respuesta de la IA ni decisión humana;
   //  - los titulares que han entrado en una noticia de 4 o más y la IA aún no ha mirado (articulos.ia_revisado).
+  // Revisión completa de noticias concretas (5/11): ?rehacer=11057,11138 o ?rehacer=top (las 15 más contadas de 48 h con 10+ medios).
+  // Con &reset=1 se vuelven a preguntar todos sus titulares, también los ya revisados; sin reset, sigue con los que falten
+  // (cada llamada hace los que le da tiempo). La referencia es el título y los titulares que más se le parecen, no los primeros.
+  const url = new URL(req.url);
+  let rehacer: number[] = [];
+  const pr = url.searchParams.get("rehacer");
+  if (pr === "top") {
+    const { data: t } = await db.from("portada_m").select("id").gte("voces", 10).gt("actualizada", new Date(Date.now() - 2 * 864e5).toISOString()).order("peso", { ascending: false }).limit(15);
+    rehacer = (t ?? []).map((x) => x.id);
+  } else if (pr) rehacer = pr.split(",").map(Number).filter(Boolean);
+  if (rehacer.length && url.searchParams.get("reset") === "1") await db.from("articulos").update({ ia_revisado: null }).in("historia_id", rehacer);
   const desde = new Date(Date.now() - 3 * 864e5).toISOString();
   const { data: ds } = await db.from("historias_dudosas").select("articulo_id, historia_id").is("ia", null).is("decision", null).gt("creado", desde).limit(1000);
   const { data: nuevos } = await db.from("articulos").select("id, historia_id").is("ia_revisado", null).not("historia_id", "is", null).gt("publicado", new Date(Date.now() - 864e5).toISOString()).limit(3000);
   const porH = new Map<number, Set<number>>();
+  if (rehacer.length) {
+    const { data: pendR } = await db.from("articulos").select("id, historia_id").is("ia_revisado", null).in("historia_id", rehacer).limit(3000);
+    for (const x of pendR ?? []) { if (!porH.has(x.historia_id)) porH.set(x.historia_id, new Set()); porH.get(x.historia_id)!.add(x.id); }
+  }
   for (const d of [...(ds ?? []).map((x) => ({ id: x.articulo_id, h: x.historia_id })), ...(nuevos ?? []).map((x) => ({ id: x.id, h: x.historia_id }))]) {
     if (!porH.has(d.h)) porH.set(d.h, new Set());
     porH.get(d.h)!.add(d.id);
@@ -129,7 +148,7 @@ Deno.serve(async (req) => {
   let sacados = 0, revisados = 0;
   const inicio = Date.now();
   for (const [hid, pend] of porH) {
-    if (quedan <= 0 || Date.now() - inicio > 60e3) break; // lo que no dé tiempo, en la siguiente hora
+    if (quedan <= 0 || Date.now() - inicio > (rehacer.length ? 110e3 : 60e3)) break; // lo que no dé tiempo, en la siguiente hora
     const { data: h } = await db.from("historias").select("titulo").eq("id", hid).maybeSingle();
     const { data: arts } = await db.from("articulos").select("id, titulo, resumen, medio_id, ia_revisado, publicado").eq("historia_id", hid).order("publicado").limit(300);
     if (!h || !arts?.length) continue;
@@ -147,7 +166,13 @@ Deno.serve(async (req) => {
     } else {
       // Referencia: el título de la noticia y hasta 5 titulares ya revisados (o, en una noticia nueva, los primeros), de medios distintos
       let base = arts.filter((a) => !enDuda(a) && a.ia_revisado);
-      if (base.length < 2) base = arts.filter((a) => !dudosoSet.has(a.id)).slice(0, 3); // noticia nueva: los primeros titulares definen el hecho
+      if (rehacer.includes(hid)) {
+        // Revisión completa: los titulares que más palabras comparten con el título (así una previa antigua no define el hecho)
+        const pal = (t: string) => new Set(String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").split(/[^a-z0-9ñ]+/).filter((w) => w.length >= 4));
+        const pt = pal(h.titulo);
+        const nota = (a: any) => [...pal(a.titulo)].filter((w) => pt.has(w)).length;
+        base = arts.filter((a) => a.titulo !== h.titulo).sort((x, y) => nota(y) - nota(x)).slice(0, 12);
+      } else if (base.length < 2) base = arts.filter((a) => !dudosoSet.has(a.id)).slice(0, 3); // noticia nueva: los primeros titulares definen el hecho
       const vistos = new Set<number>();
       for (const a of base) if (!vistos.has(a.medio_id) && a.titulo !== h.titulo && ref.length < 6) { ref.push(conFecha(a)); refIds.push(a.id); vistos.add(a.medio_id); }
       if (ref.length < 3) continue;
