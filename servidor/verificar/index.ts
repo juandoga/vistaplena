@@ -195,7 +195,9 @@ Deno.serve(async (req) => {
     // noticia sobre la cumbre de la UE). Entonces esos titulares no se sacan: se hace la segunda pregunta (abajo) y, si
     // tampoco queda claro, quedan en la gestión para decidirlo a mano.
     const nFuera = resultados.filter((x) => x.r === "otro" || x.r === "opinion").length;
-    const tituloRaro = nFuera >= 2 && nFuera * 2 >= arts.length - 1;
+    // En la revisión completa (?rehacer) el título se da por bueno: la referencia sale de él, y en una noticia muy mezclada
+    // es normal que la mitad de los titulares sobren (pasó con «Dimite Óscar Puente», con decenas de reacciones dentro)
+    const tituloRaro = !rehacer.includes(hid) && nFuera >= 2 && nFuera * 2 >= arts.length - 1;
     // Segunda pregunta: con todos los titulares delante, ¿cuál sobra? Si la IA señala justo el titular del título, ese
     // titular sale y la noticia toma como título el que la IA elige. Si no lo tiene claro, queda en la gestión.
     let resuelto = false;
