@@ -148,6 +148,9 @@ function frasePorBloque(h, T){
   return `La publican ${t("izq")} medios de izquierda, ${t("cen")} de centro y ${t("der")} de derecha que leemos.`;
 }
 
+// 8/11: el botón ⓘ mide 20 px; la zona que se puede tocar se amplía a 44 px sin cambiar cómo se ve
+document.head.insertAdjacentHTML("beforeend", "<style>.info-b{position:relative}.info-b::after{content:'';position:absolute;inset:-12px}</style>");
+
 // Cinco eventos anónimos en GoatCounter (sin cookies): sirven para saber si la gente compara, abre fuentes, comparte, se suscribe y busca.
 function evento(nombre){
   try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: "ev/" + nombre, title: nombre, event: true }); } catch (e) {}

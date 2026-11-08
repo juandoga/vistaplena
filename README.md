@@ -3,16 +3,16 @@
 **Cada noticia, contada por todos los lados.**
 [vistaplena.es](https://vistaplena.es)
 
-Vista Plena reúne los titulares de más de 30 medios españoles, junta los que hablan del mismo hecho y muestra cuántos medios de izquierda, de centro y de derecha cuentan cada noticia. Así se ve qué historias cuenta todo el mundo, cuáles cuenta sobre todo un lado y cuáles apenas llegan a los lectores de un lado (los **puntos ciegos**).
+Vista Plena reúne los titulares de 38 medios españoles (13 de izquierda, 11 de centro y 14 de derecha), junta los que hablan del mismo hecho y muestra cuántos medios de izquierda, de centro y de derecha cuentan cada noticia. Así se ve qué historias cuenta todo el mundo, cuáles cuenta sobre todo un lado y cuáles apenas llegan a los lectores de un lado (los **puntos ciegos**).
 
-No escribe noticias ni opina sobre ellas. No hay algoritmo: la portada es la misma para todo el mundo y se ordena por el número de medios que han contado cada historia en las últimas 12 horas.
+No escribe noticias ni opina sobre ellas. No hay personalización: la portada es la misma para todo el mundo y se ordena por el número de medios que han contado cada historia en las últimas 12 horas.
 
 ## Cómo funciona
 
 1. **Leer.** Cada hora se leen los canales públicos de cada medio: RSS, mapas de noticias o, si no hay otro modo, la portada.
-2. **Agrupar.** Los titulares que hablan del mismo hecho se juntan en una historia, comparando sus palabras clave.
-3. **Contar.** Para cada historia se cuenta cuántos medios de cada lado la publican. Dos medios del mismo grupo y del mismo lado cuentan como una sola voz.
-4. **Mostrar.** La barra de colores enseña el reparto, y al lado aparece cómo titula cada lado.
+2. **Agrupar.** Los titulares que hablan del mismo hecho se juntan en una historia, primero por palabras clave y después con una revisión por IA (Gemini) que saca lo que no encaja, junta repetidas y separa la opinión. Cada semana se revisa a mano una muestra y el porcentaje de aciertos se publica en la metodología.
+3. **Contar.** Para cada historia se cuenta qué parte de los medios de cada lado la publica («5 de 13», «4 de 11», «9 de 14»). Cada medio cuenta por separado, sea cual sea su grupo.
+4. **Mostrar.** La barra de colores enseña ese reparto y la página de cada historia enseña cómo la titula cada lado.
 
 Todo se explica con detalle en la [metodología](https://vistaplena.es/metodologia.html).
 
@@ -22,9 +22,9 @@ Cada **medio** (no cada noticia) tiene una etiqueta en cinco niveles: izquierda,
 
 ## Qué es un punto ciego
 
-Una historia es un punto ciego de la izquierda cuando la cuentan al menos 4 voces, la mitad o más son de derechas y las de izquierdas son menos del 10 %. El de la derecha es lo mismo al revés.
+Una historia es un punto ciego de la izquierda cuando es política, la publican 6 medios o más, lleva al menos 6 horas publicada, la parte de los medios de izquierda que la publica es como mucho la cuarta parte de la de los de derecha, la publican al menos 3 medios de derecha (o 2, si no la publica ninguno de izquierda) y ningún medio de izquierda la ha contado con otro enfoque. El de la derecha es lo mismo al revés. El centro no cuenta.
 
-No se marcan como punto ciego las noticias de deportes, corazón, tiempo, sorteos, televisión u ocio.
+Solo se enseñan los puntos ciegos vigentes: con titulares nuevos en las últimas 48 horas y empezados hace menos de 4 días. Los de política de otro país van aparte, en «Fuera de España». La IA decide si una noticia es política y si es de España o de fuera.
 
 ## Datos abiertos
 
@@ -55,8 +55,10 @@ La clave que aparece en estas direcciones es pública y solo permite leer.
 | `servidor/mantenimiento/` | Copia de seguridad semanal (domingos, por correo) y avisos si algún medio o la recogida fallan (3 veces al día) |
 | `servidor/portadas/` | Lee cada hora (minuto 8) los 15 primeros titulares de la portada web de cada medio: ordenan la portada y recogen noticias que no salen en los canales RSS |
 | `servidor/congreso/` | Descarga las votaciones del Pleno del Congreso (datos abiertos) con el voto de cada partido; la función SQL `etiquetar_votaciones()` las clasifica por temas para la guía 29N |
-| `servidor/boletin/` | Programa del boletín diario por correo |
-| `servidor/portada.sql` | Cálculo de la cobertura y de los puntos ciegos |
+| `servidor/boletin/` | Programa del boletín semanal por correo (viernes a las 8:00) |
+| `servidor/portada.sql` · `servidor/puntos_ciegos.sql` | Cálculo de la cobertura y de los puntos ciegos |
+| `servidor/verificar/` | Revisión con IA de cada historia: titulares que no encajan, repetidas, opinión, si es política y si es de España o de fuera |
+| `servidor/asuntos/` | Temas grandes: la IA agrupa las historias de varios días en un mismo tema |
 
 La web es estática y se publica con GitHub Pages. Los datos y los programas del servidor funcionan en Supabase.
 

@@ -23,6 +23,10 @@ import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 const CLAVE = Deno.env.get("GEMINI_API_KEY") ?? "";
 const H = 3600e3, LOTE = 20;
+// 8/11: tope para no volver a tener un megatema («Crisis ferroviaria y accidentes» llegó a 263 noticias mezclando el
+// accidente de Urda, la dimisión de Puente y las huelgas). Con 60 o más, el asunto solo admite su hecho central y no se
+// une con otro.
+const GRANDE = 60;
 
 async function esInterna(req: Request): Promise<boolean> {
   const v = req.headers.get("x-interna") ?? "";
@@ -79,6 +83,7 @@ Reglas:
 - Un asunto tiene un origen concreto que se explica en una frase (unas protestas, una crisis, un caso judicial, una catástrofe, una negociación, un juicio). Nunca es una categoría ni un área: «Política española», «Economía», «Sucesos», «Tribunales», «Elecciones 29N», «Campaña electoral», «Gobierno de Sánchez» o «Inmigración» no son asuntos.
 - Mismo lugar y mismo origen: unas protestas en Italia no son las de Francia aunque se parezcan; una huelga en España no es la de Francia; un crimen no es otro crimen.
 - Una noticia va a un asunto solo si quien siga ese asunto esperaría encontrarla allí. Ante la duda, déjala fuera: es mejor una noticia suelta que una noticia donde no va.
+- Dentro de una gran historia, lo que tiene vida propia va a su propio asunto si ya está abierto: tras un accidente, la dimisión de un ministro o una huelga de trabajadores son asuntos distintos del accidente. Un asunto marcado [muy grande] solo admite noticias de su hecho central.
 - Nombre del asunto nuevo: de 2 a 5 palabras, neutro y descriptivo, sin adjetivos ni juicios («Protestas en Francia», no «Caos en Francia»). Descripción: una frase neutra que diga qué une a esas noticias.
 Responde solo con JSON:
 {"asignar":[{"noticia":<número>,"asunto":"<código>"}],"nuevos":[{"nombre":"...","descripcion":"...","noticias":[<números>]}]}
@@ -89,6 +94,8 @@ const UNIR = `Eres el editor de una web española que reúne noticias. Te doy lo
 - «Protestas en Francia» y «Crisis del Gobierno francés por los disturbios»: el mismo (los disturbios son el origen de la crisis).
 - «Moción de censura en Algeciras» y «Dimisión del alcalde de Algeciras»: el mismo (las dos nacen de la acusación al alcalde).
 - «Protestas en Francia» y «Protestas en Italia»: distintos (otro país).
+- «Accidente de tren de Urda» y «Dimisión de Óscar Puente»: distintos (la dimisión nace del accidente, pero tiene vida propia).
+- «Huelgas de maquinistas» y «Huelga general»: distintos (otros convocantes, otro motivo).
 Ante la duda, no los unas.
 Si al unir el nombre del primero ya no describe todo, propón un nombre nuevo (2 a 5 palabras, neutro).
 Responde solo con JSON: {"unir":[{"asuntos":["A12","A15"],"nombre":"..."}]}. Si no hay que unir nada: {"unir":[]}.`;
@@ -149,9 +156,9 @@ Deno.serve(async (req) => {
   const sinAsunto = new Set((vs ?? []).filter((v: any) => v.asunto_id === 0).map((v: any) => v.historia_id));
   const vetado = (h: number, a: number) => sinAsunto.has(h) || veto.has(`${h}:${a}`);
   // Abiertos y también los apagados hace poco (8 días): si la historia vuelve, se retoma el mismo asunto en vez de abrir otro
-  const { data: as } = await db.from("asuntos").select("id, nombre, nombre_manual, descripcion").eq("oculto", false).gte("actualizado", new Date(ahora - 8 * 24 * H).toISOString());
-  const asuntos = new Map<number, { id: number; nombre: string; descripcion: string; nuevo?: boolean }>(
-    (as ?? []).map((a: any) => [a.id, { id: a.id, nombre: a.nombre_manual || a.nombre, descripcion: a.descripcion ?? "" }]));
+  const { data: as } = await db.from("asuntos").select("id, nombre, nombre_manual, descripcion, historias").eq("oculto", false).gte("actualizado", new Date(ahora - 8 * 24 * H).toISOString());
+  const asuntos = new Map<number, { id: number; nombre: string; descripcion: string; n: number; nuevo?: boolean }>(
+    (as ?? []).map((a: any) => [a.id, { id: a.id, nombre: a.nombre_manual || a.nombre, descripcion: a.descripcion ?? "", n: a.historias ?? 0 }]));
 
   // Lo que cambia en esta pasada: historia → { asunto, por qué }
   const cambios = new Map<number, { a: number; accion: string }>();
@@ -160,10 +167,10 @@ Deno.serve(async (req) => {
   const informe: any = { modelo, propagadas: 0, preguntadas: 0, asignadas: 0, creados: [], unidos: [], descartados: [], errores: [] };
   let idProvisional = -1;
   const nuevoAsunto = async (nombre: string, descripcion: string) => {
-    if (probar) { const id = idProvisional--; asuntos.set(id, { id, nombre, descripcion, nuevo: true }); return id; }
+    if (probar) { const id = idProvisional--; asuntos.set(id, { id, nombre, descripcion, n: 0, nuevo: true }); return id; }
     const { data, error } = await db.from("asuntos").insert({ nombre, descripcion }).select("id").single();
     if (error) throw new Error(error.message);
-    asuntos.set(data.id, { id: data.id, nombre, descripcion, nuevo: true });
+    asuntos.set(data.id, { id: data.id, nombre, descripcion, n: 0, nuevo: true });
     return data.id as number;
   };
 
@@ -197,7 +204,7 @@ Deno.serve(async (req) => {
     const lista = [...lote, ...contexto];
     const textoAsuntos = [...asuntos.values()].map((a) => {
       const u = ultimas(a.id, 4);
-      return `A${a.id < 0 ? "N" + -a.id : a.id} · ${a.nombre}${a.descripcion ? ` — ${a.descripcion}` : ""}${u.length ? "\n" + u.map((h) => `   - [${cuando(h.creada)}] ${h.titulo}`).join("\n") : ""}`;
+      return `A${a.id < 0 ? "N" + -a.id : a.id} · ${a.nombre}${a.n >= GRANDE ? " [muy grande]" : ""}${a.descripcion ? ` — ${a.descripcion}` : ""}${u.length ? "\n" + u.map((h) => `   - [${cuando(h.creada)}] ${h.titulo}`).join("\n") : ""}`;
     }).join("\n");
     const texto = `ASUNTOS ABIERTOS:\n${textoAsuntos || "(ninguno)"}\n\nNOTICIAS:\n` +
       lista.map((h, i) => `${i + 1}) [${cuando(h.creada)} · ${h.medios} medios] ${h.titulo}`).join("\n");
@@ -281,6 +288,8 @@ Deno.serve(async (req) => {
       ids.sort((x: number, y: number) => ultimas(y, 999).length - ultimas(x, 999).length);
       const [destino, ...otros] = ids;
       const nombre = String(u?.nombre ?? "").trim();
+      const suma = ids.reduce((t: number, id: number) => t + (asuntos.get(id)?.n ?? 0), 0);
+      if (suma >= GRANDE) { informe.descartados.push({ nombre: ids.map((id: number) => asuntos.get(id)?.nombre).join(" + "), noticias: suma, motivo: "no se unen: juntos pasarían de " + GRANDE + " noticias" }); continue; }
       for (const o of otros) {
         for (const h of H_.filter((h) => asuntoDe(h) === o)) if (!vetado(h.id, destino)) cambios.set(h.id, { a: destino, accion: "unir" });
         if (!probar) {
