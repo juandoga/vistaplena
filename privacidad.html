@@ -32,12 +32,11 @@
 @font-face{font-family:"Roboto";font-style:normal;font-weight:700;font-display:swap;src:url(fuentes/roboto-latin-700-normal.woff2) format("woff2")}
 @font-face{font-family:"Roboto";font-style:normal;font-weight:900;font-display:swap;src:url(fuentes/roboto-latin-900-normal.woff2) format("woff2")}
 @font-face{font-family:"Roboto Mono";font-style:normal;font-weight:500;font-display:swap;src:url(fuentes/roboto-mono-latin-500-normal.woff2) format("woff2")}
-@font-face{font-family:"Newsreader";font-style:normal;font-weight:200 800;font-display:swap;src:url(fuentes/newsreader-latin-opsz-normal.woff2) format("woff2-variations")}
 
 /* Layout: barra superior fija con logo y secciones; guía en panel gris; noticia principal a dos columnas (titular grande | titulares por lado); franja de puntos ciegos; rejilla de 3 columnas */
 :root{
   --fondo:#ffffff; --panel:#f4f4f2; --tinta:#111213; --texto:#3d4047; --gris:#5f636b; --linea:#e6e6e3;
-  --izq:#c0392b; --cen:#b3b5b9; --der:#2c5aa0; --aviso:#b26b00;
+  --izq:#c0392b; --cen:#8f9298; --der:#2c5aa0; --aviso:#8f5400;
   --logo:"Roboto",system-ui,sans-serif;
   --titular:"Newsreader",Georgia,serif;
   --ui:"Roboto",system-ui,sans-serif;
@@ -586,27 +585,30 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .m-aspecto button[aria-pressed="true"]{background:var(--tinta);color:var(--fondo)}
 .m-aspecto button[aria-pressed="true"] .m-ic{color:var(--fondo)}
 @media (min-width:900px){.top .menu .menu-a{display:grid;justify-content:normal;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:32px;align-items:start}.m-atajos{grid-column:1/-1;grid-template-columns:repeat(4,minmax(0,1fr))}.m-cajon,.m-cajon:last-of-type{border-bottom:0}.m-cajon summary{pointer-events:none}.m-cajon .m-flecha,.m-n{display:none}.m-aspecto{grid-column:1/-1;max-width:360px}}
-/* Tipografía «Editorial moderno» (28/10): titulares de Vista Plena en DM Serif Display, texto en Bricolage Grotesque, etiquetas en cursiva */
+/* Tipografía «Editorial moderno» (28/10): titulares de Vista Plena en DM Serif Display, texto en Bricolage Grotesque, etiquetas en Bricolage (9/11: sin cursiva ni Newsreader) */
 @font-face{font-family:"DM Serif Display";font-display:swap;src:url(fuentes/dm-serif-display-latin-400-normal.woff2) format("woff2")}
 @font-face{font-family:"Bricolage Grotesque";font-weight:200 800;font-display:swap;src:url(fuentes/bricolage-grotesque-latin-wght-normal.woff2) format("woff2-variations")}
-@font-face{font-family:"Newsreader";font-style:italic;font-weight:200 800;font-display:swap;src:url(fuentes/newsreader-latin-opsz-italic.woff2) format("woff2-variations")}
-:root{--ui:"Bricolage Grotesque",system-ui,sans-serif;--num:"Bricolage Grotesque",system-ui,sans-serif;--display:"DM Serif Display",Georgia,serif}
+:root{--ui:"Bricolage Grotesque",system-ui,sans-serif;--num:"Bricolage Grotesque",system-ui,sans-serif;--display:"DM Serif Display",Georgia,serif;--titular:"Bricolage Grotesque",system-ui,sans-serif}
 .logo{font-family:var(--logo)!important}
 .hero .sobre h1,.hist-cab h1,.principal h1,.metodo-cab h1{font-family:var(--display)!important;font-weight:400!important;line-height:1.04!important;letter-spacing:-.012em!important}
 .hero .sobre h1,.hist-cab h1,.principal h1{font-size:clamp(2.3rem,6vw,3.6rem)!important}
 .resumen-dia .t,.pieza h3,.ciego h3{font-family:var(--display)!important;font-weight:400!important;font-size:1.4rem!important;line-height:1.1!important;letter-spacing:0!important}
 .cab-seccion h2,.hist-titulares > h2,.hist-cob h2,.hist-asi h2,.hist-crono h2,.hist-rel h2,.guia h2,.resumen-dia h2,section > h2,.metodo h2{font-family:var(--display)!important;font-weight:400!important;font-size:1.85rem!important;line-height:1.1!important;letter-spacing:-.005em!important}
 h2 .info{margin-left:6px;vertical-align:.25em}
-.eti,.antetitulo,.antetitulo b,.hist-cab .hist-cob h2,.lados .bloque .lado{font-family:var(--titular)!important;font-style:italic!important;font-weight:500!important;font-size:1.05rem!important;text-transform:none!important;letter-spacing:0!important;color:var(--gris)!important}
+.eti,.antetitulo,.antetitulo b,.hist-cab .hist-cob h2,.lados .bloque .lado{font-family:var(--ui)!important;font-style:normal!important;font-weight:700!important;font-size:.78rem!important;text-transform:uppercase!important;letter-spacing:.04em!important;color:var(--gris)!important}
 .sobre .antetitulo,.sobre .antetitulo b{color:#fff!important}.boletin .eti{color:inherit!important;opacity:.9}
 .hist-cab .hist-cob,.hist-rel,.cab-seccion,.hist-titulares{border-top:0!important;padding-top:36px!important}
 .resumen-dia ol>li{border:0!important;padding-bottom:18px!important}
-.desplegar{border:0!important;background:var(--panel)!important;border-radius:999px!important;padding:6px 14px!important;font-weight:600!important}
+.desplegar{border:0!important;background:var(--panel)!important;border-radius:0!important;padding:6px 14px!important;font-weight:600!important}
 .top{border-bottom:1px solid var(--linea)!important}
 .lados .bloque.l-izq,.lados .bloque.l-cen,.lados .bloque.l-der{border-top-width:2px!important}
 .lados .bloque li{border-bottom:0!important}
-.edicion,.edicion *{font-family:var(--titular)!important;font-style:italic!important;font-weight:500!important;text-transform:none!important;letter-spacing:0!important;font-size:1rem!important}
-.hist-etis .tema{border:0!important;background:none!important;padding:0!important;font-family:var(--titular)!important;font-style:italic!important;font-weight:500!important;font-size:1.05rem!important;color:var(--gris)!important;text-decoration:underline;text-decoration-color:var(--linea);text-underline-offset:4px}
+.edicion,.edicion *{font-family:var(--ui)!important;font-style:normal!important;font-weight:600!important;text-transform:none!important;letter-spacing:0!important;font-size:.9rem!important}
+.hist-etis .tema{border:0!important;background:none!important;padding:0!important;font-family:var(--titular)!important;font-style:normal!important;font-weight:600!important;font-size:.95rem!important;color:var(--gris)!important;text-decoration:underline;text-decoration-color:var(--linea);text-underline-offset:4px}
+
+/* 9/11 (auditoría): titulares nunca cortados; los puntos de estado siguen redondos */
+.resumen-dia .t,.asi .bloque li a,.bloque li a,.pieza h3,.ciego h3{-webkit-line-clamp:unset!important;display:block!important;overflow:visible!important}
+.edicion .vivo::before,.tema.nuevo::before{border-radius:50%!important}
 </style>
 </head>
 <body>
@@ -645,18 +647,18 @@ h2 .info{margin-left:6px;vertical-align:.25em}
 </header>
 
 <div class="wrap metodo legal-pag">
-  <div class="subtop"><span>Información legal</span><span>Última actualización: 7 de octubre de 2026</span></div>
+  <div class="subtop"><span>Información legal</span><span>Última actualización: 9 de noviembre de 2026</span></div>
   <header class="metodo-cab">
     <span class="eti">Privacidad</span>
     <h1>Política de privacidad</h1>
-    <p class="resumen">Para leer Vista Plena no tienes que darnos ningún dato. Solo guardamos tu correo si te suscribes al boletín.</p>
+    <p class="resumen">Para leer Vista Plena no tienes que darnos ningún dato. Solo guardamos tu correo si te suscribes al boletín, y los medios que lees solo si eliges el correo de cada mañana.</p>
   </header>
 
   <section>
     <h2>En resumen</h2>
     <ul class="lista">
       <li>No usamos cookies, ni publicidad, ni herramientas que sigan lo que haces.</li>
-      <li>Solo tratamos tu correo, y solo si te suscribes al boletín.</li>
+      <li>Solo tratamos tu correo, y solo si te suscribes al boletín. Si eliges el correo de cada mañana, también los medios que nos digas que lees.</li>
       <li>No vendemos ni cedemos tu correo a nadie.</li>
       <li>Puedes darte de baja con un clic en cualquier envío.</li>
     </ul>
@@ -667,16 +669,18 @@ h2 .info{margin-left:6px;vertical-align:.25em}
     <p>Juan Domenech. Correo de contacto: <a href="mailto:contacto@vistaplena.es">contacto@vistaplena.es</a>.</p>
   </section>
 
-  <section>
+  <section id="boletin">
     <h2>Boletín por correo</h2>
     <h3>Qué datos guardamos</h3>
-    <p>Tu dirección de correo, la fecha en que te suscribiste y confirmaste, la fecha de baja si te das de baja, y un código aleatorio que sirve para confirmar la suscripción y darte de baja sin contraseña.</p>
+    <p>Tu dirección de correo, qué boletín quieres (el de cada mañana o el de los viernes), la fecha en que te suscribiste y confirmaste, la fecha de baja si te das de baja, y un código aleatorio que sirve para confirmar la suscripción, cambiarla y darte de baja sin contraseña.</p>
+    <p>Si eliges el correo de cada mañana, guardamos además los medios que nos dices que lees (de uno a cinco) y la fecha en que nos diste permiso para guardarlos.</p>
     <h3>Para qué</h3>
-    <p>Solo para enviarte el resumen semanal. No lo usamos para nada más.</p>
+    <p>Solo para enviarte el boletín que elegiste. Los medios que lees sirven únicamente para buscar las noticias que esos medios no han publicado y enviártelas: no los usamos para nada más, no hacemos perfiles con ellos ni los compartimos con nadie.</p>
     <h3>Por qué podemos hacerlo</h3>
     <p>Porque nos das tu consentimiento al suscribirte y confirmarlo desde tu correo (artículo 6.1.a del Reglamento General de Protección de Datos). Puedes retirarlo cuando quieras dándote de baja.</p>
+    <p>Qué medios lee alguien puede dar pistas sobre sus ideas políticas, que el Reglamento protege de forma especial. Por eso solo los guardamos si marcas la casilla que lo autoriza expresamente (artículo 9.2.a). Puedes cambiarlos o borrarlos cuando quieras desde el enlace «Cambiar mis medios» de cada correo: si pasas al boletín de los viernes, la lista se borra.</p>
     <h3>Cuánto tiempo</h3>
-    <p>Mientras sigas suscrito. Al darte de baja dejamos de escribirte. Si además quieres que borremos tu dirección de nuestra base de datos, escríbenos y la eliminamos.</p>
+    <p>Mientras sigas suscrito. Al darte de baja dejamos de escribirte y borramos la lista de medios que lees. Si además quieres que borremos tu dirección de nuestra base de datos, escríbenos y la eliminamos.</p>
     <h3>Quién nos ayuda a tratarlos</h3>
     <ul class="lista">
       <li><strong>Supabase</strong>, que aloja nuestra base de datos en servidores de la Unión Europea (París).</li>
@@ -718,7 +722,7 @@ h2 .info{margin-left:6px;vertical-align:.25em}
   </div>
   <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
-<script src="comun.js?v=834549c6"></script>
+<script src="comun.js?v=6f5e54aa"></script>
 
 </body>
 </html>

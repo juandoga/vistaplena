@@ -32,12 +32,11 @@
 @font-face{font-family:"Roboto";font-style:normal;font-weight:700;font-display:swap;src:url(fuentes/roboto-latin-700-normal.woff2) format("woff2")}
 @font-face{font-family:"Roboto";font-style:normal;font-weight:900;font-display:swap;src:url(fuentes/roboto-latin-900-normal.woff2) format("woff2")}
 @font-face{font-family:"Roboto Mono";font-style:normal;font-weight:500;font-display:swap;src:url(fuentes/roboto-mono-latin-500-normal.woff2) format("woff2")}
-@font-face{font-family:"Newsreader";font-style:normal;font-weight:200 800;font-display:swap;src:url(fuentes/newsreader-latin-opsz-normal.woff2) format("woff2-variations")}
 
 /* Layout: barra superior fija con logo y secciones; guía en panel gris; noticia principal a dos columnas (titular grande | titulares por lado); franja de puntos ciegos; rejilla de 3 columnas */
 :root{
   --fondo:#ffffff; --panel:#f4f4f2; --tinta:#111213; --texto:#3d4047; --gris:#5f636b; --linea:#e6e6e3;
-  --izq:#c0392b; --cen:#b3b5b9; --der:#2c5aa0; --aviso:#b26b00;
+  --izq:#c0392b; --cen:#8f9298; --der:#2c5aa0; --aviso:#8f5400;
   --logo:"Roboto",system-ui,sans-serif;
   --titular:"Newsreader",Georgia,serif;
   --ui:"Roboto",system-ui,sans-serif;
@@ -744,27 +743,35 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .m-aspecto button[aria-pressed="true"]{background:var(--tinta);color:var(--fondo)}
 .m-aspecto button[aria-pressed="true"] .m-ic{color:var(--fondo)}
 @media (min-width:900px){.top .menu .menu-a{display:grid;justify-content:normal;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:32px;align-items:start}.m-atajos{grid-column:1/-1;grid-template-columns:repeat(4,minmax(0,1fr))}.m-cajon,.m-cajon:last-of-type{border-bottom:0}.m-cajon summary{pointer-events:none}.m-cajon .m-flecha,.m-n{display:none}.m-aspecto{grid-column:1/-1;max-width:360px}}
-/* Tipografía «Editorial moderno» (28/10): titulares de Vista Plena en DM Serif Display, texto en Bricolage Grotesque, etiquetas en cursiva */
+/* Tipografía «Editorial moderno» (28/10): titulares de Vista Plena en DM Serif Display, texto en Bricolage Grotesque, etiquetas en Bricolage (9/11: sin cursiva ni Newsreader) */
 @font-face{font-family:"DM Serif Display";font-display:swap;src:url(fuentes/dm-serif-display-latin-400-normal.woff2) format("woff2")}
 @font-face{font-family:"Bricolage Grotesque";font-weight:200 800;font-display:swap;src:url(fuentes/bricolage-grotesque-latin-wght-normal.woff2) format("woff2-variations")}
-@font-face{font-family:"Newsreader";font-style:italic;font-weight:200 800;font-display:swap;src:url(fuentes/newsreader-latin-opsz-italic.woff2) format("woff2-variations")}
-:root{--ui:"Bricolage Grotesque",system-ui,sans-serif;--num:"Bricolage Grotesque",system-ui,sans-serif;--display:"DM Serif Display",Georgia,serif}
+:root{--ui:"Bricolage Grotesque",system-ui,sans-serif;--num:"Bricolage Grotesque",system-ui,sans-serif;--display:"DM Serif Display",Georgia,serif;--titular:"Bricolage Grotesque",system-ui,sans-serif}
 .logo{font-family:var(--logo)!important}
 .hero .sobre h1,.hist-cab h1,.principal h1,.metodo-cab h1{font-family:var(--display)!important;font-weight:400!important;line-height:1.04!important;letter-spacing:-.012em!important}
 .hero .sobre h1,.hist-cab h1,.principal h1{font-size:clamp(2.3rem,6vw,3.6rem)!important}
 .resumen-dia .t,.pieza h3,.ciego h3{font-family:var(--display)!important;font-weight:400!important;font-size:1.4rem!important;line-height:1.1!important;letter-spacing:0!important}
 .cab-seccion h2,.hist-titulares > h2,.hist-cob h2,.hist-asi h2,.hist-crono h2,.hist-rel h2,.guia h2,.resumen-dia h2,section > h2,.metodo h2{font-family:var(--display)!important;font-weight:400!important;font-size:1.85rem!important;line-height:1.1!important;letter-spacing:-.005em!important}
 h2 .info{margin-left:6px;vertical-align:.25em}
-.eti,.antetitulo,.antetitulo b,.hist-cab .hist-cob h2,.lados .bloque .lado{font-family:var(--titular)!important;font-style:italic!important;font-weight:500!important;font-size:1.05rem!important;text-transform:none!important;letter-spacing:0!important;color:var(--gris)!important}
+.eti,.antetitulo,.antetitulo b,.hist-cab .hist-cob h2,.lados .bloque .lado{font-family:var(--ui)!important;font-style:normal!important;font-weight:700!important;font-size:.78rem!important;text-transform:uppercase!important;letter-spacing:.04em!important;color:var(--gris)!important}
 .sobre .antetitulo,.sobre .antetitulo b{color:#fff!important}.boletin .eti{color:inherit!important;opacity:.9}
 .hist-cab .hist-cob,.hist-rel,.cab-seccion,.hist-titulares{border-top:0!important;padding-top:36px!important}
 .resumen-dia ol>li{border:0!important;padding-bottom:18px!important}
-.desplegar{border:0!important;background:var(--panel)!important;border-radius:999px!important;padding:6px 14px!important;font-weight:600!important}
+.desplegar{border:0!important;background:var(--panel)!important;border-radius:0!important;padding:6px 14px!important;font-weight:600!important}
 .top{border-bottom:1px solid var(--linea)!important}
 .lados .bloque.l-izq,.lados .bloque.l-cen,.lados .bloque.l-der{border-top-width:2px!important}
 .lados .bloque li{border-bottom:0!important}
-.edicion,.edicion *{font-family:var(--titular)!important;font-style:italic!important;font-weight:500!important;text-transform:none!important;letter-spacing:0!important;font-size:1rem!important}
-.hist-etis .tema{border:0!important;background:none!important;padding:0!important;font-family:var(--titular)!important;font-style:italic!important;font-weight:500!important;font-size:1.05rem!important;color:var(--gris)!important;text-decoration:underline;text-decoration-color:var(--linea);text-underline-offset:4px}
+.edicion,.edicion *{font-family:var(--ui)!important;font-style:normal!important;font-weight:600!important;text-transform:none!important;letter-spacing:0!important;font-size:.9rem!important}
+.hist-etis .tema{border:0!important;background:none!important;padding:0!important;font-family:var(--titular)!important;font-style:normal!important;font-weight:600!important;font-size:.95rem!important;color:var(--gris)!important;text-decoration:underline;text-decoration-color:var(--linea);text-underline-offset:4px}
+
+/* 9/11 (auditoría): titulares nunca cortados; los puntos de estado siguen redondos */
+.resumen-dia .t,.asi .bloque li a,.bloque li a,.pieza h3,.ciego h3{-webkit-line-clamp:unset!important;display:block!important;overflow:visible!important}
+.edicion .vivo::before,.tema.nuevo::before{border-radius:50%!important}
+
+/* 9/11: puntos ciegos de hoy al final de la noticia */
+#otros-ciegos .oc-sub{margin:-6px 0 14px;color:var(--gris);font-size:var(--t-s)}
+#otros-ciegos .chip{align-self:flex-start}
+#otros-ciegos .oc-todos{display:inline-flex;align-items:center;min-height:44px;margin-top:8px;font-weight:700;color:var(--tinta)}
 </style>
 </head>
 <body>
@@ -806,6 +813,7 @@ h2 .info{margin-left:6px;vertical-align:.25em}
   <div class="subtop"><a href="./" class="volver">← Volver a la portada</a><span id="estado"></span></div>
   <article id="art" aria-live="polite"><p class="vacia">Cargando la historia…</p></article>
   <section id="relacionadas" class="hist-rel" hidden aria-labelledby="rel-t"></section>
+  <section id="otros-ciegos" class="hist-rel" hidden aria-labelledby="oc-t"></section>
   <div class="bol-corto"></div>
 </div>
 
@@ -820,7 +828,7 @@ h2 .info{margin-left:6px;vertical-align:.25em}
   <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
 <script src="temas.js?v=5df45ce8"></script>
-<script src="comun.js?v=834549c6"></script>
+<script src="comun.js?v=6f5e54aa"></script>
 <script>
 const id = Number(new URLSearchParams(location.search).get("id") || document.body.dataset.id);
 const art = document.getElementById("art");
@@ -1127,8 +1135,30 @@ async function relacionadas(h){
     s.innerHTML = `<h2 id="rel-t">Historias relacionadas</h2><div class="rel-grid">${lista.map(x => {
       const r = { pi: x.pct_izq, pc: x.pct_cen, pd: x.pct_der };
       return `<a class="rel" href="${urlNoticia(x.id, x.titulo)}">${x.imagen ? `<span class="rel-foto"><img src="${esc(x.imagen)}" alt="" loading="lazy" referrerpolicy="no-referrer" onload="this.classList.add('ok')" onerror="this.remove()"></span>` : ""}
-        <span class="rel-t">${esc(x.titulo)}</span>${barra(r)}<span class="rel-m">${x.total} medios${x.punto_ciego ? ` · <b>cobertura desigual</b>` : ""}</span></a>`;
+        <span class="rel-t">${esc(x.titulo)}</span>${barra(r)}<span class="rel-m">${x.total} medios${x.punto_ciego ? ` · <b>punto ciego</b>` : ""}</span></a>`;
     }).join("")}</div>`;
+    s.hidden = false;
+  } catch (e) {}
+}
+
+// 9/11 (auditoría): al acabar una noticia, los puntos ciegos vigentes de hoy (de España), para seguir leyendo
+// lo que un lado apenas cuenta. Mismo criterio que la portada: titulares nuevos en 48 h y empezados hace menos de 4 días
+async function otrosCiegos(h){
+  try {
+    const desde = new Date(Date.now() - 48 * 3600e3).toISOString(), edad = new Date(Date.now() - 96 * 3600e3).toISOString();
+    let C = (await pedir(`portada_m?select=id,titulo,total,pct_izq,pct_cen,pct_der,punto_ciego,actualizada,imagen&punto_ciego=not.is.null&actualizada=gte.${desde}&creada=gte.${edad}&order=total.desc&limit=8`))
+      .filter(x => x.id !== h.id);
+    if (C.length) {
+      const fuera = new Set((await pedir(`historias?select=id&ia_ambito=eq.fuera&id=in.(${C.map(x => x.id).join(",")})`).catch(() => [])).map(x => x.id));
+      C = C.filter(x => !fuera.has(x.id)).slice(0, 3);
+    }
+    if (!C.length) return;
+    const s = document.getElementById("otros-ciegos");
+    s.innerHTML = `<h2 id="oc-t">Puntos ciegos de hoy</h2><p class="oc-sub">Otras noticias políticas que casi solo publica un lado.</p><div class="rel-grid">${C.map(x => {
+      const r = { pi: x.pct_izq, pc: x.pct_cen, pd: x.pct_der };
+      return `<a class="rel" href="${urlNoticia(x.id, x.titulo)}">${x.imagen ? `<span class="rel-foto"><img src="${esc(x.imagen)}" alt="" loading="lazy" referrerpolicy="no-referrer" onload="this.classList.add('ok')" onerror="this.remove()"></span>` : ""}
+        <span class="chip">La ${x.punto_ciego} apenas la cuenta</span><span class="rel-t">${esc(x.titulo)}</span>${barra(r)}<span class="rel-m">${x.total} medios</span></a>`;
+    }).join("")}</div><a class="oc-todos" href="/?vista=ciegos">Todos los puntos ciegos →</a>`;
     s.hidden = false;
   } catch (e) {}
 }
@@ -1150,7 +1180,7 @@ async function novedad(h){
     const h = mapear(filas[0]);
     pintar(h);
     document.getElementById("estado").textContent = `Actualizada ${haceCuanto(filas[0].actualizada)}`;
-    relacionadas(h); enTema(h);
+    relacionadas(h); enTema(h); otrosCiegos(h);
     if (h.ciego) pedir(`ciegos_contexto?select=id,asunto_id,asunto,medios_lado&id=eq.${h.id}`).then(([c]) => {
       const t = contextoCiego(c, h), el = document.getElementById("ctxCiego"); if (t && el) el.innerHTML = " " + t;
     }).catch(() => {});
