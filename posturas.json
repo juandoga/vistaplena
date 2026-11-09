@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-10-17",
+ "actualizado": "2026-11-09",
  "criterio": "Mientras los partidos no publiquen sus programas para el 29N, recogemos lo que cada uno ha propuesto en público: documentos del partido, declaraciones recogidas por la prensa y su programa de 2023. Siempre con fuente y fecha. No valoramos las propuestas: solo indicamos si el partido explica cómo lo haría y cómo lo pagaría.",
  "fuentes": {
   "EDB23": {
@@ -86,6 +86,61 @@
    "nombre": "Votaciones del Congreso (más abajo en esta guía)",
    "url": null,
    "fecha": null
+  },
+  "PP_EE": {
+   "nombre": "El Español: el programa del PP para el 29N",
+   "url": "https://elespanol.com/espana/politica/20261109/programa-reconstruccion-pp-medidas-devolver-confianza-poder-adquisitivo-espana/1003744451589_0.html",
+   "fecha": "2026-11-09"
+  },
+  "FA_PUBLICO": {
+   "nombre": "Público: el Frente Amplio presenta su campaña",
+   "url": "https://www.publico.es/politica/frente-amplio-apuesta-lema-voto-casa-confia-movilizacion-superar-umbral-10.html",
+   "fecha": "2026-11-09"
+  },
+  "VOX_GARRIGA": {
+   "nombre": "Demócrata: Vox promete expulsar a los inmigrantes irregulares",
+   "url": "https://www.democrata.es/politica/vox-se-compromete-a-expulsar-a-todos-los-migrantes-irregulares-si-logra-fuerza-suficiente-tras-el-29n/",
+   "fecha": "2026-10-31"
+  },
+  "POD_EJES": {
+   "nombre": "Libertad Digital: los cinco ejes del programa de Podemos",
+   "url": "https://www.libertaddigital.com/libremercado/2026-10-19/podemos-presenta-su-programa-electoral-para-volver-a-lo-basico-smi-de-1-800-euros-y-jornada-de-30-horas-semanales-7478534/",
+   "fecha": "2026-10-19"
+  },
+  "ERC_PROG": {
+   "nombre": "Programa electoral de ERC",
+   "url": "https://www.esquerrarepublicana.cat/documents/e2026-programa.pdf",
+   "fecha": "2026-11-05"
+  },
+  "CFV_MICO": {
+   "nombre": "elDiario.es: entrevista a Àgueda Micó",
+   "url": "https://www.eldiario.es/128_cfa6f2",
+   "fecha": "2026-10-25"
+  },
+  "CFV_ELCHE": {
+   "nombre": "Alicante Plaza: Compromís-Front Valencià en Elche",
+   "url": "https://alicanteplaza.es/alicanteplaza/elcheplaza/arranca-compromis-front-valencia-en-elche-con-propuestas-en-vivienda-y-transporte",
+   "fecha": "2026-11-06"
+  },
+  "VOX_PROG": {
+   "nombre": "Programa de Vox «Recuperar España»",
+   "url": "https://www.voxespana.es/wp-content/uploads/2026/10/RECUPERAR-ESPANA-A4.pdf",
+   "fecha": "2026-10-20"
+  },
+  "BNG_PROG": {
+   "nombre": "Programa electoral del BNG",
+   "url": "https://www.bng.gal/media/bnggaliza/files/2026/11/03/26_bng_xerais_documentos_programa_electoral.pdf",
+   "fecha": "2026-11-03"
+  },
+  "CC_DOC": {
+   "nombre": "Programa de CC y Primero Canarias, «Defiende Canarias»",
+   "url": "https://coalicioncanaria.org/wp-content/uploads/2026/11/CCA-26-Programa_Electoral-29NOV.pdf",
+   "fecha": "2026-11-08"
+  },
+  "PNV_DOC": {
+   "nombre": "Programa electoral del PNV",
+   "url": "https://www.eaj-pnv.eus/es/adjuntos-documentos/21765/pdf/programa-electoral-29n",
+   "fecha": "2026-11-09"
   }
  },
  "partidos": [
@@ -105,12 +160,32 @@
   {
    "id": "fa",
    "nombre": "Frente Amplio",
-   "nota": "Coalición de Sumar, IU, Comuns y Más Madrid. Se presentó el 17 de octubre; aún no ha publicado programa. Sus propuestas de 2023 son del programa de Sumar."
+   "nota": "Coalición de Movimiento Sumar, IU, Comuns y Más Madrid, con Ada Colau de candidata. Sus propuestas de 2023 son del programa de Sumar."
   },
   {
    "id": "podemos",
    "nombre": "Podemos",
-   "nota": "En 2023 fue dentro de Sumar. En Cataluña irá con ERC."
+   "nota": "En 2023 fue dentro de Sumar. En Cataluña va en las listas de ERC y en la Comunidad Valenciana, dentro de Compromís-Front Valencià."
+  },
+  {
+   "id": "erc",
+   "nombre": "ERC"
+  },
+  {
+   "id": "compromis",
+   "nombre": "Compromís-Front Valencià"
+  },
+  {
+   "id": "bng",
+   "nombre": "BNG"
+  },
+  {
+   "id": "cc",
+   "nombre": "Coalición Canaria"
+  },
+  {
+   "id": "pnv",
+   "nombre": "PNV"
   }
  ],
  "temas": {
@@ -139,6 +214,12 @@
    ],
    "vox": [
     {
+     "t": "Preferencia para los españoles en la vivienda pública, liberar suelo, más vivienda protegida, acabar con la okupación, cero impuestos en la compra de la primera vivienda y prohibir alquilar a inmigrantes en situación irregular.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 3."
+    },
+    {
      "t": "Sin IVA en la compra de la primera vivienda, «prioridad nacional» (los españoles primero) en las ayudas, más suelo urbanizable y recuperar la desgravación por vivienda habitual.",
      "f": "INFOBAE",
      "como": "no",
@@ -146,6 +227,11 @@
     }
    ],
    "fa": [
+    {
+     "t": "Una ley para expropiar más de 100.000 viviendas a fondos de inversión y un recargo del 10 % a quien tenga cuatro o más viviendas y especule con el alquiler.",
+     "f": "FA_PUBLICO",
+     "como": "parcial"
+    },
     {
      "t": "Invertir el 1 % del PIB al año en vivienda pública, contratos de alquiler indefinidos y un fondo estatal que financie nuevas promociones con créditos que se devuelven con los alquileres asequibles. Ventajas fiscales a quien alquile a precio social.",
      "f": "FA_ACTO",
@@ -166,6 +252,45 @@
      "como": "parcial",
      "nota": "Dice el mecanismo (decreto y expropiación), pero no cuánto costaría ni cómo se compensaría a los dueños."
     }
+   ],
+   "erc": [
+    {
+     "t": "Dedicar a vivienda al menos el 1,5 % del PIB, pasar a la Generalitat los pisos de la Sareb y subir al 21 % el IVA del alquiler turístico.",
+     "f": "ERC_PROG",
+     "como": "parcial",
+     "nota": "Programa electoral, pág. 19-20."
+    }
+   ],
+   "compromis": [
+    {
+     "t": "Limitar la compra de vivienda, empezando por los fondos y los grandes especuladores; bajar los alquileres en zonas tensionadas y acabar con los desahucios.",
+     "f": "CFV_MICO",
+     "como": "no"
+    }
+   ],
+   "pnv": [
+    {
+     "t": "Agilizar los trámites urbanísticos para construir más, movilizar viviendas vacías y regular los alquileres de temporada y turísticos para que no resten vivienda habitual.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 7-8."
+    }
+   ],
+   "bng": [
+    {
+     "t": "Dedicar el 3 % de los Presupuestos del Estado a un parque público de alquiler permanente y frenar el paso de vivienda habitual a alquiler de temporada, por habitaciones y turístico.",
+     "f": "BNG_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 12."
+    }
+   ],
+   "cc": [
+    {
+     "t": "Un fondo estatal de ocho años para cofinanciar vivienda pública y asequible, con una parte para Canarias según sus necesidades, y que las islas puedan limitar el alquiler vacacional donde haya presión.",
+     "f": "CC_DOC",
+     "como": "parcial",
+     "nota": "Programa, pág. 10-11."
+    }
    ]
   },
   "economia": {
@@ -185,6 +310,12 @@
    ],
    "pp": [
     {
+     "t": "Presentar los Presupuestos de 2027 en los tres primeros meses del año y quitar trabas burocráticas.",
+     "f": "PP_EE",
+     "como": "no",
+     "nota": "Avance del programa que presenta el 10 de noviembre."
+    },
+    {
      "t": "IVA del 0 % en algunos alimentos básicos y del 10 % en la luz; movilizar hasta 300.000 millones en infraestructuras (carreteras, trenes, agua, energía).",
      "f": "FORBES",
      "como": "no",
@@ -192,6 +323,12 @@
     }
    ],
    "vox": [
+    {
+     "t": "Simplificar trámites (ventanilla única, silencio administrativo positivo, fin de la cita previa), suspender el acuerdo con Mercosur y más inversión en infraestructuras.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 4."
+    },
     {
      "t": "Bajar impuestos y el coste de la energía; quitar subvenciones a partidos, sindicatos y patronal y reducir la Administración.",
      "f": "FORBES",
@@ -214,6 +351,21 @@
      "como": "no",
      "nota": "No dice cuánto costaría ni el límite del margen."
     }
+   ],
+   "erc": [
+    {
+     "t": "Un plan con las comunidades contra la subida de precios de alimentos, energía y vivienda, y que el bono social de la luz llegue de forma automática a más hogares.",
+     "f": "ERC_PROG",
+     "como": "no",
+     "nota": "Programa electoral, pág. 21."
+    }
+   ],
+   "compromis": [
+    {
+     "t": "Invertir 1.500 millones en transporte público, sobre todo en Cercanías, y topar el precio de la energía y de los alimentos básicos.",
+     "f": "CFV_ELCHE",
+     "como": "parcial"
+    }
    ]
   },
   "inmigracion": {
@@ -233,6 +385,12 @@
    ],
    "pp": [
     {
+     "t": "Fijar cada año un cupo de inmigración legal según la capacidad de acogida y los empleos que hagan falta, pedir más agentes de Frontex y recortar la ayuda a los países que no colaboren en el control de fronteras.",
+     "f": "PP_EE",
+     "como": "parcial",
+     "nota": "Avance del programa que presenta el 10 de noviembre."
+    },
+    {
      "t": "Visado por puntos (como en Canadá o Australia), que un delito grave suponga perder el permiso de residencia, que los reincidentes no puedan quedarse, ligar el ingreso mínimo vital a buscar empleo y exigir integración para dar la nacionalidad.",
      "f": "PP_INMIG",
      "como": "parcial",
@@ -240,6 +398,18 @@
     }
    ],
    "vox": [
+    {
+     "t": "Prohibir las regularizaciones masivas, repatriar a quien esté en situación irregular, deportar a quien cometa delitos graves, devolver a sus familias a los menores que llegan solos y revisar las nacionalidades concedidas de forma fraudulenta.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 5."
+    },
+    {
+     "t": "Devolver a sus países a todos los inmigrantes en situación irregular si Vox tiene «fuerza suficiente» después del 29N.",
+     "f": "VOX_GARRIGA",
+     "como": "no",
+     "nota": "Lo prometió Ignacio Garriga, secretario general de Vox."
+    },
     {
      "t": "«Remigración»: expulsar a quien entre de forma irregular, a los extranjeros que cometan delitos y a quienes vivan de ayudas; «prioridad nacional» para los españoles.",
      "f": "QUE",
@@ -255,7 +425,39 @@
      "nota": ""
     }
    ],
-   "podemos": []
+   "podemos": [],
+   "erc": [
+    {
+     "t": "Pasar a Cataluña toda la gestión de inmigración y asilo y abrir vías legales y seguras para migrar.",
+     "f": "ERC_PROG",
+     "como": "no",
+     "nota": "Programa electoral, pág. 14 y 16."
+    }
+   ],
+   "pnv": [
+    {
+     "t": "Más competencias para Euskadi en migración y extranjería y que la Ertzaintza asuma funciones de extranjería.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 24."
+    }
+   ],
+   "bng": [
+    {
+     "t": "Facilitar la regularización de las personas inmigrantes y reforzar la inspección de trabajo contra la explotación.",
+     "f": "BNG_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 22-23."
+    }
+   ],
+   "cc": [
+    {
+     "t": "Que el Estado y la Unión Europea se responsabilicen de la política migratoria y que la acogida de menores migrantes se reparta entre comunidades.",
+     "f": "CC_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 5."
+    }
+   ]
   },
   "empleo": {
    "psoe": [
@@ -276,6 +478,12 @@
    ],
    "vox": [
     {
+     "t": "Menos burocracia para trabajar y emprender y un plan para que vuelvan los españoles que emigraron por falta de oportunidades.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 4-5."
+    },
+    {
      "t": "En contra de bajar la jornada por ley; bajar cotizaciones para que suban los sueldos netos; sin cuota de autónomo para quien gane menos que el salario mínimo.",
      "f": "FORBES",
      "como": "no",
@@ -292,10 +500,47 @@
    ],
    "podemos": [
     {
+     "t": "Salario mínimo de 1.800 € al mes y semana laboral de 30 horas.",
+     "f": "POD_EJES",
+     "como": "no"
+    },
+    {
      "t": "Semana de 35 horas y salario mínimo de 1.800 € al mes.",
      "f": "FORBES",
      "como": "no",
      "nota": "No dice en cuánto tiempo ni cómo afectaría a las pequeñas empresas."
+    }
+   ],
+   "erc": [
+    {
+     "t": "Jornada máxima de 37,5 horas sin bajar el sueldo y volver a 45 días por año trabajado de indemnización en el despido improcedente.",
+     "f": "ERC_PROG",
+     "como": "no",
+     "nota": "Programa electoral, pág. 26."
+    }
+   ],
+   "pnv": [
+    {
+     "t": "Que Euskadi pueda fijar su propio salario mínimo, siempre por encima del estatal, y que prevalezcan los convenios vascos cuando sean más favorables.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 9."
+    }
+   ],
+   "bng": [
+    {
+     "t": "Jornada de 35 horas sin bajar el sueldo, avanzando hacia 32 horas en cuatro días, y salario mínimo en el 60 % del salario medio.",
+     "f": "BNG_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 15."
+    }
+   ],
+   "cc": [
+    {
+     "t": "Que el Estado financie un plan de empleo de cuatro años para menores de 35.",
+     "f": "CC_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 14."
     }
    ]
   },
@@ -318,6 +563,12 @@
    ],
    "vox": [
     {
+     "t": "Un plan nacional contra las listas de espera, una tarjeta sanitaria única y atender a los inmigrantes en situación irregular solo en urgencias vitales.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 3."
+    },
+    {
      "t": "Que el Estado recupere las competencias de sanidad de las comunidades y más inversión en atención primaria.",
      "f": "EDB23",
      "como": "no",
@@ -332,7 +583,15 @@
      "nota": ""
     }
    ],
-   "podemos": []
+   "podemos": [],
+   "pnv": [
+    {
+     "t": "Formar más médicos especialistas donde hacen falta, adaptando las plazas MIR a las necesidades reales.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 32."
+    }
+   ]
   },
   "pensiones": {
    "psoe": [
@@ -365,6 +624,12 @@
    ],
    "vox": [
     {
+     "t": "Garantizar la sostenibilidad del sistema de pensiones, sin más detalle.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 4."
+    },
+    {
      "t": "Rechaza privatizarlas y promete pagarlas «al precio que sea y como sea».",
      "f": "QUE",
      "como": "no",
@@ -385,7 +650,46 @@
      "nota": ""
     }
    ],
-   "podemos": []
+   "podemos": [],
+   "erc": [
+    {
+     "t": "Subir las pensiones con el IPC, ajustadas al coste de la vida de cada territorio, y jubilación anticipada sin penalización en oficios penosos.",
+     "f": "ERC_PROG",
+     "como": "no",
+     "nota": "Programa electoral, pág. 26-27."
+    }
+   ],
+   "compromis": [
+    {
+     "t": "Proteger las pensiones en la Constitución.",
+     "f": "CFV_MICO",
+     "como": "no"
+    }
+   ],
+   "pnv": [
+    {
+     "t": "Subir las pensiones cada año con el IPC, mejorar las mínimas y no contributivas y quitar la penalización por jubilación anticipada a quien haya cotizado más de 40 años.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 30."
+    }
+   ],
+   "bng": [
+    {
+     "t": "Pensiones mínimas iguales al salario mínimo, subirlas con el IPC real, volver a la jubilación ordinaria a los 65 años y derogar las reformas de 2011, 2013, 2021 y 2023.",
+     "f": "BNG_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 18-19."
+    }
+   ],
+   "cc": [
+    {
+     "t": "Que los complementos de renta que da Canarias no reduzcan las pensiones no contributivas ni paguen impuestos.",
+     "f": "CC_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 10."
+    }
+   ]
   },
   "impuestos": {
    "psoe": [
@@ -404,6 +708,12 @@
    ],
    "pp": [
     {
+     "t": "Duplicar el mínimo personal de la renta, la parte de los ingresos que no paga IRPF.",
+     "f": "PP_EE",
+     "como": "parcial",
+     "nota": "Avance del programa que presenta el 10 de noviembre."
+    },
+    {
      "t": "Actualizar la renta con la inflación; duplicar lo que no tributa por hijos (de 2.400 a 4.800 € el primero y de 2.700 a 5.400 € el segundo); IVA 0 % en alimentos básicos; IVA de la luz al 10 %; sin IVA para autónomos que facturen menos de 85.000 € al año.",
      "f": "FORBES",
      "como": "parcial",
@@ -412,6 +722,12 @@
    ],
    "vox": [
     {
+     "t": "Una rebaja fiscal «histórica» para familias, trabajadores, autónomos y empresas, rebajas por número de hijos y un impuesto a las remesas que se envían al extranjero.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 3-4."
+    },
+    {
      "t": "Impuesto de sociedades al 15 %, bajar la renta y el IVA; en 2023 proponía un 15 % de renta para sueldos de menos de 70.000 € y quitar los impuestos de sucesiones, donaciones y patrimonio.",
      "f": "FORBES",
      "como": "no",
@@ -419,6 +735,11 @@
     }
    ],
    "fa": [
+    {
+     "t": "Un impuesto del 2 % a los patrimonios de más de un millón de euros y del 3 % a los de más de 50 millones.",
+     "f": "FA_PUBLICO",
+     "como": "parcial"
+    },
     {
      "t": "Impuesto permanente a las grandes fortunas, reformar el impuesto de sociedades para que las pymes no paguen proporcionalmente más que las grandes empresas y gravar los beneficios extraordinarios que genere la inteligencia artificial.",
      "f": "FA_INFOBAE",
@@ -432,6 +753,30 @@
      "f": "FORBES",
      "como": "no",
      "nota": ""
+    }
+   ],
+   "erc": [
+    {
+     "t": "Hacer permanente el impuesto a las grandes fortunas, con un tramo nuevo por encima de 100 millones; subir del 30 % al 35 % el tipo más alto de las ganancias de capital y bajar la renta a quien cobre menos de 35.000 € al año.",
+     "f": "ERC_PROG",
+     "como": "parcial",
+     "nota": "Programa electoral, pág. 21-22."
+    }
+   ],
+   "pnv": [
+    {
+     "t": "Estudiar un IVA cero o superreducido para alimentos básicos y revisar el de la luz, el gas, los combustibles y el transporte público.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 21."
+    }
+   ],
+   "bng": [
+    {
+     "t": "Una renta más progresiva: que pague más quien más gana y que las rentas del capital tributen más que ahora.",
+     "f": "BNG_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 43."
     }
    ]
   },
@@ -454,6 +799,12 @@
    ],
    "vox": [
     {
+     "t": "Igualar las oportunidades educativas de los alumnos españoles y sacar la ideología de las aulas.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 3."
+    },
+    {
      "t": "Que el Estado recupere las competencias de educación, una ley educativa nacional nueva y un único examen de acceso a la universidad.",
      "f": "EDB23",
      "como": "no",
@@ -475,6 +826,22 @@
      "como": "no",
      "nota": ""
     }
+   ],
+   "erc": [
+    {
+     "t": "Dedicar el 6 % del PIB a educación, plazas públicas gratis de 0 a 3 años y proteger la escuela en catalán.",
+     "f": "ERC_PROG",
+     "como": "no",
+     "nota": "Programa electoral, pág. 10-11."
+    }
+   ],
+   "pnv": [
+    {
+     "t": "Proteger las competencias de Euskadi en educación, sin interferencias del Estado.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 10."
+    }
    ]
   },
   "territorial": {
@@ -487,6 +854,12 @@
     }
    ],
    "pp": [
+    {
+     "t": "Un plan de 650 millones para Ceuta y Melilla y que se reconozcan como frontera europea.",
+     "f": "PP_EE",
+     "como": "parcial",
+     "nota": "Avance del programa que presenta el 10 de noviembre."
+    },
     {
      "t": "Pidió devolver al Gobierno la ley que perdona parte de la deuda de las comunidades (julio de 2026). Volver a castigar la sedición y endurecer la malversación.",
      "f": "VOT",
@@ -510,7 +883,46 @@
      "nota": ""
     }
    ],
-   "podemos": []
+   "podemos": [],
+   "erc": [
+    {
+     "t": "Negociar un referéndum de autodeterminación en Cataluña, una financiación basada en lo que se recauda allí (unos 4.700 millones más al año) y perdonar los 17.100 millones de deuda del FLA.",
+     "f": "ERC_PROG",
+     "como": "parcial",
+     "nota": "Programa electoral, pág. 8 y 12."
+    }
+   ],
+   "compromis": [
+    {
+     "t": "Una financiación autonómica justa para la Comunitat Valenciana y perdonar parte de su deuda.",
+     "f": "CFV_MICO",
+     "como": "no"
+    }
+   ],
+   "pnv": [
+    {
+     "t": "Cumplir entero el Estatuto de Gernika con todas las transferencias pendientes, una relación bilateral con el Estado y el reconocimiento nacional de Euskadi.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 38."
+    }
+   ],
+   "bng": [
+    {
+     "t": "Una Hacienda gallega con política fiscal propia y competencias plenas para Galicia en relaciones laborales.",
+     "f": "BNG_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 9."
+    }
+   ],
+   "cc": [
+    {
+     "t": "Que el dinero del Régimen Económico y Fiscal no se cuente como financiación ordinaria de sanidad, educación o servicios sociales, y mantener el 75 % de descuento de residente en avión y barco.",
+     "f": "CC_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 8 y 17."
+    }
+   ]
   },
   "energia": {
    "psoe": [
@@ -523,6 +935,12 @@
    ],
    "pp": [
     {
+     "t": "Blindar las centrales nucleares para bajar el precio de la luz y auditar las redes de transporte y de energía.",
+     "f": "PP_EE",
+     "como": "no",
+     "nota": "Avance del programa que presenta el 10 de noviembre."
+    },
+    {
      "t": "Alargar la vida de las centrales nucleares, quitar el impuesto a la producción de electricidad y agilizar la conexión a la red.",
      "f": "FORBES",
      "como": "parcial",
@@ -530,6 +948,12 @@
     }
    ],
    "vox": [
+    {
+     "t": "Energía a precio de coste, recuperar el Plan Nuclear Nacional y quitar los topes a la inversión en redes eléctricas.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 4."
+    },
     {
      "t": "Alargar las nucleares y construir otras nuevas; bajar impuestos a la energía; derogar la ley de cambio climático.",
      "f": "FORBES",
@@ -557,6 +981,30 @@
      "f": "FORBES",
      "como": "no",
      "nota": ""
+    }
+   ],
+   "erc": [
+    {
+     "t": "Prohibir para siempre cortar la luz a hogares vulnerables y un programa público de inversión en baterías, placas solares, eólica y bombas de calor.",
+     "f": "ERC_PROG",
+     "como": "no",
+     "nota": "Programa electoral, pág. 22 y 27-28."
+    }
+   ],
+   "pnv": [
+    {
+     "t": "Acelerar las inversiones en redes eléctricas y revisar la planificación energética del Estado pensando en la industria.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 15."
+    }
+   ],
+   "bng": [
+    {
+     "t": "Una tarifa eléctrica gallega que tenga en cuenta que Galicia produce más electricidad de la que consume.",
+     "f": "BNG_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 54."
     }
    ]
   },
@@ -599,7 +1047,31 @@
      "nota": ""
     }
    ],
-   "podemos": []
+   "podemos": [],
+   "erc": [
+    {
+     "t": "Derogar la «ley mordaza», suprimir los delitos de ofensas religiosas e injurias a la Corona y crear un Consejo de Justicia de Cataluña.",
+     "f": "ERC_PROG",
+     "como": "no",
+     "nota": "Programa electoral, pág. 8 y 15."
+    }
+   ],
+   "pnv": [
+    {
+     "t": "Que los juicios terminen en el Tribunal Superior de Justicia del País Vasco, salvo lo reservado al Supremo, y crear un Consejo Vasco de Justicia.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 39."
+    }
+   ],
+   "bng": [
+    {
+     "t": "Inhabilitar directamente a los cargos públicos que cometan fraude fiscal o usen paraísos fiscales.",
+     "f": "BNG_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 41."
+    }
+   ]
   }
  }
 }
