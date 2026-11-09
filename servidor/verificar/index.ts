@@ -100,12 +100,15 @@ Responde solo con JSON, una clave por número: {"1":"publica","2":"ligera"}.`;
 
 // Solo una noticia política puede tener cobertura desigual (punto ciego), como en Ground News («political undertones»).
 // Decidido por Juan el 21/10: un terremoto o los resultados de una empresa no son un punto ciego aunque un lado no los cuente.
-const POLITICA = `Eres el editor de una web que señala qué noticias políticas cuenta solo un lado del espectro ideológico.
-Para cada noticia (por su título) decide si es política:
-- "si": toca el poder público o un debate político: gobierno y administración, partidos y elecciones, leyes y decretos, tribunales en casos con dimensión política (cargos públicos, partidos, leyes), políticas públicas (vivienda, impuestos, inmigración, sanidad o educación públicas, energía, clima), conflictos sociales organizados (huelgas, protestas, sindicatos y patronal frente al Gobierno), relaciones internacionales, guerras y política de otros países.
+// 8/11: además dice si la política es de España o de fuera. Los puntos ciegos de fuera se muestran aparte
+// (para un lector español pesa poco que un lado no cuente la dimisión del primer ministro belga).
+const POLITICA = `Eres el editor de una web española que señala qué noticias políticas cuenta solo un lado del espectro ideológico.
+Para cada noticia (por su título) decide si es política y de dónde:
+- "espana": política que toca el poder público en España o un debate político español: Gobierno, Cortes, comunidades autónomas y ayuntamientos, partidos y elecciones españolas, leyes y decretos, tribunales en casos con dimensión política (cargos públicos, partidos, leyes), políticas públicas (vivienda, impuestos, inmigración, sanidad o educación públicas, energía, clima), conflictos sociales organizados (huelgas, protestas, sindicatos y patronal frente al Gobierno). También la política de otro país o de la UE cuando España o un político español es protagonista (relaciones de España con Marruecos, una decisión de Bruselas sobre España, Sánchez en una cumbre).
+- "fuera": política de otro país o internacional sin papel directo de España: gobiernos, elecciones y partidos extranjeros, guerras y conflictos, organismos internacionales.
 - "no": empresas y mercados sin una decisión pública de por medio, sucesos y crímenes sin cargo público ni debate político, catástrofes naturales, ciencia, salud o cultura sin una decisión pública, tecnología, consumo.
-Ante la duda, "no".
-Responde solo con JSON, una clave por número: {"1":"si","2":"no"}.`;
+Ante la duda entre política y no política, "no". Ante la duda entre "espana" y "fuera", "espana".
+Responde solo con JSON, una clave por número: {"1":"espana","2":"fuera","3":"no"}.`;
 
 Deno.serve(async (req) => {
   if (!(await esInterna(req))) return json({ error: "Solo para tareas internas" }, 401);
@@ -299,17 +302,25 @@ Deno.serve(async (req) => {
   let politicas = 0;
   // Solo las de 6 medios o más pueden ser cobertura desigual: esas primero (si una crece, entra en la siguiente pasada)
   const { data: vis6 } = await db.from("portada_m").select("id").gte("total", 6).gt("actualizada", new Date(Date.now() - 2 * 864e5).toISOString()).limit(1000);
-  const { data: sinPol } = (vis6 ?? []).length ? await db.from("historias").select("id, titulo").is("ia_politica", null).eq("ia_tipo", "publica").in("id", vis6!.map((x) => x.id)) : { data: [] as any[] };
-  for (let i = 0; i < (sinPol ?? []).length && quedan > 0 && Date.now() - inicio < 118e3; i += 25) {
-    const lote = sinPol!.slice(i, i + 25);
+  const ids6 = (vis6 ?? []).map((x) => x.id);
+  const { data: sinPol } = ids6.length ? await db.from("historias").select("id, titulo").is("ia_politica", null).eq("ia_tipo", "publica").in("id", ids6) : { data: [] as any[] };
+  // Las políticas de antes del 8/11 no tienen ámbito: se preguntan también, pero su respuesta solo rellena el ámbito
+  const { data: sinAmbito } = ids6.length ? await db.from("historias").select("id, titulo").eq("ia_politica", true).is("ia_ambito", null).in("id", ids6) : { data: [] as any[] };
+  const porMirar = [...(sinPol ?? []).map((h: any) => ({ ...h, nueva: true })), ...(sinAmbito ?? []).map((h: any) => ({ ...h, nueva: false }))];
+  for (let i = 0; i < porMirar.length && quedan > 0 && Date.now() - inicio < 118e3; i += 25) {
+    const lote = porMirar.slice(i, i + 25);
     quedan--;
     let res: Record<string, string>;
     try { res = await gemini(modelo, POLITICA, lote.map((h: any, j: number) => `${j + 1}) ${h.titulo}`).join("\n")); } catch (e) { informe.push({ error: String(e).slice(0, 200) }); break; }
     for (let j = 0; j < lote.length; j++) {
       const t = res[String(j + 1)];
-      if (t !== "si" && t !== "no") continue;
-      await db.from("historias").update({ ia_politica: t === "si" }).eq("id", lote[j].id);
-      if (t === "si") politicas++;
+      if (t !== "espana" && t !== "fuera" && t !== "no") continue;
+      if (lote[j].nueva) {
+        await db.from("historias").update({ ia_politica: t !== "no", ia_ambito: t === "no" ? null : t }).eq("id", lote[j].id);
+        if (t !== "no") politicas++;
+      } else if (t !== "no") {
+        await db.from("historias").update({ ia_ambito: t }).eq("id", lote[j].id);
+      }
     }
   }
   if (juntadas || ligeras || sacados || enlazadas || politicas) await db.rpc("refrescar_portada");

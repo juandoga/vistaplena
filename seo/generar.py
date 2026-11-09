@@ -495,7 +495,18 @@ def portada_estatica(historias, ahora):
     hace = lambda h: dt.datetime.fromisoformat(h["actualizada"].replace("Z", "+00:00"))
     recientes = [h for h in historias if (ahora - hace(h)).total_seconds() < 36 * 3600]
     top = sorted(recientes, key=lambda h: (h.get("peso") or 0, h.get("total") or 0), reverse=True)[:20]
-    ciegos = sorted([h for h in recientes if h.get("punto_ciego")], key=lambda h: h.get("total") or 0, reverse=True)[:6]
+    # Puntos ciegos vigentes (8/11, igual que en la portada): titulares nuevos en 48 h, empezados hace menos de 4 días
+    # y de política española (los de fuera se ven aparte en la sección)
+    creada = lambda h: dt.datetime.fromisoformat(h["creada"].replace("Z", "+00:00"))
+    ciegos = [h for h in historias if h.get("punto_ciego") and (ahora - hace(h)).total_seconds() < 48 * 3600
+              and (ahora - creada(h)).total_seconds() < 96 * 3600]
+    if ciegos:
+        try:
+            fuera = {x["id"] for x in pedir(f"historias?select=id&ia_ambito=eq.fuera&id=in.({','.join(str(h['id']) for h in ciegos)})")}
+        except Exception:
+            fuera = set()
+        ciegos = [h for h in ciegos if h["id"] not in fuera]
+    ciegos = sorted(ciegos, key=lambda h: h.get("total") or 0, reverse=True)[:6]
     if not top:
         return
     def li(h):
@@ -507,7 +518,7 @@ def portada_estatica(historias, ahora):
               '<p>Las noticias que más medios están contando. Toca una para ver cómo la titula cada lado.</p></div>'
               f'<ol class="ultimo-lista">{"".join(li(h) for h in top)}</ol></section>')
     if ciegos:
-        cuerpo += ('<section class="ultimo"><div class="cab-seccion"><h2>Cobertura desigual</h2>'
+        cuerpo += ('<section class="ultimo"><div class="cab-seccion"><h2>Puntos ciegos</h2>'
                    '<p>Noticias políticas que un lado apenas cuenta.</p></div>'
                    f'<ol class="ultimo-lista">{"".join(li(h) for h in ciegos)}</ol></section>')
     t = t.replace('<main id="contenido"></main>', f'<main id="contenido" data-estatica="1">{cuerpo}</main>', 1)
@@ -548,7 +559,7 @@ def boletin_ejemplo(historias, tpl_t, ahora):
         '<div class="bol-corto"></div>'
         f'<section class="bol-ejemplo"><h2>La edición de esta semana, tal como saldría hoy ({dia.day} de {MESES[dia.month - 1]})</h2>'
         f'<ol class="bol-lista">{piezas}</ol>'
-        + (f'<h2>Cobertura desigual</h2><ol class="bol-lista">{desig}</ol>' if desig else "")
+        + (f'<h2>Puntos ciegos</h2><ol class="bol-lista">{desig}</ol>' if desig else "")
         + '</section><style>.bol-ejemplo{margin-top:40px}.bol-ejemplo h2{margin:32px 0 6px;padding-top:12px;border-top:4px solid var(--tinta);font-weight:900;font-size:var(--t-l);color:var(--tinta)}'
         '.bol-lista{list-style:none;margin:0;padding:0}.bol-pieza{display:grid;gap:8px;padding:18px 0;border-bottom:1px solid var(--linea)}'
         '.bol-pieza .m{font-size:var(--t-xs);color:var(--gris)}.bol-pieza .t{font-family:var(--titular);font-weight:600;font-size:1.2rem;line-height:1.25;color:var(--tinta);text-decoration:none}'

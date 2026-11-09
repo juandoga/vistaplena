@@ -571,7 +571,7 @@ h2 .info{margin-left:6px;vertical-align:.25em}
       <div>
         <span class="eti">Antes de empezar</span>
         <h2 id="guia-t">Cómo leer Vista Plena</h2>
-        <p class="entradilla"><b>Cada medio te cuenta una parte.</b> Aquí ves cada noticia contada por todos<span class="resto"> y lo que tu periódico no te está contando. Sin algoritmos: la misma portada para todo el mundo</span>.</p>
+        <p class="entradilla"><b>Cada medio te cuenta una parte.</b> Aquí ves cada noticia contada por todos<span class="resto"> y lo que tu periódico no te está contando. Sin personalización: la misma portada para todo el mundo</span>.</p>
       </div>
       <div class="guia-bot"><button class="cerrar secundario" id="verGuia" aria-expanded="false" aria-controls="guiaCols">Cómo funciona</button><button class="cerrar" id="cerrarGuia">Entendido</button></div>
     </div>
@@ -604,7 +604,7 @@ h2 .info{margin-left:6px;vertical-align:.25em}
         <p class="aparte">Que una noticia la cuente más un lado no la hace falsa. Para ver el enfoque, compara cómo la titula cada uno.</p>
       </div>
     </div>
-    <div class="proceso"><span><b>1</b>Cada hora leemos <span id="nMedios">21</span> medios</span><span><b>2</b>Juntamos los titulares del mismo hecho</span><span><b>3</b>Contamos cuántos medios de cada lado lo publican</span></div>
+    <div class="proceso"><span><b>1</b>Cada hora leemos <span id="nMedios">38</span> medios</span><span><b>2</b>Juntamos los titulares del mismo hecho</span><span><b>3</b>Contamos cuántos medios de cada lado lo publican</span></div>
   </section>
 
   <nav class="temas secciones-nav" id="secciones" aria-label="Secciones"></nav>
@@ -628,7 +628,7 @@ h2 .info{margin-left:6px;vertical-align:.25em}
     </form>
   </section>
 
-  <section class="medios" aria-labelledby="medios-t">
+  <section class="medios" id="medios-lista" aria-labelledby="medios-t">
     <div class="cab-seccion" style="margin-top:0">
       <h2 id="medios-t">Los medios y su etiqueta</h2>
       <p>Primera versión, revisable. Cada etiqueta se explica en la <a href="metodologia.html">página de metodología</a>, donde también puedes proponer un cambio.</p>
@@ -636,10 +636,10 @@ h2 .info{margin-left:6px;vertical-align:.25em}
     <div class="escala" id="escala"></div>
   </section>
 </div>
-<footer class="pie">
+<footer class="pie" id="pie">
   <div class="wrap pie-cols">
     <div><a class="logo" href="./" aria-label="Vista Plena"><svg class="logo-ic" viewBox="0 0 64 64" aria-hidden="true"><path d="M6 40V58H24" style="fill:none;stroke:var(--izq);stroke-width:7;stroke-linecap:square"/><path d="M40 6H58V24" style="fill:none;stroke:var(--der);stroke-width:7;stroke-linecap:square"/><circle cx="32" cy="32" r="10" fill="currentColor"/></svg>Vista Plena</a>
-      <p>Cada noticia, contada por todos los lados. Sin opinión y sin algoritmo: la misma portada para todo el mundo.</p></div>
+      <p>Cada noticia, contada por todos los lados. Sin opinión y sin personalización: la misma portada para todo el mundo.</p></div>
     <nav aria-label="Noticias"><span class="eti">Noticias</span><a href="./">Portada</a><a href="./?vista=ciegos">Puntos ciegos</a><a href="elecciones.html">Elecciones 29N</a><a href="./#boletin">Boletín</a></nav>
     <nav aria-label="Proyecto"><span class="eti">Proyecto</span><a href="quienes-somos.html">Quiénes somos</a><a href="metodologia.html">Metodología</a><a href="metodologia.html#datos">Datos abiertos</a><a href="/medio/">Los medios, uno a uno</a><a href="/archivo/">Archivo</a><a href="quienes-somos.html#correcciones">Correcciones</a></nav>
     <nav aria-label="Legal"><span class="eti">Legal</span><a href="aviso-legal.html">Aviso legal</a><a href="privacidad.html">Privacidad</a><a href="https://github.com/juandoga/vistaplena" target="_blank" rel="noopener">Código en GitHub</a></nav>
@@ -662,6 +662,9 @@ try {
 } catch (e) {}
 const PARAM = new URLSearchParams(location.search);
 let vista = ["ciegos","izquierda","derecha"].includes(PARAM.get("vista")) ? PARAM.get("vista") : "portada";
+// Punto ciego vigente (8/11): la noticia ha tenido titulares nuevos en las últimas 48 horas y empezó hace menos de 4 días
+const CIEGO_VIGENTE = 48 * 3600e3, CIEGO_MAX_EDAD = 96 * 3600e3;
+const ciegoVigente = x => Date.now() - new Date(x.actualizada) < CIEGO_VIGENTE && Date.now() - new Date(x.creada) < CIEGO_MAX_EDAD;
 const fh = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
 document.getElementById("fechaHoy").textContent = fh.charAt(0).toUpperCase() + fh.slice(1);
 function pieza(h){
@@ -812,7 +815,8 @@ function render(){
   const H = DATA.historias || [];
   pintarSecciones(H);
   pintarTemas();
-  const ci = H.filter(h => h.ciego === "izquierda"), cd = H.filter(h => h.ciego === "derecha");
+  const ci = H.filter(h => h.ciego === "izquierda" && !h.fuera), cd = H.filter(h => h.ciego === "derecha" && !h.fuera);
+  const cf = H.filter(h => h.ciego && h.fuera);
   const c = document.getElementById("contenido");
   // La copia ya escrita de la portada (seo/generar.py) se queda mientras cargan los datos o si fallan
   if (c.dataset.estatica && !H.length && vista === "portada" && !seccion && CARGA !== "ok") return;
@@ -900,6 +904,13 @@ function render(){
     if (!lista.length) rej.innerHTML = `<p class="vacia">Ahora mismo no hay puntos ciegos${filtro === "todos" ? "" : " de este lado"}. Se recalcula cada hora.</p>`;
     lista.forEach(h => rej.appendChild(pieza(h)));
     c.appendChild(rej);
+    const fuera = cf.filter(h => filtro === "todos" || h.ciego === filtro);
+    if (fuera.length) {
+      c.insertAdjacentHTML("beforeend", cab("Fuera de España", "Política de otros países que casi solo cuenta un lado. Pesa menos para el lector español, por eso va aparte.", true));
+      const rf = document.createElement("div"); rf.className = "rejilla";
+      fuera.forEach(h => rf.appendChild(pieza(h)));
+      c.appendChild(rf);
+    }
     c.querySelectorAll("[data-filtro]").forEach(b => b.addEventListener("click", () => {
       vista = b.dataset.filtro === "todos" ? "ciegos" : b.dataset.filtro;
       history.replaceState(null, "", `./?vista=${vista}`);
@@ -922,7 +933,7 @@ function render(){
   }));
   marcarSalto();
   const M = DATA.medios || [];
-  document.getElementById("nMedios").textContent = M.length || 21;
+  document.getElementById("nMedios").textContent = M.length || 38;
   document.getElementById("escala").innerHTML = NIVELES.map(([v, n, col]) =>
     `<div><h4 style="border-color:${col};${Math.abs(v)===1?"border-top-style:dashed":""}">${n}</h4><ul>${M.filter(m => m.o === v).map(m => `<li><a href="/medio/${slug(m.n)}/">${esc(m.n)}</a></li>`).join("")}</ul></div>`).join("");
   document.getElementById("estado").textContent = DATA.generado ? `Actualizado ${new Date(DATA.generado).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}` : CARGA === "cargando" ? "Cargando…" : "Sin datos";
@@ -948,7 +959,8 @@ render();
     const [hist, ciegos, ultimas, med, temas, asuntos, ctx] = await Promise.all([
       // Orden de la portada: medios que han contado la historia en las últimas 12 horas (lo que está pasando ahora)
       pedir(`portada_m?select=${CAMPOS}&order=peso.desc,voces.desc,actualizada.desc&limit=40`),
-      pedir(`portada_m?select=${CAMPOS}&punto_ciego=not.is.null&order=voces.desc,actualizada.desc&limit=30`),
+      // 8/11: solo los vigentes (con titulares nuevos en 48 h y empezados hace menos de 4 días); los viejos quedan en su noticia y en el archivo
+      pedir(`portada_m?select=${CAMPOS}&punto_ciego=not.is.null&actualizada=gte.${new Date(Date.now() - CIEGO_VIGENTE).toISOString()}&creada=gte.${new Date(Date.now() - CIEGO_MAX_EDAD).toISOString()}&order=voces.desc,actualizada.desc&limit=30`),
       // «Lo último»: las historias más recientes, aunque aún las cuenten pocos medios
       pedir(`portada_m?select=${CAMPOS}&order=creada.desc&limit=14`),
       pedir("medios?select=nombre,orientacion,ultima_lectura&activo=eq.true&order=orientacion,nombre"),
@@ -970,9 +982,14 @@ render();
     ASUNTOS = new Map(asuntos.map(a => [a.id, a])); indexarAsuntos();
     const ids = new Set(hist.map(x => x.id));
     const todas = [...hist, ...ciegos.filter(x => !ids.has(x.id))];
+    for (const x of todas) if (x.punto_ciego && !ciegoVigente(x)) x.punto_ciego = null;
+    // Ámbito de cada punto ciego (lo decide la IA): los de política de otro país se enseñan aparte
+    const idsC = todas.filter(x => x.punto_ciego).map(x => x.id);
+    const amb = idsC.length ? await pedir(`historias?select=id,ia_ambito&id=in.(${idsC.join(",")})`).catch(() => []) : [];
+    const FUERA = new Set(amb.filter(a => a.ia_ambito === "fuera").map(a => a.id));
     // Hora real de la última lectura de los medios (no la hora a la que se abrió la página)
     const ultima = med.map(m => m.ultima_lectura).filter(Boolean).sort().pop() || null;
-    DATA = { generado: ultima, medios: med.map(m => ({ n: m.nombre, o: m.orientacion })), historias: todas.map(mapear), ultimas: ultimas.map(mapear), desarrollo: enDes };
+    DATA = { generado: ultima, medios: med.map(m => ({ n: m.nombre, o: m.orientacion })), historias: todas.map(x => ({ ...mapear(x), fuera: FUERA.has(x.id) })), ultimas: ultimas.map(x => ({ ...mapear(x), ciego: ciegoVigente(x) ? x.punto_ciego : null })), desarrollo: enDes };
     CARGA = "ok";
     render();
     try { localStorage.setItem("vp-portada", JSON.stringify({ guardada: Date.now(), data: DATA, temas: [...TEMAS.values()], asuntos: [...ASUNTOS.values()] })); } catch (e) {}
@@ -980,6 +997,22 @@ render();
     if (intento < 3) return setTimeout(() => cargarPortada(intento + 1), intento * 2000);
     CARGA = "error"; render();
   }
+})();
+
+// 8/11: hasta dónde se baja en la portada. Un evento anónimo por bloque y visita (ev/bloque/temas…), sin cookies,
+// para saber qué partes se ven y cuáles casi nadie alcanza
+(() => {
+  if (vista !== "portada" || !("IntersectionObserver" in window)) return;
+  const vistos = new Set();
+  const nombres = { "s-principal": "principal", "s-hoy": "mas-contadas", "s-temas": "temas", "s-ciegos": "puntos-ciegos", "s-mas": "ultimo", "boletin": "boletin", "medios-lista": "medios", "pie": "pie" };
+  const obs = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    const n = nombres[e.target.id]; obs.unobserve(e.target);
+    if (n && !vistos.has(n)) { vistos.add(n); evento("bloque/" + n); }
+  }), { threshold: 0.3 });
+  const mirar = () => Object.keys(nombres).forEach(id => { const el = document.getElementById(id); if (el && !el.dataset.mirado) { el.dataset.mirado = "1"; obs.observe(el); } });
+  // La portada se vuelve a pintar al llegar los datos: se mira de nuevo un poco después
+  setTimeout(mirar, 2500); setTimeout(mirar, 6000);
 })();
 
 // Boletín: alta y mensajes al volver de los enlaces del correo
