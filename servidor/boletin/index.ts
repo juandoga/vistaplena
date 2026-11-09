@@ -229,6 +229,10 @@ Deno.serve(async (req) => {
       if (!(await esInterna(req))) return noInterna();
       const prueba = u.searchParams.get("prueba");
       const hoy = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Madrid" });
+      // El programa se llama a las 5:30 y a las 6:30 UTC para que sea las 7:30 en Madrid en invierno y en verano;
+      // antes de las 7:00 de Madrid no se envía, y el segundo intento del día no repite (envios)
+      const horaMadrid = +new Date().toLocaleString("en-GB", { timeZone: "Europe/Madrid", hour: "2-digit", hour12: false });
+      if (!prueba && horaMadrid < 7) return json({ ok: true, estado: "aún es pronto" });
       const { data: P } = await db.from("portada_m").select("id,titulo,total,pct_izq,pct_cen,pct_der,punto_ciego,articulos,actualizada,creada")
         .gte("actualizada", new Date(Date.now() - 24 * 3600e3).toISOString()).gte("creada", new Date(Date.now() - 48 * 3600e3).toISOString())
         .gte("total", 6).order("total", { ascending: false }).limit(150);
