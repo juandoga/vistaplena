@@ -5,7 +5,7 @@
 
 Vista Plena reúne los titulares de 38 medios españoles (13 de izquierda, 11 de centro y 14 de derecha), junta los que hablan del mismo hecho y muestra cuántos medios de izquierda, de centro y de derecha cuentan cada noticia. Así se ve qué historias cuenta todo el mundo, cuáles cuenta sobre todo un lado y cuáles apenas llegan a los lectores de un lado (los **puntos ciegos**).
 
-No escribe noticias ni opina sobre ellas. No hay personalización: la portada es la misma para todo el mundo y se ordena por el número de medios que han contado cada historia en las últimas 12 horas.
+No escribe noticias ni opina sobre ellas. No hay personalización: la portada es la misma para todo el mundo y se ordena por el número de medios que han contado cada historia en las últimas 12 horas. La única excepción, opcional, es el boletín de cada mañana: el lector elige de 1 a 5 medios que lee y recibe las noticias políticas que esos medios no han publicado (lo contrario de un algoritmo de recomendación).
 
 ## Cómo funciona
 
@@ -55,7 +55,8 @@ La clave que aparece en estas direcciones es pública y solo permite leer.
 | `servidor/mantenimiento/` | Copia de seguridad semanal (domingos, por correo) y avisos si algún medio o la recogida fallan (3 veces al día) |
 | `servidor/portadas/` | Lee cada hora (minuto 8) los 15 primeros titulares de la portada web de cada medio: ordenan la portada y recogen noticias que no salen en los canales RSS |
 | `servidor/congreso/` | Descarga las votaciones del Pleno del Congreso (datos abiertos) con el voto de cada partido; la función SQL `etiquetar_votaciones()` las clasifica por temas para la guía 29N |
-| `servidor/boletin/` | Programa del boletín semanal por correo (viernes a las 8:00) |
+| `servidor/boletin/` | Programa de los boletines por correo: el semanal (viernes a las 8:00) y el personal de cada mañana (7:30), con lo que no han publicado los medios que el lector dice leer. Los medios solo se guardan con su consentimiento expreso y se borran al darse de baja o pasar al semanal |
+| `boletin-medios.html` | Página para cambiar los medios y la frecuencia del boletín con el enlace de cada correo (sin contraseña: el enlace lleva la llave) |
 | `servidor/portada.sql` · `servidor/puntos_ciegos.sql` | Cálculo de la cobertura y de los puntos ciegos |
 | `servidor/verificar/` | Revisión con IA de cada historia: titulares que no encajan, repetidas, opinión, si es política y si es de España o de fuera |
 | `servidor/asuntos/` | Temas grandes: la IA agrupa las historias de varios días en un mismo tema |

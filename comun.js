@@ -164,20 +164,23 @@ document.addEventListener("click", e => {
 
 // Boletín: formulario corto que se puede poner al final de cualquier página (<div class="bol-corto"></div>)
 const BOLETIN_URL = `${SUPA.url}/functions/v1/boletin`;
-async function apuntarBoletin(correo){
+async function apuntarBoletin(correo, extra = {}){
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(correo)) return "Escribe un correo válido, por ejemplo nombre@ejemplo.com.";
   try {
-    const r = await fetch(`${BOLETIN_URL}?accion=alta`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: correo }) });
+    const r = await fetch(`${BOLETIN_URL}?accion=alta`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: correo, ...extra }) });
     const d = await r.json();
-    if (!d.ok) throw new Error(d.error || "error");
-    evento("boletin");
-    return d.estado === "ya" ? "Ya estabas suscrito. ¡Gracias!" : "Revisa tu correo y pulsa «Confirmar suscripción». Si no lo ves, mira en spam.";
+    if (!d.ok) return d.error || "No hemos podido apuntarte ahora mismo. Inténtalo de nuevo en unos minutos.";
+    evento(extra.frecuencia === "diario" ? "boletin-diario" : "boletin");
+    if (d.estado === "ya") return "Ya estabas suscrito. ¡Gracias!";
+    if (d.estado === "cambiar") return "Ya estabas suscrito. Te hemos enviado un enlace a tu correo para cambiar tus medios o cuándo lo recibes.";
+    return "Revisa tu correo y pulsa «Confirmar suscripción». Si no lo ves, mira en spam.";
   } catch (err) { return "No hemos podido apuntarte ahora mismo. Inténtalo de nuevo en unos minutos."; }
 }
 document.querySelectorAll(".bol-corto").forEach((caja, i) => {
   caja.innerHTML = `<form novalidate><label for="bolc${i}"><b>La semana en Vista Plena.</b> Cada viernes, las historias que más medios contaron y las que solo contó un lado.${location.pathname.startsWith("/boletin") ? "" : ' <a href="/boletin/">Ver un ejemplo</a>'}</label>
     <div class="fila"><input id="bolc${i}" type="email" autocomplete="email" placeholder="nombre@ejemplo.com" required><button type="submit">Suscribirme</button></div>
-    <p class="msg" role="status" aria-live="polite"></p><p class="legal">Gratis. Te pediremos confirmarlo por correo y puedes darte de baja con un clic. <a href="/privacidad.html">Privacidad</a>.</p></form>`;
+    <p class="msg" role="status" aria-live="polite"></p><p class="legal">Gratis. Te pediremos confirmarlo por correo y puedes darte de baja con un clic. <a href="/privacidad.html">Privacidad</a>.</p>
+    <p class="legal"><b>¿Prefieres cada mañana lo que no han publicado los medios que lees?</b> <a href="/#boletin">Elige tus medios</a></p></form>`;
   const f = caja.querySelector("form"), msg = caja.querySelector(".msg"), btn = caja.querySelector("button");
   f.addEventListener("submit", async e => {
     e.preventDefault(); btn.disabled = true; msg.textContent = "Enviando…";
