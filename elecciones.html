@@ -6,7 +6,7 @@
 <meta name="msvalidate.01" content="E9CB72CE86C079B72425B53725AC79AC">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Elecciones 29N · Vista Plena</title>
-<meta name="description" content="Qué propone cada partido para las elecciones del 29 de noviembre, con cita literal del programa.">
+<meta name="description" content="Qué propone cada partido para las elecciones del 29 de noviembre, con la fuente y la fecha de cada propuesta.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -18,7 +18,7 @@
 <meta property="og:locale" content="es_ES">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Elecciones 29N · Vista Plena">
-<meta property="og:description" content="Qué propone cada partido para las elecciones del 29 de noviembre, con cita literal del programa.">
+<meta property="og:description" content="Qué propone cada partido para las elecciones del 29 de noviembre, con la fuente y la fecha de cada propuesta.">
 <meta property="og:url" content="https://vistaplena.es/elecciones.html">
 <meta property="og:image" content="https://vistaplena.es/og.png">
 <link rel="canonical" href="https://vistaplena.es/elecciones.html">
@@ -849,7 +849,7 @@ h2 .info{margin-left:6px;vertical-align:.25em}
     <div class="cuenta"><b id="dias">—</b><span>días para votar</span></div>
   </header>
   <div class="gv-modos" role="group" aria-label="Cómo quieres comparar">
-    <button type="button" data-modo="tema" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16"/><path d="M9 4v16M15 4v16"/></svg><b>Comparar por tema</b><small>Los 12 partidos, un tema cada vez</small></button>
+    <button type="button" data-modo="tema" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16"/><path d="M9 4v16M15 4v16"/></svg><b>Comparar por tema</b><small>Todos los partidos, un tema cada vez</small></button>
     <button type="button" data-modo="partido" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.5 18.5a6.5 6.5 0 0 1 11 0"/></svg><b>Ver un partido</b><small>Todo lo que propone y vota uno</small></button>
   </div>
 
@@ -859,7 +859,7 @@ h2 .info{margin-left:6px;vertical-align:.25em}
   <div class="gv-fija"><nav class="gv-temas" id="gvTemas" aria-label="Temas"></nav></div>
 <div class="wrap metodo elecc">
   <div id="gvVista" class="gv-vista"></div>
-  <div class="aviso" id="estadoProgramas">Los partidos todavía no han presentado sus programas para el 29N. En cuanto cada uno publique el suyo, añadiremos sus propuestas tema a tema, con cita literal y enlace al documento original.</div>
+  <div class="aviso" id="estadoProgramas">Los partidos todavía no han presentado sus programas para el 29N. En cuanto cada uno publique el suyo, sus propuestas saldrán de ese documento, con la página donde aparecen.</div>
 
   <section id="partidos">
     <h2>Los partidos, uno a uno</h2>
@@ -871,11 +871,11 @@ h2 .info{margin-left:6px;vertical-align:.25em}
   <details id="como" class="gv-metodo">
     <summary><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Cómo hacemos esta guía</summary>
     <ol class="pasos-m">
-      <li><strong>Solo el programa oficial.</strong> Usamos el documento que publica cada partido, nunca resúmenes de otros medios.</li>
-      <li><strong>Cita literal y página.</strong> Para cada tema extraemos sus propuestas con la frase exacta y la página donde aparece.</li>
-      <li><strong>Revisión humana.</strong> Una persona comprueba cada cita contra el original antes de publicarla.</li>
+      <li><strong>Primero, el programa oficial.</strong> Cuando un partido publica su programa, sus propuestas salen de ese documento y llevan la página donde aparecen. Mientras no lo publica, recogemos lo que ha propuesto en público: documentos del partido, declaraciones recogidas por la prensa y su programa de 2023.</li>
+      <li><strong>En palabras sencillas y con la fuente.</strong> Contamos cada propuesta con nuestras palabras, sin añadir nada, y enlazamos el original para que puedas comprobarla.</li>
+      <li><strong>Revisión.</strong> Cada propuesta se comprueba contra su fuente antes de publicarla.</li>
       <li><strong>La misma plantilla para todos.</strong> Mismos temas y mismo espacio para cada partido, en el orden de lo que más preocupa según el CIS. No valoramos ninguna propuesta.</li>
-      <li><strong>Con fecha y corrección visible.</strong> Cada propuesta indica cuándo se añadió. Si encontramos un error, lo corregimos y lo señalamos.</li>
+      <li><strong>Con fecha y corrección visible.</strong> Cada propuesta indica la fecha de su fuente. Si encontramos un error, lo corregimos y lo señalamos.</li>
     </ol>
     <h3>Lo que votaron</h3>
     <p>Las votaciones salen de los <a href="https://www.congreso.es/opendata/votaciones" target="_blank" rel="noopener">datos abiertos del Congreso</a>, que publican el voto de cada diputado. Mostramos lo que votó la mayoría de los diputados de cada partido; los del Grupo Mixto (Podemos, BNG, Coalición Canaria, UPN…) van por separado. Se actualiza cada día.</p>
@@ -1000,7 +1000,9 @@ function pintar(){
   if (PROG) {
     document.getElementById("actualizado").textContent = "Actualizada el " + fechaLarga(GUIA && GUIA.actualizado > PROG.actualizado ? GUIA.actualizado : PROG.actualizado);
     document.getElementById("criterio").textContent = "Criterio: " + PROG.criterio;
-    if (conPrograma) document.getElementById("estadoProgramas").textContent = `${conPrograma} de ${P.length} partidos han publicado ya su programa. Los demás aparecen como pendientes hasta que lo presenten.`;
+    const conP = P.filter(p => p.programa).map(p => p.nombre), lista = conP.join(", ").replace(/, ([^,]*)$/, " y $1");
+    if (conPrograma) document.getElementById("estadoProgramas").textContent = (conPrograma === 1 ? `De los ${P.length} partidos de la guía, solo ${lista} ha publicado ya su programa completo.` : `De los ${P.length} partidos de la guía, ${conPrograma} han publicado ya su programa completo: ${lista}.`)
+      + " Del resto recogemos lo que han propuesto en público, con fuente y fecha, hasta que lo publiquen.";
   }
   if (!T.length) return;
   if (!T.some(t => t.id === TEMA)) TEMA = T[0].id;
@@ -1033,15 +1035,20 @@ const FICHA_P = [
   { id: "psoe", post: "psoe", vot: "PSOE" }, { id: "pp", post: "pp", vot: "PP" }, { id: "vox", post: "vox", vot: "Vox" },
   { id: "fa", post: "fa", vot: "Sumar", nombre: "Frente Amplio",
     votNota: "El Frente Amplio se formó en octubre de 2026 y no tiene grupo propio en el Congreso. Mostramos lo que votó el grupo Sumar, en el que estaban sus partidos (Sumar, IU, Comuns y Más Madrid)." },
-  { id: "podemos", post: "podemos", vot: "Podemos" }, { id: "erc", vot: "ERC" }, { id: "junts", vot: "Junts" }, { id: "bildu", vot: "EH Bildu" },
-  { id: "pnv", vot: "PNV" }, { id: "bng", vot: "BNG" }, { id: "cc", vot: "CC" }, { id: "upn", vot: "UPN" }
+  { id: "podemos", post: "podemos", vot: "Podemos" }, { id: "erc", post: "erc", vot: "ERC" }, { id: "junts", vot: "Junts" }, { id: "bildu", vot: "EH Bildu" },
+  { id: "pnv", post: "pnv", vot: "PNV" }, { id: "bng", post: "bng", vot: "BNG" }, { id: "cc", post: "cc", vot: "CC" }, { id: "upn", vot: "UPN" },
+  // Desde el 9/11: dos partidos sin grupo propio que las encuestas sitúan con opciones de escaño (criterio de programas.json)
+  { id: "compromis", post: "compromis", vot: "Compromís", nombre: "Compromís-Front Valencià",
+    votNota: "Compromís-Front Valencià es una coalición nueva. Mostramos lo que votaron los diputados de Compromís en el Congreso." },
+  { id: "adelante", vot: "", nombre: "Adelante Andalucía", votNota: "Adelante Andalucía no tenía diputados en el Congreso en esta legislatura." }
 ];
 let FICHA = (location.hash.match(/^#partidos-([a-z]+)/) || [])[1] || "psoe";
 const VOTO_K = { "Sí": ["s", "A favor"], "No": ["n", "En contra"], "Abstención": ["a", "Abstención"] };
 function fichaPartido(){
   if (!PROG || !GUIA) return `<p class="g-vacio">Cargando…</p>`;
   const datos = f => { const pr = PROG.partidos.find(x => x.id === f.id), po = POST && f.post ? POST.partidos.find(x => x.id === f.post) : null;
-    return { ...f, nombre: f.nombre || (po && po.nombre) || (pr && pr.nombre) || f.id, web: pr ? pr.web : "", programa: pr ? pr.programa : null, nota: po ? po.nota : "" }; };
+    return { ...f, nombre: f.nombre || (po && po.nombre) || (pr && pr.nombre) || f.id, web: pr ? pr.web : "", programa: pr ? pr.programa : null,
+      nota: [pr && pr.nota, po && po.nota].filter(Boolean).join(" ") }; };
   const nProp = f => POST && f.post ? GUIA.temas.reduce((n, t) => n + ((POST.temas[t.id] || {})[f.post] || []).length, 0) : 0;
   if (!FICHA_P.some(f => f.id === FICHA)) FICHA = "psoe";
   const tabs = `<div class="gv-ptabs" role="tablist" aria-label="Partidos">${FICHA_P.map(f => { const d = datos(f), n = nProp(f);
@@ -1053,7 +1060,7 @@ function fichaPartido(){
   // Propuestas, en el orden de los temas de la guía
   h += `<div class="fp-bloque"><span class="eti">Qué propone, tema a tema</span>`;
   if (!POST) h += `<p class="g-vacio">Cargando…</p>`;
-  else if (!p.post) h += `<p class="fp-sin">De momento la guía solo recoge las propuestas de PSOE, PP, Vox, Frente Amplio y Podemos. Cuando ${esc(p.nombre)} publique su programa, añadiremos las suyas con cita y página.</p>`;
+  else if (!p.post) h += `<p class="fp-sin">Todavía no hemos recogido propuestas concretas de ${esc(p.nombre)}. Cuando publique su programa, añadiremos las suyas con la página donde aparecen.</p>`;
   else {
     const sin = [];
     for (const t of GUIA.temas) {
@@ -1071,7 +1078,7 @@ function fichaPartido(){
   if (!VOT) h += `<p class="g-vacio">Cargando las votaciones del Congreso…</p>`;
   else {
     const L = VOT.filter(v => v.partidos && v.partidos[p.vot]);
-    if (!L.length) h += `<p class="fp-sin">No hay votaciones suyas en los datos.</p>`;
+    if (!L.length) h += `<p class="fp-sin">${esc(p.votNota || "No hay votaciones suyas en los datos.")}</p>`;
     else {
       const cuenta = k => L.filter(v => v.partidos[p.vot].voto === k).length;
       const mesAno = d => new Date(d + "T12:00:00").toLocaleDateString("es-ES", { month: "long", year: "numeric" });
