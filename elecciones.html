@@ -1001,7 +1001,7 @@ function pintar(){
     document.getElementById("actualizado").textContent = "Actualizada el " + fechaLarga(GUIA && GUIA.actualizado > PROG.actualizado ? GUIA.actualizado : PROG.actualizado);
     document.getElementById("criterio").textContent = "Criterio: " + PROG.criterio;
     const conP = P.filter(p => p.programa).map(p => p.nombre), lista = conP.join(", ").replace(/, ([^,]*)$/, " y $1");
-    if (conPrograma) document.getElementById("estadoProgramas").textContent = (conPrograma === 1 ? `De los ${P.length} partidos de la guía, solo ${lista} ha publicado ya su programa completo.` : `De los ${P.length} partidos de la guía, ${conPrograma} han publicado ya su programa completo: ${lista}.`)
+    if (conPrograma) document.getElementById("estadoProgramas").textContent = (conPrograma === 1 ? `De los ${P.length} partidos de la guía, solo ${lista} ha publicado ya su programa.` : `De los ${P.length} partidos de la guía, ${conPrograma} han publicado ya su programa: ${lista}.`)
       + " Del resto recogemos lo que han propuesto en público, con fuente y fecha, hasta que lo publiquen.";
   }
   if (!T.length) return;

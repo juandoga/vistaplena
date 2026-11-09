@@ -112,21 +112,6 @@
    "url": "https://www.esquerrarepublicana.cat/documents/e2026-programa.pdf",
    "fecha": "2026-11-05"
   },
-  "BNG_DEC": {
-   "nombre": "Diario en Positivo: el decálogo del BNG",
-   "url": "https://www.diarioenpositivo.com/espana/29n-bng-reclama-decalogo-compromisos-mas-autogobierno-fiscalidad-mas-justa-vida-digna/20261107152520097009.html",
-   "fecha": "2026-11-07"
-  },
-  "CC_PROG": {
-   "nombre": "elDiario.es: el programa de CC y Primero Canarias",
-   "url": "https://www.eldiario.es/canariasahora/politica/cc-canarias-presenta-programa-electoral-29n_1_13650673.html",
-   "fecha": "2026-11-09"
-  },
-  "PNV_PROG": {
-   "nombre": "Atlas: el PNV presenta su programa",
-   "url": "https://www.atlas-news.com/politica/pnv-defendemos-derecho-euskadi-decidir_3_02233866.html",
-   "fecha": "2026-11-09"
-  },
   "CFV_MICO": {
    "nombre": "elDiario.es: entrevista a Àgueda Micó",
    "url": "https://www.eldiario.es/128_cfa6f2",
@@ -136,6 +121,26 @@
    "nombre": "Alicante Plaza: Compromís-Front Valencià en Elche",
    "url": "https://alicanteplaza.es/alicanteplaza/elcheplaza/arranca-compromis-front-valencia-en-elche-con-propuestas-en-vivienda-y-transporte",
    "fecha": "2026-11-06"
+  },
+  "VOX_PROG": {
+   "nombre": "Programa de Vox «Recuperar España»",
+   "url": "https://www.voxespana.es/wp-content/uploads/2026/10/RECUPERAR-ESPANA-A4.pdf",
+   "fecha": "2026-10-20"
+  },
+  "BNG_PROG": {
+   "nombre": "Programa electoral del BNG",
+   "url": "https://www.bng.gal/media/bnggaliza/files/2026/11/03/26_bng_xerais_documentos_programa_electoral.pdf",
+   "fecha": "2026-11-03"
+  },
+  "CC_DOC": {
+   "nombre": "Programa de CC y Primero Canarias, «Defiende Canarias»",
+   "url": "https://coalicioncanaria.org/wp-content/uploads/2026/11/CCA-26-Programa_Electoral-29NOV.pdf",
+   "fecha": "2026-11-08"
+  },
+  "PNV_DOC": {
+   "nombre": "Programa electoral del PNV",
+   "url": "https://www.eaj-pnv.eus/es/adjuntos-documentos/21765/pdf/programa-electoral-29n",
+   "fecha": "2026-11-09"
   }
  },
  "partidos": [
@@ -209,6 +214,12 @@
    ],
    "vox": [
     {
+     "t": "Preferencia para los españoles en la vivienda pública, liberar suelo, más vivienda protegida, acabar con la okupación, cero impuestos en la compra de la primera vivienda y prohibir alquilar a inmigrantes en situación irregular.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 3."
+    },
+    {
      "t": "Sin IVA en la compra de la primera vivienda, «prioridad nacional» (los españoles primero) en las ayudas, más suelo urbanizable y recuperar la desgravación por vivienda habitual.",
      "f": "INFOBAE",
      "como": "no",
@@ -250,25 +261,35 @@
      "nota": "Programa electoral, pág. 19-20."
     }
    ],
-   "bng": [
-    {
-     "t": "Topes legales al alquiler, renovación automática de los contratos, prohibir desahuciar a personas vulnerables y dedicar el 3 % de los presupuestos públicos a vivienda pública de alquiler.",
-     "f": "BNG_DEC",
-     "como": "parcial"
-    }
-   ],
-   "cc": [
-    {
-     "t": "Un fondo estatal de ocho años para construir y rehabilitar vivienda pública asequible, limitar la compra de vivienda por extranjeros no residentes y regular el alquiler vacacional en zonas tensionadas.",
-     "f": "CC_PROG",
-     "como": "parcial"
-    }
-   ],
    "compromis": [
     {
      "t": "Limitar la compra de vivienda, empezando por los fondos y los grandes especuladores; bajar los alquileres en zonas tensionadas y acabar con los desahucios.",
      "f": "CFV_MICO",
      "como": "no"
+    }
+   ],
+   "pnv": [
+    {
+     "t": "Agilizar los trámites urbanísticos para construir más, movilizar viviendas vacías y regular los alquileres de temporada y turísticos para que no resten vivienda habitual.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 7-8."
+    }
+   ],
+   "bng": [
+    {
+     "t": "Dedicar el 3 % de los Presupuestos del Estado a un parque público de alquiler permanente y frenar el paso de vivienda habitual a alquiler de temporada, por habitaciones y turístico.",
+     "f": "BNG_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 12."
+    }
+   ],
+   "cc": [
+    {
+     "t": "Un fondo estatal de ocho años para cofinanciar vivienda pública y asequible, con una parte para Canarias según sus necesidades, y que las islas puedan limitar el alquiler vacacional donde haya presión.",
+     "f": "CC_DOC",
+     "como": "parcial",
+     "nota": "Programa, pág. 10-11."
     }
    ]
   },
@@ -302,6 +323,12 @@
     }
    ],
    "vox": [
+    {
+     "t": "Simplificar trámites (ventanilla única, silencio administrativo positivo, fin de la cita previa), suspender el acuerdo con Mercosur y más inversión en infraestructuras.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 4."
+    },
     {
      "t": "Bajar impuestos y el coste de la energía; quitar subvenciones a partidos, sindicatos y patronal y reducir la Administración.",
      "f": "FORBES",
@@ -372,6 +399,12 @@
    ],
    "vox": [
     {
+     "t": "Prohibir las regularizaciones masivas, repatriar a quien esté en situación irregular, deportar a quien cometa delitos graves, devolver a sus familias a los menores que llegan solos y revisar las nacionalidades concedidas de forma fraudulenta.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 5."
+    },
+    {
      "t": "Devolver a sus países a todos los inmigrantes en situación irregular si Vox tiene «fuerza suficiente» después del 29N.",
      "f": "VOX_GARRIGA",
      "como": "no",
@@ -401,11 +434,28 @@
      "nota": "Programa electoral, pág. 14 y 16."
     }
    ],
+   "pnv": [
+    {
+     "t": "Más competencias para Euskadi en migración y extranjería y que la Ertzaintza asuma funciones de extranjería.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 24."
+    }
+   ],
+   "bng": [
+    {
+     "t": "Facilitar la regularización de las personas inmigrantes y reforzar la inspección de trabajo contra la explotación.",
+     "f": "BNG_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 22-23."
+    }
+   ],
    "cc": [
     {
-     "t": "Que el Estado y la Unión Europea pongan más medios para que Canarias no afronte sola la llegada de migrantes.",
-     "f": "CC_PROG",
-     "como": "no"
+     "t": "Que el Estado y la Unión Europea se responsabilicen de la política migratoria y que la acogida de menores migrantes se reparta entre comunidades.",
+     "f": "CC_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 5."
     }
    ]
   },
@@ -427,6 +477,12 @@
     }
    ],
    "vox": [
+    {
+     "t": "Menos burocracia para trabajar y emprender y un plan para que vuelvan los españoles que emigraron por falta de oportunidades.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 4-5."
+    },
     {
      "t": "En contra de bajar la jornada por ley; bajar cotizaciones para que suban los sueldos netos; sin cuota de autónomo para quien gane menos que el salario mínimo.",
      "f": "FORBES",
@@ -463,18 +519,28 @@
      "nota": "Programa electoral, pág. 26."
     }
    ],
+   "pnv": [
+    {
+     "t": "Que Euskadi pueda fijar su propio salario mínimo, siempre por encima del estatal, y que prevalezcan los convenios vascos cuando sean más favorables.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 9."
+    }
+   ],
    "bng": [
     {
-     "t": "Subir el salario mínimo al 60 % del salario medio y bajar poco a poco la jornada a 35 horas sin recorte de sueldo.",
-     "f": "BNG_DEC",
-     "como": "no"
+     "t": "Jornada de 35 horas sin bajar el sueldo, avanzando hacia 32 horas en cuatro días, y salario mínimo en el 60 % del salario medio.",
+     "f": "BNG_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 15."
     }
    ],
    "cc": [
     {
-     "t": "Un plan de empleo de cuatro años para menores de 35 años.",
-     "f": "CC_PROG",
-     "como": "no"
+     "t": "Que el Estado financie un plan de empleo de cuatro años para menores de 35.",
+     "f": "CC_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 14."
     }
    ]
   },
@@ -497,6 +563,12 @@
    ],
    "vox": [
     {
+     "t": "Un plan nacional contra las listas de espera, una tarjeta sanitaria única y atender a los inmigrantes en situación irregular solo en urgencias vitales.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 3."
+    },
+    {
      "t": "Que el Estado recupere las competencias de sanidad de las comunidades y más inversión en atención primaria.",
      "f": "EDB23",
      "como": "no",
@@ -511,7 +583,15 @@
      "nota": ""
     }
    ],
-   "podemos": []
+   "podemos": [],
+   "pnv": [
+    {
+     "t": "Formar más médicos especialistas donde hacen falta, adaptando las plazas MIR a las necesidades reales.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 32."
+    }
+   ]
   },
   "pensiones": {
    "psoe": [
@@ -544,6 +624,12 @@
    ],
    "vox": [
     {
+     "t": "Garantizar la sostenibilidad del sistema de pensiones, sin más detalle.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 4."
+    },
+    {
      "t": "Rechaza privatizarlas y promete pagarlas «al precio que sea y como sea».",
      "f": "QUE",
      "como": "no",
@@ -573,18 +659,35 @@
      "nota": "Programa electoral, pág. 26-27."
     }
    ],
-   "bng": [
-    {
-     "t": "Pensiones mínimas del 60 % del salario medio y volver a la jubilación ordinaria a los 65 años.",
-     "f": "BNG_DEC",
-     "como": "no"
-    }
-   ],
    "compromis": [
     {
      "t": "Proteger las pensiones en la Constitución.",
      "f": "CFV_MICO",
      "como": "no"
+    }
+   ],
+   "pnv": [
+    {
+     "t": "Subir las pensiones cada año con el IPC, mejorar las mínimas y no contributivas y quitar la penalización por jubilación anticipada a quien haya cotizado más de 40 años.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 30."
+    }
+   ],
+   "bng": [
+    {
+     "t": "Pensiones mínimas iguales al salario mínimo, subirlas con el IPC real, volver a la jubilación ordinaria a los 65 años y derogar las reformas de 2011, 2013, 2021 y 2023.",
+     "f": "BNG_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 18-19."
+    }
+   ],
+   "cc": [
+    {
+     "t": "Que los complementos de renta que da Canarias no reduzcan las pensiones no contributivas ni paguen impuestos.",
+     "f": "CC_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 10."
     }
    ]
   },
@@ -618,6 +721,12 @@
     }
    ],
    "vox": [
+    {
+     "t": "Una rebaja fiscal «histórica» para familias, trabajadores, autónomos y empresas, rebajas por número de hijos y un impuesto a las remesas que se envían al extranjero.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 3-4."
+    },
     {
      "t": "Impuesto de sociedades al 15 %, bajar la renta y el IVA; en 2023 proponía un 15 % de renta para sueldos de menos de 70.000 € y quitar los impuestos de sucesiones, donaciones y patrimonio.",
      "f": "FORBES",
@@ -653,6 +762,22 @@
      "como": "parcial",
      "nota": "Programa electoral, pág. 21-22."
     }
+   ],
+   "pnv": [
+    {
+     "t": "Estudiar un IVA cero o superreducido para alimentos básicos y revisar el de la luz, el gas, los combustibles y el transporte público.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 21."
+    }
+   ],
+   "bng": [
+    {
+     "t": "Una renta más progresiva: que pague más quien más gana y que las rentas del capital tributen más que ahora.",
+     "f": "BNG_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 43."
+    }
    ]
   },
   "educacion": {
@@ -673,6 +798,12 @@
     }
    ],
    "vox": [
+    {
+     "t": "Igualar las oportunidades educativas de los alumnos españoles y sacar la ideología de las aulas.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 3."
+    },
     {
      "t": "Que el Estado recupere las competencias de educación, una ley educativa nacional nueva y un único examen de acceso a la universidad.",
      "f": "EDB23",
@@ -702,6 +833,14 @@
      "f": "ERC_PROG",
      "como": "no",
      "nota": "Programa electoral, pág. 10-11."
+    }
+   ],
+   "pnv": [
+    {
+     "t": "Proteger las competencias de Euskadi en educación, sin interferencias del Estado.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 10."
     }
    ]
   },
@@ -753,32 +892,35 @@
      "nota": "Programa electoral, pág. 8 y 12."
     }
    ],
-   "bng": [
-    {
-     "t": "Más autogobierno para Galicia y que la autopista AP-9 sea pública, gratuita y gestionada desde Galicia.",
-     "f": "BNG_DEC",
-     "como": "no"
-    }
-   ],
-   "cc": [
-    {
-     "t": "Desarrollar el Estatuto, separar el dinero del Régimen Económico y Fiscal canario de la financiación ordinaria y mantener el 75 % de descuento de residente en avión y barco.",
-     "f": "CC_PROG",
-     "como": "no"
-    }
-   ],
-   "pnv": [
-    {
-     "t": "Derecho de Euskadi a decidir su futuro, reconocimiento nacional y un nuevo estatus político; cumplir entero el Estatuto de Gernika y una relación bilateral con el Estado.",
-     "f": "PNV_PROG",
-     "como": "no"
-    }
-   ],
    "compromis": [
     {
      "t": "Una financiación autonómica justa para la Comunitat Valenciana y perdonar parte de su deuda.",
      "f": "CFV_MICO",
      "como": "no"
+    }
+   ],
+   "pnv": [
+    {
+     "t": "Cumplir entero el Estatuto de Gernika con todas las transferencias pendientes, una relación bilateral con el Estado y el reconocimiento nacional de Euskadi.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 38."
+    }
+   ],
+   "bng": [
+    {
+     "t": "Una Hacienda gallega con política fiscal propia y competencias plenas para Galicia en relaciones laborales.",
+     "f": "BNG_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 9."
+    }
+   ],
+   "cc": [
+    {
+     "t": "Que el dinero del Régimen Económico y Fiscal no se cuente como financiación ordinaria de sanidad, educación o servicios sociales, y mantener el 75 % de descuento de residente en avión y barco.",
+     "f": "CC_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 8 y 17."
     }
    ]
   },
@@ -806,6 +948,12 @@
     }
    ],
    "vox": [
+    {
+     "t": "Energía a precio de coste, recuperar el Plan Nuclear Nacional y quitar los topes a la inversión en redes eléctricas.",
+     "f": "VOX_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 4."
+    },
     {
      "t": "Alargar las nucleares y construir otras nuevas; bajar impuestos a la energía; derogar la ley de cambio climático.",
      "f": "FORBES",
@@ -843,11 +991,20 @@
      "nota": "Programa electoral, pág. 22 y 27-28."
     }
    ],
+   "pnv": [
+    {
+     "t": "Acelerar las inversiones en redes eléctricas y revisar la planificación energética del Estado pensando en la industria.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 15."
+    }
+   ],
    "bng": [
     {
-     "t": "Una tarifa eléctrica gallega y que Galicia tenga competencias en energía.",
-     "f": "BNG_DEC",
-     "como": "no"
+     "t": "Una tarifa eléctrica gallega que tenga en cuenta que Galicia produce más electricidad de la que consume.",
+     "f": "BNG_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 54."
     }
    ]
   },
@@ -897,6 +1054,22 @@
      "f": "ERC_PROG",
      "como": "no",
      "nota": "Programa electoral, pág. 8 y 15."
+    }
+   ],
+   "pnv": [
+    {
+     "t": "Que los juicios terminen en el Tribunal Superior de Justicia del País Vasco, salvo lo reservado al Supremo, y crear un Consejo Vasco de Justicia.",
+     "f": "PNV_DOC",
+     "como": "no",
+     "nota": "Programa, pág. 39."
+    }
+   ],
+   "bng": [
+    {
+     "t": "Inhabilitar directamente a los cargos públicos que cometan fraude fiscal o usen paraísos fiscales.",
+     "f": "BNG_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 41."
     }
    ]
   }
