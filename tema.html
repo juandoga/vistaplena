@@ -649,6 +649,8 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .tema-eti{font-size:var(--t-xs);text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--gris);align-self:center}
 .chip.vivo{background:var(--tinta);color:var(--fondo)}
 .tema-sub{margin:0;color:var(--gris);font-size:var(--t-s)}
+.tema-seguir{margin:12px 0 0}.c-btn.seguir{cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:40px;font:600 var(--t-s) var(--ui)}
+.c-btn.seguir[aria-pressed="true"]{background:var(--tinta);color:var(--fondo);border-color:var(--tinta)}
 .tema-cuerpo{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:48px;align-items:start}
 @media (max-width:880px){.tema-cuerpo{grid-template-columns:1fr;gap:32px}}
 .tema-ultimo{display:grid;gap:12px;padding-bottom:32px;border-bottom:1px solid var(--linea)}
@@ -813,7 +815,7 @@ h2 .info{margin-left:6px;vertical-align:.25em}
   </div>
   <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
-<script src="comun.js?v=6f5e54aa"></script>
+<script src="comun.js?v=752e9b43"></script>
 <script>
 // Página de un tema: un asunto de varios días que reúne varias historias (cada historia es un hecho distinto, con su cobertura)
 // Un tema grande (asunto, lo agrupa la IA) lleva una «a» delante del número: /tema/protestas-en-francia-a12/
@@ -860,6 +862,7 @@ function pintar(t, H, S = []){
       <h1>${esc(t.nombre)}</h1>
       ${t.descripcion ? `<p class="tema-desc">${esc(t.descripcion)}</p>` : ""}
       <p class="tema-sub">${H.length} noticias desde ${dia(t.inicio).toLowerCase()} · última novedad ${haceCuanto(t.actualizado)}</p>
+      <p class="tema-seguir"><button type="button" class="c-btn seguir" id="seguirTema" aria-pressed="false" hidden>Seguir este tema</button></p>
     </header>
     <div class="tema-cuerpo">
       <div>
@@ -878,7 +881,7 @@ function pintar(t, H, S = []){
         ${S.length ? `<details class="tema-sueltos">
           <summary>${S.length === 1 ? "Otro titular suelto sobre el tema" : `Otros ${Math.min(S.length, 15)} titulares sueltos sobre el tema`}</summary>
           <p class="aparte">Titulares que ningún otro medio ha contado igual, así que no forman una noticia propia ni entran en los porcentajes.</p>
-          <ol>${S.slice(0, 15).map(a => `<li><time datetime="${a.publicado}">${hora(a.publicado)}</time><div><span class="md"><i style="background:${a.medios.orientacion < 0 ? "var(--izq)" : a.medios.orientacion > 0 ? "var(--der)" : "var(--cen)"}"></i>${esc(a.medios.nombre)} · ${ETIQUETA[a.medios.orientacion]}</span><a href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.titulo)}</a></div></li>`).join("")}</ol>
+          <ol>${S.slice(0, 15).map(a => `<li><time datetime="${a.publicado}">${hora(a.publicado)}</time><div><span class="md"><i style="background:${a.medios.orientacion < 0 ? "var(--izq)" : a.medios.orientacion > 0 ? "var(--der)" : "var(--cen)"}"></i>${esc(a.medios.nombre)} · ${ETIQUETA[a.medios.orientacion]}</span><a href="${esc(a.url)}" data-m="${esc(a.medios.nombre)}" target="_blank" rel="noopener">${esc(a.titulo)}</a></div></li>`).join("")}</ol>
         </details>` : ""}
         </div>
       </div>
@@ -890,6 +893,7 @@ function pintar(t, H, S = []){
         <p class="aparte">${esAsunto ? "Este tema lo agrupa una IA: junta las noticias que nacen del mismo origen aunque cambien de protagonista. " : ""}Un tema reúne varias noticias sobre el mismo asunto. Cada noticia es un hecho distinto, con su propia cobertura y sus propios titulares. <a href="metodologia.html#temas">Cómo formamos los temas</a>.</p>
       </aside>
     </div>`;
+  botonSeguir(document.getElementById("seguirTema"), idCrudo);
 }
 
 // «Lo que más cuenta cada lado» (30/10): dentro de un tema, qué noticias publica sobre todo un lado. Los titulares de un mismo

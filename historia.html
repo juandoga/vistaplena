@@ -828,7 +828,7 @@ h2 .info{margin-left:6px;vertical-align:.25em}
   <div class="wrap pie-fin"><span>© 2026 Vista Plena · <a class="pie-gestion" href="gestion.html">Gestión</a></span><span>Los titulares y las fotos pertenecen a cada medio y enlazan a la noticia original.</span></div>
 </footer>
 <script src="temas.js?v=5df45ce8"></script>
-<script src="comun.js?v=6f5e54aa"></script>
+<script src="comun.js?v=752e9b43"></script>
 <script>
 const id = Number(new URLSearchParams(location.search).get("id") || document.body.dataset.id);
 const art = document.getElementById("art");
@@ -949,8 +949,8 @@ function fuentes(h){
   for (const a of porMedio(h)) g[lado(a.o)].push(a);
   // Titulares de este lado que hablan de lo mismo con otro enfoque: no entran en el reparto, pero se muestran
   const otros = k => (h.tb || []).filter(a => lado(a.o) === k);
-  const li = a => `<li><span class="medio">${esc(a.m)}${a.p ? ` · ${hora(a.p)}` : ""}</span><a href="${esc(a.u)}" target="_blank" rel="noopener">${esc(a.t)}</a></li>`;
-  const medio = a => `<a href="${esc(a.u)}" target="_blank" rel="noopener">${esc(a.m)}</a>`;
+  const li = a => `<li><span class="medio">${esc(a.m)}${a.p ? ` · ${hora(a.p)}` : ""}</span><a href="${esc(a.u)}" data-m="${esc(a.m)}" target="_blank" rel="noopener">${esc(a.t)}</a></li>`;
+  const medio = a => `<a href="${esc(a.u)}" data-m="${esc(a.m)}" target="_blank" rel="noopener">${esc(a.m)}</a>`;
   const y = l => l.length < 2 ? l.join("") : `${l.slice(0, -1).join(", ")} y ${l[l.length - 1]}`;
   const VISIBLES = 3;
   const nombre = k => k === "cen" ? "Centro" : LADO[k][0].toUpperCase() + LADO[k].slice(1);
@@ -1014,7 +1014,7 @@ function avisar(){
 function pintar(h){
   const secciones = (window.seccionesDe ? window.seccionesDe(h) : []).map(s => window.SECCIONES.find(x => x.id === s)).filter(Boolean);
   const ent = h.ent ? porMedio(h).find(a => a.m === h.entm) : null;
-  const fuenteEnt = ent ? `<a href="${esc(ent.u)}" target="_blank" rel="noopener">${esc(h.entm)}</a>` : esc(h.entm || "");
+  const fuenteEnt = ent ? `<a href="${esc(ent.u)}" data-m="${esc(h.entm)}" target="_blank" rel="noopener">${esc(h.entm)}</a>` : esc(h.entm || "");
   document.title = `${h.t} · Vista Plena`;
   // Orden (20/10): qué ha pasado, quién la cuenta, cómo la titula cada lado; lo demás, plegado al final
   art.innerHTML = `
