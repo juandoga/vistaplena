@@ -522,6 +522,15 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .tema-recien{margin:10px 0 0;font-size:var(--t-s);color:var(--texto)}.tema-recien a{color:var(--tinta);font-weight:600}
 .tema-sueltos summary{cursor:pointer;font-weight:600;color:var(--tinta);padding:6px 0}
 .ia-otro{color:var(--aviso);font-weight:700}.ia-mismo{color:var(--gris);font-weight:600}
+.dud-peso{margin:2px 0 0;font-size:var(--t-xs);color:var(--gris)}
+.acierto{margin:6px 0 0;font-size:var(--t-s);color:var(--texto)}.acierto b{color:var(--tinta)}
+.mu{display:grid;gap:6px}.mu p{margin:0}
+.mu .m{font-size:var(--t-xs);color:var(--gris)}
+.mu .mu-que{font-size:var(--t-s);color:var(--texto)}.mu .mu-que b{color:var(--tinta)}
+.mu .mu-tit{color:var(--tinta);font-family:var(--titular);font-size:1.12rem;font-weight:500;line-height:1.3}
+.mu-otros{list-style:none;margin:0;padding:0 0 0 12px;border-left:2px solid var(--linea);display:grid;gap:3px;font-size:var(--t-s);color:var(--texto)}
+.mu-otros .m{margin-right:4px}
+.mu-hecho{font-size:var(--t-s);color:var(--tinta);font-weight:600}
 .gestion section{padding-top:32px}
 .gestion h2 .n{font-weight:400;font-size:var(--t-s);color:var(--gris);margin-left:8px}
 .aviso-g{border-top:1px solid var(--linea);padding:14px 0;display:grid;gap:6px}
@@ -672,9 +681,15 @@ h2 .info{margin-left:6px;vertical-align:.25em}
   </div>
 
   <div id="panel" hidden>
+    <section id="muestraG">
+      <h2>Muestra de hoy <span class="n" id="nMuestra"></span></h2>
+      <p class="aparte">La IA decide sola: saca de cada noticia los titulares que cuentan otro hecho y deja los demás. Para saber cuánto acierta, cada día salen 10 casos al azar de los días anteriores: 5 que sacó y 5 que dejó. Di si acertó. Si se equivocó, se corrige en ese momento.</p>
+      <p class="acierto" id="aciertoIA"></p>
+      <div id="listaMuestra"></div>
+    </section>
     <section id="dudosas">
-      <h2>Titulares que quizá no encajan <span class="n" id="nDudosas"></span></h2>
-      <p class="aparte">La revisión automática (cada hora) cree que estos titulares cuentan otro hecho distinto al de su historia. Una IA da también su opinión, en prueba: tus decisiones sirven para medir cuánto acierta. Si es así, pulsa «Sacar» y no volverá a entrar en ella. Si está bien donde está, pulsa «Está bien».</p>
+      <h2>Lo que la IA no ha podido decidir <span class="n" id="nDudosas"></span></h2>
+      <p class="aparte">Titulares que la revisión automática marcó y la IA no ha resuelto: casi siempre porque sospecha del título de la noticia, o porque aún no los ha mirado. Primero las noticias en portada y con más medios. «Sacar» lo quita de la noticia y no vuelve a entrar; «Está bien» lo deja donde está.</p>
       <div id="listaDudosas"></div>
     </section>
     <section id="fusionesG">
@@ -819,6 +834,36 @@ document.getElementById("listaFus").addEventListener("click", async e => {
   try { const r = await llamar(null, { accion: "separar", de, a }); st.textContent = `Separadas (${r.n} titulares vuelven a su noticia).`; setTimeout(pintarFus, 1500); }
   catch (err) { st.textContent = err.detalle || "No se ha podido separar."; b.disabled = false; }
 });
+async function pintarMuestra(){
+  const M = await llamar("muestra").catch(() => null);
+  const el = document.getElementById("listaMuestra"), ac = document.getElementById("aciertoIA");
+  if (!M) { el.innerHTML = `<p class="aparte">No se ha podido cargar la muestra.</p>`; return; }
+  const frase = (x, verbo) => x.n ? `al ${verbo} acertó <b>${x.ok} de ${x.n}</b> (${Math.round(100 * x.ok / x.n)} %)` : `al ${verbo}, aún sin respuestas`;
+  ac.innerHTML = M.acierto.sacar.n + M.acierto.bien.n ? `Últimos 30 días: ${frase(M.acierto.sacar, "sacar")} · ${frase(M.acierto.bien, "dejar")}.` : "Todavía no hay respuestas: con las de hoy empieza la cuenta.";
+  const hechos = M.casos.filter(c => c.respondido).length;
+  document.getElementById("nMuestra").textContent = M.casos.length ? `${hechos} de ${M.casos.length} respondidos` : "";
+  el.innerHTML = M.casos.length ? M.casos.map(c => `<article class="dud-h mu" id="mu${c.articulo_id}">
+    <p class="mu-que">${c.decision === "sacar" ? "La IA lo <b>sacó</b> de esta noticia porque cree que cuenta otro hecho" : "La IA lo <b>dejó</b> en esta noticia porque cree que cuenta el mismo hecho"}.</p>
+    <p class="m">Titular · ${esc(c.medio || "")}</p>
+    <p><a class="mu-tit" href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.titulo)}</a></p>
+    <p class="m">Noticia</p>
+    <p><a class="dud-tit" href="historia.html?id=${c.historia_id}" target="_blank" rel="noopener">${esc(c.historia || "Noticia " + c.historia_id)}</a></p>
+    ${c.otros.length ? `<ul class="mu-otros">${c.otros.map(o => `<li><span class="m">${esc(o.medio || "")}</span>${esc(o.titulo)}</li>`).join("")}</ul>` : ""}
+    ${c.respondido ? `<p class="mu-hecho">${c.acierto ? "Acertó." : "Se equivocó (ya corregido)."}</p>`
+      : `<span class="dud-bot"><button class="boton secundario" type="button" data-mu="${c.articulo_id}" data-ok="1">Acertó</button>
+        <button class="boton secundario" type="button" data-mu="${c.articulo_id}" data-ok="0">Se equivocó</button></span> <span class="m" role="status"></span>`}
+  </article>`).join("") : `<p class="aparte">Hoy no hay casos: la IA no decidió nada en los tres días anteriores.</p>`;
+}
+document.getElementById("listaMuestra").addEventListener("click", async e => {
+  const b = e.target.closest("[data-mu]"); if (!b) return;
+  const art = document.getElementById("mu" + b.dataset.mu), st = art.querySelector("[role=status]");
+  art.querySelectorAll("button").forEach(x => x.disabled = true); st.textContent = "Guardando…";
+  try {
+    const r = await llamar(null, { accion: "muestra", articulo_id: Number(b.dataset.mu), acierto: b.dataset.ok === "1" });
+    st.textContent = r.nota || "Apuntado.";
+    setTimeout(pintarMuestra, 1200);
+  } catch (err) { st.textContent = err.detalle || "No se ha podido guardar."; art.querySelectorAll("button").forEach(x => x.disabled = false); }
+});
 async function pintarCorr(){
   const C = await llamar("correcciones").catch(() => []);
   document.getElementById("listaCorr").innerHTML = C.map(c => `<li>${fecha(c.fecha)} · <b>${esc(c.tipo)}</b>${c.titulo ? ` · ${esc(c.titulo)}` : ""}: ${esc(c.que)} <button class="boton secundario" type="button" data-corr="${c.id}">Quitar</button></li>`).join("");
@@ -864,13 +909,14 @@ document.getElementById("filasAsuntos").addEventListener("click", async e => {
 async function cargar(){
   try {
     const [avisos, temas, dudosas] = await Promise.all([llamar("avisos"), llamar("temas"), llamar("dudosas").catch(() => [])]);
-    pintarCorr(); pintarFus(); pintarAsuntos();
+    pintarCorr(); pintarFus(); pintarAsuntos(); pintarMuestra();
     // Titulares dudosos, agrupados por historia
     const porH = new Map();
     for (const d of dudosas) { const l = porH.get(d.historia_id) || []; l.push(d); porH.set(d.historia_id, l); }
     document.getElementById("nDudosas").textContent = dudosas.length ? `${dudosas.length} por revisar` : "";
     document.getElementById("listaDudosas").innerHTML = porH.size ? [...porH].map(([hid, l]) => `<article class="dud-h">
       <a class="dud-tit" href="historia.html?id=${hid}" target="_blank" rel="noopener">${esc(l[0].historia)}</a>
+      <p class="dud-peso">${l[0].portada ? "En portada" : "Fuera de portada"}${l[0].medios ? ` · ${l[0].medios} medios` : ""}${l.some(d => /título de la noticia/.test(d.motivo || "")) ? " · <b class='ia-otro'>La IA sospecha del título de la noticia, no de cada titular</b>" : ""}</p>
       <ul>${l.map(d => `<li id="dud${d.articulo_id}"><span class="m">${esc(d.medio || "")} · ${esc(d.motivo || "")}${d.ia === "otro" ? ` · <b class="ia-otro">La IA dice: otro hecho</b>` : d.ia === "mismo" ? ` · <b class="ia-mismo">La IA dice: mismo hecho</b>` : ""}</span>
         <a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.titulo)}</a>
         <span class="dud-bot"><button class="boton secundario" type="button" data-dud="${d.articulo_id}" data-dec="sacar">Sacar</button>

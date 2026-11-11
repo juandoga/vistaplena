@@ -17,8 +17,12 @@
 // GET  ?q=temas            temas activos, con su nombre automático y el manual
 // POST {accion:"revisar", id, revisado}
 // POST {accion:"tema", id, nombre_manual, oculto}
-// GET  ?q=dudosas          titulares que la revisión automática cree que no encajan en su historia
+// GET  ?q=dudosas          titulares que la revisión automática cree que no encajan en su historia y la IA no ha
+//                          podido resolver; primero los de las noticias con más medios
 // POST {accion:"dudosa", articulo_id, decision:"sacar"|"bien"}
+// GET  ?q=muestra          muestra del día: 5 titulares que la IA sacó y 5 que dio por buenos (al azar, de los 3 días
+//                          anteriores), y cuánto ha acertado en las muestras de los últimos 30 días
+// POST {accion:"muestra", articulo_id, acierto}   si no acertó, se corrige: vuelve a su noticia o sale de ella
 // POST {accion:"salir"}
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 import { createRemoteJWKSet, jwtVerify } from "npm:jose@5.9.6";
@@ -32,6 +36,37 @@ const json = (d: unknown, status = 200) => new Response(JSON.stringify(d), { sta
 const huella = async (s: string) => Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))).map((b) => b.toString(16).padStart(2, "0")).join("");
 const aleatorio = () => btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 const ahora = () => new Date().toISOString();
+// Día en Madrid («2026-11-11») y el instante en que empieza
+const diaMadrid = (d: Date) => d.toLocaleDateString("sv-SE", { timeZone: "Europe/Madrid" });
+const inicioDiaMadrid = (dia: string) => {
+  const ref = new Date(`${dia}T12:00:00Z`);
+  const desfase = Date.parse(ref.toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).replace(" ", "T") + "Z") - ref.getTime();
+  return Date.parse(`${dia}T00:00:00Z`) - desfase;
+};
+
+// Sacar un titular de su noticia (decisión en la gestión): no vuelve a entrar y queda en el registro público de correcciones
+async function sacarTitular(articulo: number, historia: number) {
+  await db.from("articulos").update({ historia_id: null }).eq("id", articulo).eq("historia_id", historia);
+  await db.from("historia_vetos").upsert({ articulo_id: articulo, historia_id: historia }, { onConflict: "articulo_id,historia_id", ignoreDuplicates: true });
+  const { data: art } = await db.from("articulos").select("titulo, medios(nombre)").eq("id", articulo).maybeSingle();
+  const { data: his } = await db.from("historias").select("titulo").eq("id", historia).maybeSingle();
+  await db.from("correcciones").insert({ tipo: "Titular mal agrupado", historia_id: historia, titulo: his?.titulo ?? null,
+    que: `Sacamos el titular de ${(art as any)?.medios?.nombre ?? "un medio"} «${String(art?.titulo ?? "").slice(0, 160)}» porque contaba otro hecho.` });
+  await db.from("historias_dudosas").update({ decision: "sacar", decidio: "gestion" }).eq("articulo_id", articulo);
+}
+
+// Devolver a su noticia un titular que la IA sacó por error
+async function devolverTitular(articulo: number, historia: number) {
+  await db.from("historias_dudosas").update({ decision: "bien", decidio: "gestion" }).eq("articulo_id", articulo);
+  await db.from("historia_vetos").delete().eq("articulo_id", articulo).eq("historia_id", historia);
+  const { data: art } = await db.from("articulos").select("historia_id").eq("id", articulo).maybeSingle();
+  const { data: his } = await db.from("historias").select("id").eq("id", historia).maybeSingle();
+  if (!art) return "El titular ya no está en la base de datos.";
+  if (art.historia_id && art.historia_id !== historia) return "Ahora está en otra noticia: no se ha movido.";
+  if (!his) return "Esa noticia ya no existe.";
+  await db.from("articulos").update({ historia_id: historia, ia_revisado: true }).eq("id", articulo);
+  return "Ha vuelto a su noticia.";
+}
 
 async function pedirEnlace() {
   const respuesta = json({ ok: true }); // siempre la misma respuesta, se mande o no
@@ -139,14 +174,55 @@ Deno.serve(async (req) => {
     }
     if (req.method === "GET" && q === "dudosas") {
       const { data: ds } = await db.from("historias_dudosas").select("articulo_id, historia_id, puntuacion, motivo, creado, ia")
-        .is("decision", null).gt("creado", new Date(Date.now() - 3 * 864e5).toISOString()).order("historia_id").limit(300);
+        .is("decision", null).gt("creado", new Date(Date.now() - 3 * 864e5).toISOString()).order("creado", { ascending: false }).limit(500);
       const aIds = (ds ?? []).map((d) => d.articulo_id), hIds = [...new Set((ds ?? []).map((d) => d.historia_id))];
       const { data: arts } = aIds.length ? await db.from("articulos").select("id, titulo, url, historia_id, medios(nombre)").in("id", aIds) : { data: [] as any[] };
       const { data: hs } = hIds.length ? await db.from("historias").select("id, titulo").in("id", hIds) : { data: [] as any[] };
       const A = new Map((arts ?? []).map((a: any) => [a.id, a])), Hm = new Map((hs ?? []).map((h: any) => [h.id, h.titulo]));
-      // Solo los que siguen en esa historia (si ya salieron por otra vía, no se proponen)
-      return json((ds ?? []).filter((d) => A.get(d.articulo_id)?.historia_id === d.historia_id && Hm.has(d.historia_id))
-        .map((d) => ({ ...d, titulo: A.get(d.articulo_id).titulo, url: A.get(d.articulo_id).url, medio: A.get(d.articulo_id).medios?.nombre, historia: Hm.get(d.historia_id) })));
+      // Cuánto pesa cada noticia: si está en portada y con cuántos medios
+      const { data: pm } = hIds.length ? await db.from("portada_m").select("id, total").in("id", hIds) : { data: [] as any[] };
+      const P = new Map((pm ?? []).map((x: any) => [x.id, x.total]));
+      // Solo los que siguen en esa historia (si ya salieron por otra vía, no se proponen). Primero las noticias con más medios
+      const L = (ds ?? []).filter((d) => A.get(d.articulo_id)?.historia_id === d.historia_id && Hm.has(d.historia_id))
+        .map((d) => ({ ...d, titulo: A.get(d.articulo_id).titulo, url: A.get(d.articulo_id).url, medio: A.get(d.articulo_id).medios?.nombre, historia: Hm.get(d.historia_id),
+          portada: P.has(d.historia_id), medios: P.get(d.historia_id) ?? null }));
+      L.sort((x, y) => (Number(y.portada) - Number(x.portada)) || ((y.medios ?? 0) - (x.medios ?? 0)) || (y.historia_id - x.historia_id));
+      return json(L);
+    }
+    if (req.method === "GET" && q === "muestra") {
+      const dia = diaMadrid(new Date()), hoy0 = inicioDiaMadrid(dia);
+      // Candidatos: lo que la IA decidió sola en los 3 días anteriores (fijo durante todo el día)
+      const { data: cand } = await db.from("historias_dudosas").select("articulo_id, decision").eq("decidio", "ia")
+        .gte("ia_fecha", new Date(hoy0 - 3 * 864e5).toISOString()).lt("ia_fecha", new Date(hoy0).toISOString()).limit(5000);
+      const { data: resp } = await db.from("ia_muestra").select("articulo_id, decision_ia, acierto, dia").gte("dia", diaMadrid(new Date(Date.now() - 30 * 864e5)));
+      const ya = new Set((resp ?? []).map((x) => x.articulo_id));
+      const deHoy = (resp ?? []).filter((x) => x.dia === dia);
+      // Al azar, pero el mismo orden todo el día: huella de «día-titular»
+      const libres = await Promise.all((cand ?? []).filter((c) => !ya.has(c.articulo_id)).map(async (c) => ({ ...c, k: await huella(`${dia}-${c.articulo_id}`) })));
+      libres.sort((x, y) => (x.k < y.k ? -1 : 1));
+      const elegir = (dec: string) => {
+        const hechos = deHoy.filter((x) => x.decision_ia === dec);
+        return [...hechos.map((x) => ({ articulo_id: x.articulo_id, decision: dec, respondido: true, acierto: x.acierto })),
+          ...libres.filter((c) => c.decision === dec).slice(0, Math.max(0, 5 - hechos.length)).map((c) => ({ articulo_id: c.articulo_id, decision: dec, respondido: false, acierto: null }))];
+      };
+      const casos = [...elegir("sacar"), ...elegir("bien")];
+      const ids = casos.map((c) => c.articulo_id);
+      const { data: dd } = ids.length ? await db.from("historias_dudosas").select("articulo_id, historia_id, motivo").in("articulo_id", ids) : { data: [] as any[] };
+      const D = new Map((dd ?? []).map((x: any) => [x.articulo_id, x]));
+      const hIds = [...new Set((dd ?? []).map((x: any) => x.historia_id))];
+      const { data: arts } = ids.length ? await db.from("articulos").select("id, titulo, url, medios(nombre)").in("id", ids) : { data: [] as any[] };
+      const { data: hs } = hIds.length ? await db.from("historias").select("id, titulo").in("id", hIds) : { data: [] as any[] };
+      const { data: otros } = hIds.length ? await db.from("articulos").select("id, titulo, historia_id, medios(nombre)").in("historia_id", hIds).order("publicado", { ascending: false }).limit(1500) : { data: [] as any[] };
+      const A = new Map((arts ?? []).map((a: any) => [a.id, a])), Hm = new Map((hs ?? []).map((h: any) => [h.id, h.titulo]));
+      const cuenta = (dec: string) => { const l = (resp ?? []).filter((x) => x.decision_ia === dec); return { n: l.length, ok: l.filter((x) => x.acierto).length }; };
+      return json({ dia, acierto: { sacar: cuenta("sacar"), bien: cuenta("bien") },
+        casos: casos.filter((c) => A.has(c.articulo_id) && D.has(c.articulo_id)).map((c) => {
+          const d = D.get(c.articulo_id), a = A.get(c.articulo_id);
+          return { ...c, historia_id: d.historia_id, motivo: d.motivo, titulo: a.titulo, url: a.url, medio: a.medios?.nombre ?? null,
+            historia: Hm.get(d.historia_id) ?? null,
+            otros: (otros ?? []).filter((o: any) => o.historia_id === d.historia_id && o.id !== c.articulo_id && o.titulo !== Hm.get(d.historia_id)).slice(0, 3)
+              .map((o: any) => ({ titulo: o.titulo, medio: o.medios?.nombre ?? null })) };
+        }) });
     }
     if (req.method === "GET" && q === "fusiones") {
       // Noticias juntadas en los últimos 2 días (por recoger, verificar o a mano), para poder separarlas
@@ -204,17 +280,23 @@ Deno.serve(async (req) => {
       if (b.accion === "dudosa") {
         const { data: d } = await db.from("historias_dudosas").select("historia_id").eq("articulo_id", b.articulo_id).maybeSingle();
         if (!d) return json({ error: "No está en la lista" }, 404);
-        if (b.decision === "sacar") {
-          await db.from("articulos").update({ historia_id: null }).eq("id", b.articulo_id).eq("historia_id", d.historia_id);
-          await db.from("historia_vetos").upsert({ articulo_id: b.articulo_id, historia_id: d.historia_id }, { onConflict: "articulo_id,historia_id", ignoreDuplicates: true });
-          // Queda anotado en el registro público de correcciones (Quiénes somos)
-          const { data: art } = await db.from("articulos").select("titulo, medios(nombre)").eq("id", b.articulo_id).maybeSingle();
-          const { data: his } = await db.from("historias").select("titulo").eq("id", d.historia_id).maybeSingle();
-          await db.from("correcciones").insert({ tipo: "Titular mal agrupado", historia_id: d.historia_id, titulo: his?.titulo ?? null,
-            que: `Sacamos el titular de ${(art as any)?.medios?.nombre ?? "un medio"} «${String(art?.titulo ?? "").slice(0, 160)}» porque contaba otro hecho.` });
-        }
-        await db.from("historias_dudosas").update({ decision: b.decision === "sacar" ? "sacar" : "bien" }).eq("articulo_id", b.articulo_id);
+        // Al sacarlo queda anotado en el registro público de correcciones (Quiénes somos)
+        if (b.decision === "sacar") await sacarTitular(Number(b.articulo_id), d.historia_id);
+        else await db.from("historias_dudosas").update({ decision: "bien", decidio: "gestion" }).eq("articulo_id", b.articulo_id);
         return json({ ok: true });
+      }
+      if (b.accion === "muestra") {
+        const id = Number(b.articulo_id), acierto = b.acierto === true;
+        const { data: d } = await db.from("historias_dudosas").select("historia_id, decision, decidio").eq("articulo_id", id).maybeSingle();
+        if (!d) return json({ error: "No está en la lista" }, 404);
+        const { data: ya } = await db.from("ia_muestra").select("articulo_id").eq("articulo_id", id).maybeSingle();
+        if (ya) return json({ error: "Ya está respondido" }, 409);
+        if (d.decidio !== "ia" || (d.decision !== "sacar" && d.decision !== "bien")) return json({ error: "Este caso no lo decidió la IA" }, 400);
+        let nota = acierto ? "" : d.decision === "sacar" ? await devolverTitular(id, d.historia_id) : "Sacado de la noticia.";
+        if (!acierto && d.decision === "bien") await sacarTitular(id, d.historia_id);
+        const { error } = await db.from("ia_muestra").insert({ articulo_id: id, historia_id: d.historia_id, decision_ia: d.decision, acierto, dia: diaMadrid(new Date()) });
+        if (error) nota = `${nota} (no se ha podido apuntar: ${error.message})`.trim();
+        return json({ ok: true, nota });
       }
       if (b.accion === "correccion") {
         const que = String(b.que ?? "").trim().slice(0, 600), tipo = String(b.tipo ?? "").trim().slice(0, 60) || "Corrección";
