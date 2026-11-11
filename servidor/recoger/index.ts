@@ -172,7 +172,7 @@ async function depurar(url: URL) {
   const unaH = Number(url.searchParams.get("historia") || 0);
   const dias = Math.min(14, Number(url.searchParams.get("dias") || 2));
   const desdeD = new Date(Date.now() - dias * 864e5).toISOString();
-  let qh = db.from("historias").select("id, titulo, actualizada");
+  let qh = db.from("historias").select("id, titulo, actualizada, titulo_fijo");
   qh = unaH ? qh.eq("id", unaH) : qh.gte("actualizada", desdeD);
   const { data: hs } = await qh.limit(2000);
   if (!hs?.length) return { historias: 0 };
@@ -186,7 +186,7 @@ async function depurar(url: URL) {
       if (!data || data.length < 1000) break;
     }
   }
-  // Titulares que una persona ya dio por buenos en la gestión: no se vuelven a proponer ni a sacar
+  // Titulares que ya se dieron por buenos (en la gestión o, desde el 11/11, la IA): no se vuelven a proponer ni a sacar
   const buenos = new Set<number>();
   for (let i = 0; i < arts.length; i += 300) {
     const { data } = await db.from("historias_dudosas").select("articulo_id").eq("decision", "bien").in("articulo_id", arts.slice(i, i + 300).map((a) => a.id));
@@ -261,7 +261,8 @@ async function depurar(url: URL) {
       await db.from("articulos").update({ historia_id: null }).in("id", fuera.map((a) => a.id));
       await db.from("historia_vetos").upsert(fuera.map((a) => ({ articulo_id: a.id, historia_id: h.id })), { onConflict: "articulo_id,historia_id", ignoreDuplicates: true });
       const top = new Map<string, number>(); for (const i of nucleo) for (const w of L[i].w) top.set(w, (top.get(w) ?? 0) + 1);
-      await db.from("historias").update({ titulo: L[centro].titulo, resumen: L[centro].resumen, palabras: [...top.entries()].sort((x, y) => y[1] - x[1]).slice(0, 40).map((e) => e[0]) }).eq("id", h.id);
+      // Un título elegido por la IA o a mano (titulo_fijo) no se cambia
+      await db.from("historias").update({ ...(h.titulo_fijo ? {} : { titulo: L[centro].titulo, resumen: L[centro].resumen }), palabras: [...top.entries()].sort((x, y) => y[1] - x[1]).slice(0, 40).map((e) => e[0]) }).eq("id", h.id);
     }
     sacados += fuera.length;
   }
@@ -482,6 +483,9 @@ Deno.serve(async (req) => {
 
   // 3. Guardar: crear historias nuevas con 2+ medios y asignar artículos
   let asignados = 0, devueltos = 0;
+  // Noticias con el título elegido por la IA o a mano (11/11): al entrarles titulares nuevos no se les recalcula el título
+  const { data: conTituloFijo } = await db.from("historias").select("id").not("titulo_fijo", "is", null).gte("actualizada", new Date(Date.now() - 4 * 864e5).toISOString()).limit(5000);
+  const tituloFijo = new Set((conTituloFijo ?? []).map((x) => x.id));
   const devolver = new Map<number, number[]>();
   for (const g of grupos.values()) {
     const pendientes = g.ids.filter((id) => !porId.get(id)!.historia_id);
@@ -510,7 +514,7 @@ Deno.serve(async (req) => {
       const { data } = await db.from("historias").insert({ titulo: ref.titulo, resumen: ref.resumen, palabras: top, anterior: g.padre?.id ?? null }).select("id").single();
       g.id = data!.id;
     } else {
-      await db.from("historias").update({ titulo: ref.titulo, resumen: ref.resumen, palabras: top, actualizada: new Date().toISOString() }).eq("id", g.id);
+      await db.from("historias").update({ ...(tituloFijo.has(g.id) ? {} : { titulo: ref.titulo, resumen: ref.resumen }), palabras: top, actualizada: new Date().toISOString() }).eq("id", g.id);
     }
     // ia_revisado vuelve a vacío: verificar mira cada titular que entra en una noticia, también uno viejo que la IA sacó
     // de otra noticia y ahora se agrupa aquí (5/11: «Irán celebra la derrota de Trump» acabó en la noticia de Vance)
