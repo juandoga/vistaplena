@@ -228,7 +228,7 @@ def cuerpo_noticia(h, tema, archivada=False):
         lista = [a for a in m if lado(a["orientacion"]) == k]
         items = "".join(
             f'<li><span class="medio">{esc(a["medio"])} <span class="ficha">{ETIQUETA[a["orientacion"]]}</span></span>'
-            f'<a href="{esc(a["url"])}" target="_blank" rel="noopener">{esc(a["titulo"])}</a></li>' for a in lista)
+            f'<a href="{esc(a["url"])}" data-m="{esc(a["medio"])}" target="_blank" rel="noopener">{esc(a["titulo"])}</a></li>' for a in lista)
         bloques += (f'<div class="bloque"><div class="lado eti">{nombres[k]} · {len(lista)}</div>'
                     + (f"<ul>{items}</ul>" if lista else '<p class="vacio">Ningún medio de este lado la ha publicado.</p>') + "</div>")
     ent = (f'<section class="hist-que"><h2>Qué ha pasado</h2><blockquote>{esc(h["entradilla"])}</blockquote>'
@@ -542,7 +542,7 @@ def boletin_ejemplo(historias, tpl_t, ahora):
         uno = {}
         for a in h.get("articulos") or []:
             uno.setdefault(lado(a["orientacion"]), a)
-        return "".join(f'<li><b>{nombres[k]}</b> · {esc(uno[k]["medio"])}: <a href="{esc(uno[k]["url"])}" target="_blank" rel="noopener">{esc(uno[k]["titulo"])}</a></li>'
+        return "".join(f'<li><b>{nombres[k]}</b> · {esc(uno[k]["medio"])}: <a href="{esc(uno[k]["url"])}" data-m="{esc(uno[k]["medio"])}" target="_blank" rel="noopener">{esc(uno[k]["titulo"])}</a></li>'
                        for k in ("izq", "cen", "der") if k in uno)
     piezas = "".join(
         f'<li class="bol-pieza"><span class="m">{i + 1} · {h["total"]} medios</span>'

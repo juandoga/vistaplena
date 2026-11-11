@@ -57,6 +57,7 @@ La clave que aparece en estas direcciones es pública y solo permite leer.
 | `servidor/congreso/` | Descarga las votaciones del Pleno del Congreso (datos abiertos) con el voto de cada partido; la función SQL `etiquetar_votaciones()` las clasifica por temas para la guía 29N |
 | `servidor/boletin/` | Programa de los boletines por correo: el semanal (viernes a las 8:00) y el personal de cada mañana (7:30), con lo que no han publicado los medios que el lector dice leer. Los medios solo se guardan con su consentimiento expreso y se borran al darse de baja o pasar al semanal |
 | `boletin-medios.html` | Página para cambiar los medios y la frecuencia del boletín con el enlace de cada correo (sin contraseña: el enlace lleva la llave) |
+| `servidor/cuenta/` y `cuenta.html` | Cuentas de lector, opcionales: se entra con un enlace al correo o con Google, sin contraseña. Sirven para seguir temas, gestionar el boletín y, solo si el lector lo activa, ver su «dieta de medios» (cuántas veces abre cada medio por semana; nada más). Tablas en `servidor/cuentas.sql` |
 | `servidor/portada.sql` · `servidor/puntos_ciegos.sql` | Cálculo de la cobertura y de los puntos ciegos |
 | `servidor/verificar/` | Revisión con IA de cada historia: titulares que no encajan, repetidas, opinión, si es política y si es de España o de fuera |
 | `servidor/asuntos/` | Temas grandes: la IA agrupa las historias de varios días en un mismo tema |

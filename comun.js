@@ -71,7 +71,7 @@ function recientes(h){
 function bloques(h, max = 99){
   const g = { izq: [], cen: [], der: [] };
   for (const a of recientes(h)) g[lado(a.o)].push(a);
-  const b = (k, n, c) => `<div class="bloque"><div class="lado eti"><i style="background:${c}"></i>${n}</div>${g[k].length ? `<ul>${g[k].map((a, i) => `<li${i >= max ? " hidden" : ""}><span class="medio">${esc(a.m)}</span><a href="${esc(a.u)}" target="_blank" rel="noopener">${esc(a.t)}</a></li>`).join("")}</ul>${g[k].length > max ? `<button class="mas">Ver ${g[k].length - max} más</button>` : ""}` : `<p class="vacio">Ningún medio de este lado la ha publicado.</p>`}</div>`;
+  const b = (k, n, c) => `<div class="bloque"><div class="lado eti"><i style="background:${c}"></i>${n}</div>${g[k].length ? `<ul>${g[k].map((a, i) => `<li${i >= max ? " hidden" : ""}><span class="medio">${esc(a.m)}</span><a href="${esc(a.u)}" data-m="${esc(a.m)}" target="_blank" rel="noopener">${esc(a.t)}</a></li>`).join("")}</ul>${g[k].length > max ? `<button class="mas">Ver ${g[k].length - max} más</button>` : ""}` : `<p class="vacio">Ningún medio de este lado la ha publicado.</p>`}</div>`;
   return b("izq","Izquierda","var(--izq)") + b("cen","Centro","var(--cen)") + b("der","Derecha","var(--der)");
 }
 // Foto del propio medio, enlazada desde su web y con crédito. Si no carga, desaparece.
@@ -243,3 +243,61 @@ document.addEventListener("click", e => {
   else { const d = b.nextElementSibling; if (d) d.hidden = !abrir; }
   if (abrir) evento("compara");
 });
+
+// ---------- Cuentas (11/11): opcionales. La sesión se guarda en este navegador ----------
+const CUENTA_URL = `${SUPA.url}/functions/v1/cuenta`;
+function sesionVP(){ try { return localStorage.getItem("vp-sesion") || ""; } catch (e) { return ""; } }
+function olvidarSesionVP(){ try { ["vp-sesion", "vp-dieta", "vp-dieta-t"].forEach(k => localStorage.removeItem(k)); } catch (e) {} }
+// Llamada a la función «cuenta». Con q, lectura (GET); sin q, una acción (POST)
+async function cuentaVP(accion, datos = {}, q = null){
+  const s = sesionVP(), cab = s ? { "x-sesion": s } : {};
+  const r = await fetch(q ? `${CUENTA_URL}?q=${q}` : CUENTA_URL, q ? { headers: cab }
+    : { method: "POST", headers: { "Content-Type": "text/plain", ...cab }, body: JSON.stringify({ accion, ...datos }) });
+  const d = await r.json().catch(() => ({}));
+  if (r.status === 401 && d.error === "sesion") olvidarSesionVP();
+  if (!r.ok) { const e = new Error(d.error || String(r.status)); e.detalle = d.error === "sesion" ? "Tu sesión ha caducado. Vuelve a entrar." : d.error; e.estado = r.status; throw e; }
+  return d;
+}
+// Icono de la cuenta en la cabecera, junto a «Buscar»
+(() => {
+  const bol = document.querySelector(".top .btn-bol");
+  if (!bol || document.querySelector(".btn-cuenta")) return;
+  const dentro = !!sesionVP(), txt = dentro ? "Mi cuenta" : "Entrar";
+  const ic = `<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M4 21c1.4-4 4.4-6 8-6s6.6 2 8 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>`;
+  bol.insertAdjacentHTML("beforebegin", `<a class="btn-buscar btn-cuenta" style="margin-left:0" href="/cuenta.html" aria-label="${txt}" title="${txt}"${location.pathname === "/cuenta.html" ? ' aria-current="page"' : ""}>${ic}</a>`);
+  // En móviles estrechos no cabe en la cabecera: va en el menú, debajo de los atajos
+  document.head.insertAdjacentHTML("beforeend", "<style>@media (max-width:440px){.btn-cuenta{display:none!important}}</style>");
+  const at = document.querySelector("#menu .m-atajos");
+  if (at) at.insertAdjacentHTML("afterend", `<a class="m-cajon m-enlace m-cuenta" href="/cuenta.html">${ic.replace('width="20" height="20" ', 'class="m-ic" ')}${dentro ? "Mi cuenta" : "Entrar en tu cuenta"}<svg class="m-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>`);
+})();
+// Dieta de medios: si el lector la activó, al abrir un titular se apunta de qué medio es (solo el medio)
+(() => {
+  if (!sesionVP()) return;
+  let t = 0; try { t = Number(localStorage.getItem("vp-dieta-t") || 0); } catch (e) {}
+  // Una vez cada 12 horas se comprueba si la tiene activada (puede haberla cambiado en otro dispositivo)
+  if (Date.now() - t > 12 * 3600e3) cuentaVP(null, {}, "estado").then(d => { try { localStorage.setItem("vp-dieta", d.dieta ? "1" : "0"); localStorage.setItem("vp-dieta-t", String(Date.now())); } catch (e) {} }).catch(() => {});
+})();
+document.addEventListener("click", e => {
+  const a = e.target.closest("a[data-m]"); if (!a || !navigator.sendBeacon) return;
+  let activa = false; try { activa = localStorage.getItem("vp-dieta") === "1"; } catch (er) {}
+  const s = sesionVP(); if (!s || !activa) return;
+  navigator.sendBeacon(CUENTA_URL, new Blob([JSON.stringify({ accion: "lectura", medio: a.dataset.m, sesion: s })], { type: "text/plain" }));
+}, true);
+// Botón «Seguir este tema». clave: «a12» (tema grande) o «34» (tema pequeño)
+async function botonSeguir(b, clave){
+  if (!b || !/^a?\d+$/.test(clave)) return;
+  const volver = location.pathname + location.search;
+  if (!sesionVP()) {
+    b.outerHTML = `<a class="c-btn seguir" href="/cuenta.html?volver=${encodeURIComponent(volver)}&seguir=${clave}">Seguir este tema</a>`;
+    return;
+  }
+  const poner = sigo => { b.hidden = false; b.setAttribute("aria-pressed", String(sigo)); b.textContent = sigo ? "Sigues este tema" : "Seguir este tema"; b.title = sigo ? "Pulsa para dejar de seguirlo" : "Lo verás en tu cuenta, con las noticias nuevas"; };
+  try { poner((await cuentaVP("tema_visita", { tema: clave })).sigo); } catch (e) { if (!sesionVP()) return botonSeguir(b, clave); poner(false); }
+  b.addEventListener("click", async () => {
+    const quiero = b.getAttribute("aria-pressed") !== "true";
+    b.disabled = true;
+    try { poner((await cuentaVP("seguir", { tema: clave, seguir: quiero })).sigo); evento(quiero ? "seguir-tema" : "dejar-tema"); }
+    catch (e) { b.textContent = e.detalle || "No se ha podido guardar"; }
+    b.disabled = false;
+  });
+}

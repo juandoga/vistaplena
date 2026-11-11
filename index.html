@@ -749,7 +749,7 @@ h2 .info{margin-left:6px;vertical-align:.25em}
 </footer>
 
 <script src="temas.js?v=5df45ce8"></script>
-<script src="comun.js?v=6f5e54aa"></script>
+<script src="comun.js?v=752e9b43"></script>
 <script>
 const SNAPSHOT = /*SNAPSHOT*/null;
 const NIVELES = [[-2,"Izquierda","var(--izq)"],[-1,"Centroizquierda","var(--izq)"],[0,"Centro","var(--cen)"],[1,"Centroderecha","var(--der)"],[2,"Derecha","var(--der)"]];
@@ -828,7 +828,7 @@ function desarrolloBloque(conCabecera){
       const destino = g ? urlAsunto(g.id, g.nombre) : urlTema(t.id, t.nombre), nombreT = g ? g.nombre : t.nombre;
       return `<article class="des"><h3><a href="${destino}">${esc(nombreT)}</a></h3>
         <p class="m">${t.sueltos_12h} titulares nuevos de ${t.medios_12h} medios${mueve(t)}</p>${barra(reparto)}
-        <ul>${t.titulares.slice(0, 3).map(a => `<li><span class="md"><i style="background:${COL_LADO[lado(a.o)]}"></i>${esc(a.m)} · ${horaCorta(a.p)}</span><a href="${esc(a.u)}" target="_blank" rel="noopener">${esc(a.t)}</a></li>`).join("")}</ul>
+        <ul>${t.titulares.slice(0, 3).map(a => `<li><span class="md"><i style="background:${COL_LADO[lado(a.o)]}"></i>${esc(a.m)} · ${horaCorta(a.p)}</span><a href="${esc(a.u)}" data-m="${esc(a.m)}" target="_blank" rel="noopener">${esc(a.t)}</a></li>`).join("")}</ul>
         <a class="ir" href="${destino}">Todo el tema →</a></article>`;
     }).join("")}</div></section>`;
 }
