@@ -473,6 +473,20 @@ footer.pie{margin-top:80px;padding:0;border-top:1px solid var(--linea);backgroun
 .niveles span{font-size:.95rem}
 @media (max-width:600px){.niveles div{grid-template-columns:14px 1fr}.niveles span{grid-column:2}}
 .aviso{background:color-mix(in srgb,var(--aviso) 10%,transparent);border-left:3px solid var(--aviso);padding:14px 16px;border-radius:0 8px 8px 0;font-size:.95rem}
+/* Programas electorales (11/11): quién lo ha publicado y cuándo lo comprobamos por última vez */
+.pg{border:1px solid var(--linea);padding:18px 18px 14px;margin:0 0 28px}
+.pg h2{margin:0 0 6px;font:900 1.25rem/1.2 var(--ui);color:var(--tinta)}
+.pg-resumen{margin:0 0 10px;font-size:.95rem;color:var(--texto);max-width:70ch}
+.pg-lista{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));column-gap:24px}
+.pg-lista li{display:grid;grid-template-columns:8.6em 1fr;align-items:baseline;gap:10px;padding:9px 0;border-bottom:1px solid var(--linea);font-size:.92rem}
+.pg-n{font-weight:700;color:var(--tinta);text-decoration:none}
+.pg-n:hover{text-decoration:underline}
+.pg-e{color:var(--gris)}
+.pg-e::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--gris);vertical-align:1px}
+.pg-e.pub{color:var(--tinta)}.pg-e.pub::before{background:#1f7a46}
+.pg-e.res::before{background:var(--aviso)}
+.pg-e a{font-weight:600;color:var(--tinta)}
+.pg-comprobado{margin:10px 0 0;font-size:var(--t-xs);color:var(--gris)}
 .ejemplos{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:6px 0 16px}
 .ejemplos div{background:var(--panel);border-radius:12px;padding:16px 18px;display:grid;gap:6px;font-size:.95rem}
 .ejemplos strong{color:var(--tinta)}
@@ -859,7 +873,12 @@ h2 .info{margin-left:6px;vertical-align:.25em}
   <div class="gv-fija"><nav class="gv-temas" id="gvTemas" aria-label="Temas"></nav></div>
 <div class="wrap metodo elecc">
   <div id="gvVista" class="gv-vista"></div>
-  <div class="aviso" id="estadoProgramas">Los partidos todavía no han presentado sus programas para el 29N. En cuanto cada uno publique el suyo, sus propuestas saldrán de ese documento, con la página donde aparecen.</div>
+  <section class="pg" id="programas" aria-labelledby="pgT">
+    <h2 id="pgT">Programas electorales</h2>
+    <p class="pg-resumen" id="estadoProgramas">Cargando…</p>
+    <ul class="pg-lista" id="pgLista"></ul>
+    <p class="pg-comprobado" id="pgComprobado"></p>
+  </section>
 
   <section id="partidos">
     <h2>Los partidos, uno a uno</h2>
@@ -871,7 +890,7 @@ h2 .info{margin-left:6px;vertical-align:.25em}
   <details id="como" class="gv-metodo">
     <summary><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Cómo hacemos esta guía</summary>
     <ol class="pasos-m">
-      <li><strong>Primero, el programa oficial.</strong> Cuando un partido publica su programa, sus propuestas salen de ese documento y llevan la página donde aparecen. Mientras no lo publica, recogemos lo que ha propuesto en público: documentos del partido, declaraciones recogidas por la prensa y su programa de 2023.</li>
+      <li><strong>Primero, el programa oficial.</strong> Cuando un partido publica su programa, sus propuestas salen de ese documento y llevan la página donde aparecen. Mientras no lo publica, recogemos lo que ha propuesto en público: documentos del partido, declaraciones recogidas por la prensa y su programa de 2023. Dos veces al día miramos en la web oficial de cada partido si ha publicado su programa, y en la prensa si ha anunciado cuándo lo presentará.</li>
       <li><strong>En palabras sencillas y con la fuente.</strong> Contamos cada propuesta con nuestras palabras, sin añadir nada, y enlazamos el original para que puedas comprobarla.</li>
       <li><strong>Revisión.</strong> Cada propuesta se comprueba contra su fuente antes de publicarla.</li>
       <li><strong>La misma plantilla para todos.</strong> Mismos temas y mismo espacio para cada partido, en el orden de lo que más preocupa según el CIS. No valoramos ninguna propuesta.</li>
@@ -992,7 +1011,41 @@ document.addEventListener("click", e => {
   const bp = e.target.closest("[data-partido]");
   if (bp) { PARTIDO = bp.dataset.partido; pintar(); }
 });
+// Estado de los programas (tabla «programas»): se revisa dos veces al día y manda sobre programas.json
+let PROG_DB = null, COMPROBADO = null;
+function combinar(){
+  if (!PROG || !PROG_DB) return;
+  for (const p of PROG.partidos) {
+    const d = PROG_DB[p.id]; if (!d) continue;
+    if (d.estado === "publicado" && d.url) p.programa = { url: d.url, fecha: d.fecha || (p.programa && p.programa.fecha) || null };
+    p.resumen = d.estado === "resumen" && d.url ? d.url : null;
+    p.presentacion = d.estado !== "publicado" ? d.presentacion : null;
+    if (d.nota) p.nota = d.nota;
+  }
+}
+const diaMes = d => new Date(d + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "long" });
+function cuandoComprobado(iso){
+  const f = new Date(iso), hoy = new Date(), ayer = new Date(Date.now() - 864e5), mismo = (a, b) => a.toDateString() === b.toDateString();
+  const hora = f.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" });
+  return mismo(f, hoy) ? `hoy a las ${hora}` : mismo(f, ayer) ? `ayer a las ${hora}` : `el ${f.toLocaleDateString("es-ES", { day: "numeric", month: "long" })} a las ${hora}`;
+}
+function pintarProgramas(P){
+  const orden = p => p.programa ? 0 : p.resumen ? 1 : p.presentacion ? 2 : 3;
+  const L = [...P].sort((a, b) => orden(a) - orden(b) || (a.programa && b.programa ? String(b.programa.fecha || "").localeCompare(String(a.programa.fecha || "")) : 0));
+  document.getElementById("pgLista").innerHTML = L.map(p => {
+    const e = p.programa ? `<span class="pg-e pub"><a href="${esc(p.programa.url)}" target="_blank" rel="noopener">Programa publicado</a>${p.programa.fecha ? ` el ${diaMes(p.programa.fecha)}` : ""}</span>`
+      : p.resumen ? `<span class="pg-e res"><a href="${esc(p.resumen)}" target="_blank" rel="noopener">Solo un resumen</a>; el programa, aún no</span>`
+      : p.presentacion ? `<span class="pg-e">Lo presenta el ${diaMes(p.presentacion)}</span>`
+      : `<span class="pg-e">Aún no lo ha publicado</span>`;
+    return `<li><a class="pg-n" href="#partidos-${p.id}">${esc(p.nombre)}</a>${e}</li>`;
+  }).join("");
+  document.getElementById("pgComprobado").textContent = COMPROBADO
+    ? `Comprobado en las webs oficiales de los partidos ${cuandoComprobado(COMPROBADO)}. Lo revisamos dos veces al día.`
+    : `Comprobado en las webs oficiales de los partidos el ${fechaLarga(PROG.actualizado)}.`;
+}
+
 function pintar(){
+  combinar();
   const T = GUIA ? GUIA.temas : [];
   const S = window.SECCIONES || [];
   const P = PROG ? PROG.partidos : [];
@@ -1001,8 +1054,9 @@ function pintar(){
     document.getElementById("actualizado").textContent = "Actualizada el " + fechaLarga(GUIA && GUIA.actualizado > PROG.actualizado ? GUIA.actualizado : PROG.actualizado);
     document.getElementById("criterio").textContent = "Criterio: " + PROG.criterio;
     const conP = P.filter(p => p.programa).map(p => p.nombre), lista = conP.join(", ").replace(/, ([^,]*)$/, " y $1");
-    if (conPrograma) document.getElementById("estadoProgramas").textContent = (conPrograma === 1 ? `De los ${P.length} partidos de la guía, solo ${lista} ha publicado ya su programa.` : `De los ${P.length} partidos de la guía, ${conPrograma} han publicado ya su programa: ${lista}.`)
-      + " Del resto recogemos lo que han propuesto en público, con fuente y fecha, hasta que lo publiquen.";
+    document.getElementById("estadoProgramas").textContent = (!conPrograma ? `Ninguno de los ${P.length} partidos de la guía ha publicado aún su programa.` : conPrograma === 1 ? `De los ${P.length} partidos de la guía, solo ${lista} ha publicado ya su programa.` : `De los ${P.length} partidos de la guía, ${conPrograma} han publicado ya su programa.`)
+      + " Sus propuestas salen de ese documento, con la página donde aparecen. Del resto recogemos lo que han propuesto en público, con fuente y fecha.";
+    pintarProgramas(P);
   }
   if (!T.length) return;
   if (!T.some(t => t.id === TEMA)) TEMA = T[0].id;
@@ -1047,7 +1101,7 @@ const VOTO_K = { "Sí": ["s", "A favor"], "No": ["n", "En contra"], "Abstención
 function fichaPartido(){
   if (!PROG || !GUIA) return `<p class="g-vacio">Cargando…</p>`;
   const datos = f => { const pr = PROG.partidos.find(x => x.id === f.id), po = POST && f.post ? POST.partidos.find(x => x.id === f.post) : null;
-    return { ...f, nombre: f.nombre || (po && po.nombre) || (pr && pr.nombre) || f.id, web: pr ? pr.web : "", programa: pr ? pr.programa : null,
+    return { ...f, nombre: f.nombre || (po && po.nombre) || (pr && pr.nombre) || f.id, web: pr ? pr.web : "", programa: pr ? pr.programa : null, resumen: pr ? pr.resumen : null, presentacion: pr ? pr.presentacion : null,
       nota: [pr && pr.nota, po && po.nota].filter(Boolean).join(" ") }; };
   const nProp = f => POST && f.post ? GUIA.temas.reduce((n, t) => n + ((POST.temas[t.id] || {})[f.post] || []).length, 0) : 0;
   if (!FICHA_P.some(f => f.id === FICHA)) FICHA = "psoe";
@@ -1055,7 +1109,7 @@ function fichaPartido(){
     return `<button type="button" role="tab" data-ficha="${f.id}" aria-selected="${f.id === FICHA}">${esc(d.nombre)}<small>${n ? n + (n === 1 ? " propuesta" : " propuestas") : "Votos en el Congreso"}</small></button>`; }).join("")}</div>`;
   const p = datos(FICHA_P.find(f => f.id === FICHA));
   let h = tabs + `<div class="fp-cab"><h3>${esc(p.nombre)}</h3>${p.web ? `<a href="${esc(p.web)}" target="_blank" rel="noopener">${esc(p.web.replace(/^https?:\/\/(www\.)?/, ""))}</a>` : ""}</div>`
-    + `<p class="fp-estado">${p.programa ? `Programa para el 29N: <a href="${esc(p.programa.url)}" target="_blank" rel="noopener">publicado el ${fechaLarga(p.programa.fecha)}</a>` : "Todavía no ha publicado su programa para el 29N."}</p>`
+    + `<p class="fp-estado">${p.programa ? `Programa para el 29N: <a href="${esc(p.programa.url)}" target="_blank" rel="noopener">publicado el ${fechaLarga(p.programa.fecha)}</a>` : p.resumen ? `Todavía no ha publicado su programa completo; hay <a href="${esc(p.resumen)}" target="_blank" rel="noopener">un resumen en su web</a>.` : p.presentacion ? `Todavía no ha publicado su programa para el 29N: lo presenta el ${diaMes(p.presentacion)}.` : "Todavía no ha publicado su programa para el 29N."}</p>`
     + (p.nota ? `<p class="fp-nota">${esc(p.nota)}</p>` : "");
   // Propuestas, en el orden de los temas de la guía
   h += `<div class="fp-bloque"><span class="eti">Qué propone, tema a tema</span>`;
@@ -1131,6 +1185,15 @@ Promise.all([fetch("programas.json").then(r => r.json()), fetch("guia.json").the
   .then(([p, g, q]) => { PROG = p; GUIA = g; POST = q; pintar(); if (location.hash.startsWith("#partidos")) document.querySelector(".gv-modos").scrollIntoView(); else if (location.hash && location.hash !== "#" + TEMA) document.querySelector(location.hash)?.scrollIntoView(); }).catch(() => {});
 (async () => {
   const h = { apikey: SUPA.key, Authorization: "Bearer " + SUPA.key };
+  try {
+    const r = await fetch(`${SUPA.url}/rest/v1/programas?select=partido,estado,url,fecha,presentacion,nota,comprobado`, { headers: h });
+    if (r.ok) {
+      const L = await r.json();
+      PROG_DB = Object.fromEntries(L.map(x => [x.partido, x]));
+      COMPROBADO = L.reduce((m, x) => (!m || x.comprobado > m ? x.comprobado : m), null);
+      pintar();
+    }
+  } catch (e) {}
   try {
     const r = await fetch(`${SUPA.url}/rest/v1/votaciones?select=id,fecha,tipo,expediente,si,no,abst,partidos,url,temas,titulo_llano,propone,si_significa,aprobada,nota&destacada=eq.true&oculta=eq.false&temas=neq.{}&order=fecha.desc,numero.desc&limit=600`, { headers: h });
     if (r.ok) { VOT = await r.json(); pintar(); }
