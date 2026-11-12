@@ -1,7 +1,7 @@
 {
   "eleccion": "Elecciones generales del 29 de noviembre de 2026",
   "fecha": "2026-11-29",
-  "actualizado": "2026-11-11",
+  "actualizado": "2026-11-12",
   "criterio": "Partidos con representación en el Congreso en la XV legislatura. Se añadirá cualquier otro partido que las encuestas sitúen con opciones de obtener escaño.",
   "partidos": [
     {"id": "psoe", "nombre": "PSOE", "web": "https://www.psoe.es", "programa": null, "propuestas": {}, "nota": "Aún no ha publicado su programa ni ha dado fecha oficial. Según El Independiente (7 de noviembre), lo presentaría a finales de la semana del 9 de noviembre, después de la huelga general del 11. Recogemos lo que ha prometido en la precampaña."},
@@ -17,6 +17,6 @@
     {"id": "cc", "nombre": "Coalición Canaria", "web": "https://coalicioncanaria.org", "programa": {"url": "https://coalicioncanaria.org/wp-content/uploads/2026/11/CCA-26-Programa_Electoral-29NOV.pdf", "fecha": "2026-11-08"}, "propuestas": {}, "nota": "Su programa, «Defiende Canarias», es común con Municipalistas Primero Canarias. Lo presentó el 9 de noviembre."},
     {"id": "upn", "nombre": "UPN", "web": "https://www.upn.org", "programa": null, "propuestas": {}, "nota": "Se presenta en coalición con el PP en Navarra. No ha publicado un programa propio."},
     {"id": "compromis", "nombre": "Compromís-Front Valencià", "web": "https://compromis.net", "programa": null, "propuestas": {}, "nota": "Coalición de Compromís, Podemos, Esquerra Unida y ERPV que solo se presenta en la Comunidad Valenciana. En su web (frontvalencia.org) hay un resumen en seis ejes (vivienda, trabajo, trato justo, territorio, movilidad e igualdad); el programa completo aún no está.", "resumen": "https://frontvalencia.org/#programa"},
-    {"id": "adelante", "nombre": "Adelante Andalucía", "web": "https://adelanteandalucia.org", "programa": null, "propuestas": {}, "nota": "Se presenta solo en Andalucía. En su web solo está su programa de las elecciones andaluzas de mayo; el de las generales aún no lo ha publicado."}
+    {"id": "adelante", "nombre": "Adelante Andalucía", "web": "https://adelanteandalucia.org", "programa": {"url": "https://programa.adelanteandalucia.org/programa-29n-adelante-andalucia.pdf", "fecha": "2026-11-10"}, "propuestas": {}, "nota": "Se presenta solo en Andalucía. Su programa, «Un programa para frenar a las derechas», tiene 719 propuestas; las 29 principales están resumidas en «Las 29 del 29N». Lo presentó el 10 de noviembre."}
   ]
 }

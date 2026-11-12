@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-11",
+ "actualizado": "2026-11-12",
  "criterio": "Mientras los partidos no publiquen sus programas para el 29N, recogemos lo que cada uno ha propuesto en público: documentos del partido, declaraciones recogidas por la prensa y su programa de 2023. Siempre con fuente y fecha. No valoramos las propuestas: solo indicamos si el partido explica cómo lo haría y cómo lo pagaría.",
  "fuentes": {
   "EDB23": {
@@ -146,6 +146,11 @@
    "nombre": "Programa del PP «Reconstrucción nacional»",
    "url": "https://www.pp.es/wp-content/uploads/2026/11/LA-RECONSTRUCCION-NACIONAL.pdf",
    "fecha": "2026-11-10"
+  },
+  "ADELANTE_PROG": {
+   "nombre": "Programa de Adelante Andalucía «Un programa para frenar a las derechas»",
+   "url": "https://programa.adelanteandalucia.org/programa-29n-adelante-andalucia.pdf",
+   "fecha": "2026-11-10"
   }
  },
  "partidos": [
@@ -191,6 +196,10 @@
   {
    "id": "pnv",
    "nombre": "PNV"
+  },
+  {
+   "id": "adelante",
+   "nombre": "Adelante Andalucía"
   }
  ],
  "temas": {
@@ -296,6 +305,14 @@
      "como": "parcial",
      "nota": "Programa, pág. 10-11."
     }
+   ],
+   "adelante": [
+    {
+     "t": "Que ningún alquiler supere el 20 % de la renta media de la zona, con un índice estatal de precios por barrio o municipio; llevar el parque público de alquiler a la media europea (hasta el 20 % de las viviendas en las zonas con más demanda) con un gasto del 1,5 % del PIB; ningún desahucio de hogares vulnerables sin una alternativa, y ninguna licencia nueva de pisos turísticos en zonas tensionadas.",
+     "f": "ADELANTE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 4 y 49-50. Explica los instrumentos (el índice de precios, una reforma de la Ley de Enjuiciamiento Civil, las licencias) y cuánto gastar en vivienda pública; para pagarlo menciona bonos de deuda que cualquiera pueda comprar y recargos del IBI, pero sin cifras."
+    }
    ]
   },
   "economia": {
@@ -364,6 +381,14 @@
      "t": "Invertir 1.500 millones en transporte público, sobre todo en Cercanías, y topar el precio de la energía y de los alimentos básicos.",
      "f": "CFV_ELCHE",
      "como": "parcial"
+    }
+   ],
+   "adelante": [
+    {
+     "t": "Límites temporales a los precios de los alimentos y los suministros básicos cuando suban de forma abusiva, una banca pública que dé crédito a pymes, autónomos, cooperativas y vivienda pública, empresas públicas en energía, farmacia, alimentación y telecomunicaciones, y una red de supermercados públicos.",
+     "f": "ADELANTE_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 12, 21, 61 y 68. No explica cómo se fijarían los límites de precios ni cuánto costarían la banca, las empresas y los supermercados públicos."
     }
    ]
   },
@@ -450,6 +475,14 @@
      "como": "no",
      "nota": "Programa, pág. 5."
     }
+   ],
+   "adelante": [
+    {
+     "t": "Cambiar la Ley de Extranjería por una ley basada en derechos, una regularización extraordinaria como la que pide la iniciativa popular «¡Regularización Ya!», acabar con las devoluciones en caliente y cerrar los centros de internamiento de extranjeros (CIE), empezando por el de Algeciras.",
+     "f": "ADELANTE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 28 y 106. Dice qué leyes cambiaría, pero no cómo se haría la regularización ni cuánto costaría."
+    }
    ]
   },
   "empleo": {
@@ -535,6 +568,14 @@
      "como": "no",
      "nota": "Programa, pág. 14."
     }
+   ],
+   "adelante": [
+    {
+     "t": "Jornada de 32 horas sin bajar el sueldo (en dos años en las grandes empresas y en cuatro en las pymes, con ayudas públicas para reorganizarse), salarios y salario mínimo que suban con la inflación por ley, fin del turno partido y un despido más caro: 50 días por año trabajado en el contrato indefinido y 60 en el temporal, con autorización de la Inspección de Trabajo.",
+     "f": "ADELANTE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 7-9 y 63. Explica los plazos y los instrumentos, pero no cuánto costarían las ayudas a las empresas."
+    }
    ]
   },
   "sanidad": {
@@ -583,6 +624,14 @@
      "f": "PNV_DOC",
      "como": "no",
      "nota": "Programa, pág. 32."
+    }
+   ],
+   "adelante": [
+    {
+     "t": "Un gasto sanitario mínimo del 8 % del PIB fijado por ley; acabar con los conciertos y las externalizaciones y derogar la ley de 1997 que permite otras formas de gestión en la sanidad pública; esperas máximas garantizadas: 30 días para ver al especialista, 15 para una prueba y 120 para operarse.",
+     "f": "ADELANTE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 14 y 36-41. Explica cómo lo haría, pero no cuánto costaría llegar al 8 % del PIB; para pagarlo remite al nuevo modelo de financiación autonómica, sin cifras."
     }
    ]
   },
@@ -676,6 +725,14 @@
      "como": "no",
      "nota": "Programa, pág. 10."
     }
+   ],
+   "adelante": [
+    {
+     "t": "Subir las pensiones con el IPC real por ley y proteger el sistema público en la Constitución; pensiones mínimas iguales al salario mínimo neto; jubilación ordinaria a los 64 años (anticipada desde los 55 con contrato de relevo) y sin recortes para quien haya cotizado 40 años, y cotizar por los ingresos reales, sin tope.",
+     "f": "ADELANTE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 13 y 55. Dice que se pagaría con cotizaciones sin tope y con impuestos, pero no cuánto costaría."
+    }
    ]
   },
   "impuestos": {
@@ -759,6 +816,14 @@
      "como": "no",
      "nota": "Programa, pág. 43."
     }
+   ],
+   "adelante": [
+    {
+     "t": "Un IRPF que baje a las rentas más bajas y suba con fuerza a partir de 100.000 euros al año, un impuesto a las grandes fortunas, la gran propiedad inmobiliaria y los latifundios que sustituya al de Patrimonio, e impuestos permanentes sobre los beneficios extraordinarios de la banca y las eléctricas.",
+     "f": "ADELANTE_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 10 y 58. No dice los tipos ni cuánto se recaudaría."
+    }
    ]
   },
   "educacion": {
@@ -822,6 +887,14 @@
      "f": "PNV_DOC",
      "como": "no",
      "nota": "Programa, pág. 10."
+    }
+   ],
+   "adelante": [
+    {
+     "t": "Un gasto mínimo en educación pública del 5 % del PIB y subir la inversión por alumno de 6.687 a 8.246 euros (la media europea) al final de la legislatura; todo el dinero público para la escuela pública; escuela infantil de 0 a 3 años gratuita y pública, y como máximo 15 alumnos por clase en Infantil y Primaria, 20 en la ESO y 25 en Bachillerato.",
+     "f": "ADELANTE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 17-18 y 42-46. Explica algunos instrumentos (un real decreto para el número de alumnos por clase, un plan estatal de plazas de 0 a 3 años), pero no cuánto costaría; solo pide que lo pague el Estado."
     }
    ]
   },
@@ -903,6 +976,14 @@
      "como": "no",
      "nota": "Programa, pág. 8 y 17."
     }
+   ],
+   "adelante": [
+    {
+     "t": "Una financiación autonómica nueva sin «ordinalidad» (que no garantice a las comunidades más ricas seguir recibiendo más), con al menos el 55 % del IRPF y el 70 % del IVA para las comunidades; perdonar a Andalucía la deuda causada por la falta de financiación, y reconocerla como nacionalidad histórica con el máximo nivel de autonomía.",
+     "f": "ADELANTE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 23-24 y 72-73. Explica cómo repartir los impuestos y propone un fondo transitorio mientras llega el nuevo sistema, pero no cuánto costaría al Estado ni perdonar la deuda."
+    }
    ]
   },
   "energia": {
@@ -981,6 +1062,14 @@
      "como": "no",
      "nota": "Programa, pág. 54."
     }
+   ],
+   "adelante": [
+    {
+     "t": "Que toda la energía sea pública: una empresa pública de renovables, con filial andaluza, que produzca y venda electricidad a precio justo; una ley de emergencia climática con objetivos anuales de reducción de emisiones y al menos el 2 % del PIB para políticas ambientales; sacar el gas del sistema eléctrico en 2030, y un bono social de luz y agua aplicado de oficio y pagado por las compañías.",
+     "f": "ADELANTE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 22 y 82. No dice cuánto costaría la empresa pública ni de dónde saldría el 2 % del PIB."
+    }
    ]
   },
   "justicia": {
@@ -1045,6 +1134,14 @@
      "f": "BNG_PROG",
      "como": "no",
      "nota": "Programa, pág. 41."
+    }
+   ],
+   "adelante": [
+    {
+     "t": "Una autoridad independiente contra la corrupción que proteja a quien denuncie, 15 años de inhabilitación para los condenados por corrupción, que la ciudadanía elija directamente el Consejo General del Poder Judicial, acabar con los aforamientos y derogar la Ley de Seguridad Ciudadana (la llamada «ley mordaza»).",
+     "f": "ADELANTE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 26, 29 y 90-94. Para los aforamientos y el Poder Judicial propone reformas legales y de la Constitución; no dice cuánto costaría."
     }
    ]
   }
