@@ -377,6 +377,131 @@ def imagen_og(h, ruta):
     im.save(ruta, optimize=True)
 
 
+
+# ---------- Elecciones 29N: una página para compartir por tema y por partido (12/11) ----------
+# elecciones.html es una sola página que cambia de tema o de partido sin recargar, así que al compartirla todas las
+# direcciones enseñaban la misma vista previa. Ahora cada tema (elecciones-vivienda.html) y cada partido
+# (elecciones-psoe.html) tiene su copia con su título, su descripción y su imagen: el tema con una línea por partido,
+# el partido con una línea por tema. La página lee de su dirección qué tema o partido abrir.
+def imagen_29n(ruta, *, titulo, sub, filas, pie):
+    from PIL import Image, ImageDraw, ImageFont
+    F = fuentes()
+    W, H, M = 1200, 630, 64
+    TINTA, FONDO, GRIS, LINEA, IZQ, DER = (17, 18, 19), (255, 255, 255), (122, 126, 134), (220, 220, 214), (192, 57, 43), (44, 90, 160)
+    im = Image.new("RGB", (W, H), FONDO)
+    d = ImageDraw.Draw(im)
+    x0, y0, s = M, 40, 34
+    g = max(4, s // 9)
+    d.line([(x0, y0 + s * 0.62), (x0, y0 + s), (x0 + s * 0.38, y0 + s)], fill=IZQ, width=g, joint="curve")
+    d.line([(x0 + s * 0.62, y0), (x0 + s, y0), (x0 + s, y0 + s * 0.38)], fill=DER, width=g, joint="curve")
+    r = s * 0.16
+    d.ellipse([x0 + s / 2 - r, y0 + s / 2 - r, x0 + s / 2 + r, y0 + s / 2 + r], fill=TINTA)
+    d.text((x0 + s + 14, y0 + s / 2), "Vista Plena", font=ImageFont.truetype(F["negra"], 30), fill=TINTA, anchor="lm")
+    d.text((W - M, y0 + s / 2), "Elecciones 29N", font=ImageFont.truetype(F["negra"], 24), fill=TINTA, anchor="rm")
+
+    def ajustar(texto, fuente, ancho):
+        if d.textlength(texto, font=fuente) <= ancho:
+            return texto
+        while texto and d.textlength(texto + "…", font=fuente) > ancho:
+            texto = texto.rsplit(" ", 1)[0] if " " in texto else texto[:-1]
+        return texto.rstrip(".,;:«(") + "…"
+
+    for tam in (58, 50, 44, 38):
+        ft = ImageFont.truetype(F["negra"], tam)
+        if d.textlength(titulo, font=ft) <= W - 2 * M:
+            break
+    d.text((M, 100), ajustar(titulo, ft, W - 2 * M), font=ft, fill=TINTA)
+    y = 100 + int(tam * 1.15)
+    d.text((M, y), sub, font=ImageFont.truetype(F["media"], 26), fill=GRIS)
+    y += 46
+    d.line([(M, y), (W - M, y)], fill=TINTA, width=2)
+    y += 16
+    fe = ImageFont.truetype(F["negra"], 22)
+    fp = ImageFont.truetype(F["titular"], 24)
+    try:
+        fp.set_variation_by_axes([400, 24])
+    except Exception:
+        pass
+    col = max([d.textlength(e, font=fe) for e, _ in filas] + [120]) + 22
+    col = min(col, 300)
+    alto = min(46, (H - 92 - y) // max(1, len(filas)))
+    for e, t in filas:
+        d.text((M, y + alto / 2), ajustar(e, fe, col - 22), font=fe, fill=TINTA, anchor="lm")
+        d.text((M + col, y + alto / 2), ajustar(t, fp, W - 2 * M - col), font=fp, fill=TINTA, anchor="lm")
+        y += alto
+        d.line([(M, y), (W - M, y)], fill=LINEA, width=1)
+    yp = H - 40
+    d.text((M, yp), pie, font=ImageFont.truetype(F["media"], 22), fill=GRIS, anchor="ls")
+    d.text((W - M, yp), "vistaplena.es", font=ImageFont.truetype(F["negra"], 22), fill=TINTA, anchor="rs")
+    im.save(ruta, optimize=True)
+
+
+def elecciones_compartibles():
+    guia = json.load(open(os.path.join(RAIZ, "guia.json"), encoding="utf-8"))
+    post = json.load(open(os.path.join(RAIZ, "posturas.json"), encoding="utf-8"))
+    prog = json.load(open(os.path.join(RAIZ, "programas.json"), encoding="utf-8"))
+    base = open(os.path.join(SALIDA, "elecciones.html"), encoding="utf-8").read()
+    os.makedirs(os.path.join(SALIDA, "og"), exist_ok=True)
+    nombre_p = {p["id"]: p["nombre"] for p in prog["partidos"]}
+    nombre_p.update({p["id"]: p["nombre"] for p in post["partidos"]})
+    nombre_p["fa"] = "Frente Amplio"
+    corto = lambda pid: {"compromis": "Compromís", "cc": "Coalición Canaria"}.get(pid, nombre_p.get(pid, pid))  # en las imágenes
+    def recorta(t, n):
+        t = re.sub(r"\s+", " ", str(t)).strip().rstrip(".")
+        return t if len(t) <= n else t[:n].rsplit(" ", 1)[0].rstrip(",;:(") + "…"
+    partidos_post = [p["id"] for p in post["partidos"]]
+    temas = guia["temas"]
+    hoy = dt.date.today().isoformat()
+
+    def pagina(archivo, *, titulo, desc, imagen):
+        t = base
+        url = BASE + "/" + archivo.replace(".html", "")
+        t = re.sub(r"<title>.*?</title>", lambda _: f"<title>{esc(titulo)}</title>", t, count=1)
+        t = re.sub(r'<meta name="description" content="[^"]*">', lambda _: f'<meta name="description" content="{esc(desc)}">', t, count=1)
+        for prop, valor in (("og:title", titulo), ("og:description", desc), ("og:url", url), ("og:image", imagen)):
+            t = re.sub(rf'<meta property="{prop}" content="[^"]*">', lambda _, v=valor, pr=prop: f'<meta property="{pr}" content="{esc(v)}">', t, count=1)
+        t = re.sub(r'<link rel="canonical" href="[^"]*">', lambda _: f'<link rel="canonical" href="{url}">', t, count=1)
+        t = t.replace('<meta name="twitter:card" content="summary_large_image">',
+                      '<meta name="twitter:card" content="summary_large_image">\n'
+                      f'<meta name="twitter:title" content="{esc(titulo)}">\n<meta name="twitter:description" content="{esc(desc)}">\n'
+                      f'<meta name="twitter:image" content="{esc(imagen)}">', 1)
+        open(os.path.join(SALIDA, archivo), "w", encoding="utf-8").write(t)
+        return ("/" + archivo.replace(".html", ""), hoy)
+
+    mapa = []
+    # La página general, con su propia imagen: los temas de la guía
+    imagen_29n(os.path.join(SALIDA, "og", "elecciones.png"), titulo="Qué propone cada partido",
+               sub=f"{len(partidos_post)} partidos y {len(temas)} temas, cada propuesta con su fuente",
+               filas=[(t["nombre"], f"{sum(1 for p in partidos_post if (post['temas'].get(t['id']) or {}).get(p))} partidos con propuestas") for t in temas[:7]],
+               pie="Y lo que ha votado cada partido en el Congreso")
+    pagina("elecciones.html", titulo="Elecciones 29N: qué propone cada partido · Vista Plena",
+           desc="Qué propone cada partido para las elecciones del 29 de noviembre, tema a tema, con la fuente y la fecha de cada propuesta.",
+           imagen=f"{BASE}/og/elecciones.png")
+    for t in temas:
+        L = post["temas"].get(t["id"]) or {}
+        con = [p for p in partidos_post if L.get(p)]
+        if not con:
+            continue
+        filas = [(corto(p), L[p][0]["t"]) for p in con]
+        mas = len(filas) - 7
+        imagen_29n(os.path.join(SALIDA, "og", f"29n-{t['id']}.png"), titulo=t["nombre"], sub="Qué propone cada partido para el 29N",
+                   filas=filas[:7], pie=(f"Y {mas} partido{'s' if mas > 1 else ''} más · " if mas > 0 else "") + "Cada propuesta, con su fuente")
+        resumen = ". ".join(f"{corto(p)}: {recorta(L[p][0]['t'], 70)}" for p in con[:2]).replace("…. ", "… ")
+        mapa.append(pagina(f"elecciones-{t['id']}.html", titulo=f"{t['nombre']}: qué propone cada partido para el 29N · Vista Plena",
+                           desc=f"Las propuestas de {len(con)} partidos sobre {t['nombre'].lower()}, cada una con su fuente. {resumen}.".replace("….", "…"),
+                           imagen=f"{BASE}/og/29n-{t['id']}.png"))
+    for pid, nombre in nombre_p.items():
+        filas = [(t["nombre"], (post["temas"].get(t["id"]) or {})[pid][0]["t"]) for t in temas if (post["temas"].get(t["id"]) or {}).get(pid)]
+        imagen = BASE + "/og/elecciones.png"
+        if filas:
+            imagen_29n(os.path.join(SALIDA, "og", f"29n-{pid}.png"), titulo=nombre, sub="Qué propone para el 29N, tema a tema",
+                       filas=filas[:7], pie=(f"Y {len(filas) - 7} temas más · " if len(filas) > 7 else "") + "Con la fuente de cada propuesta")
+            imagen = f"{BASE}/og/29n-{pid}.png"
+        desc = (f"Qué propone {nombre} para el 29N en {len(filas)} temas, con la fuente de cada propuesta, y lo que ha votado en el Congreso."
+                if filas else f"{nombre} ante el 29N: su programa y lo que ha votado en el Congreso.")
+        mapa.append(pagina(f"elecciones-{pid}.html", titulo=f"Qué propone {nombre} para el 29N · Vista Plena", desc=desc, imagen=imagen))
+    return mapa
+
 # ---------- Archivo permanente ----------
 def lista_html(hs):
     return "".join(f'<li><time datetime="{h["creada"]}">{fecha(h["creada"])}</time><div><a href="{url_noticia(h["id"], h["titulo"])}">'
@@ -670,11 +795,15 @@ def main():
     except Exception as e:
         print("Fichas de medios sin generar:", e)
     try:
+        mapa += elecciones_compartibles()
+    except Exception as e:
+        print("Páginas de las elecciones sin generar:", e)
+    try:
         mapa += boletin_ejemplo(historias, tpl_t, ahora)
     except Exception as e:
         print("Ejemplo del boletín sin generar:", e)
     # Mapa del sitio y robots.txt
-    fijas = [("/", ahora.isoformat()), ("/metodologia.html", None), ("/elecciones.html", None), ("/quienes-somos.html", None),
+    fijas = [("/", ahora.isoformat()), ("/metodologia.html", None), ("/elecciones", None), ("/quienes-somos.html", None),
              ("/?vista=ciegos", ahora.isoformat()), ("/medio/", None), ("/archivo/", None)]
     xml = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for url, mod in fijas + mapa:

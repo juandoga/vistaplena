@@ -816,6 +816,16 @@ h2 .info{margin-left:6px;vertical-align:.25em}
 /* 9/11 (auditoría): titulares nunca cortados; los puntos de estado siguen redondos */
 .resumen-dia .t,.asi .bloque li a,.bloque li a,.pieza h3,.ciego h3{-webkit-line-clamp:unset!important;display:block!important;overflow:visible!important}
 .edicion .vivo::before,.tema.nuevo::before{border-radius:50%!important}
+
+/* 12/11: compartir cada tema y cada partido con su propia dirección (elecciones-vivienda.html, elecciones-psoe.html) */
+.gv-comp{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 18px;padding:10px 0;border-top:1px solid var(--linea);border-bottom:1px solid var(--linea)}
+.gv-comp .c-eti{margin-right:auto;font-size:var(--t-s);font-weight:700;color:var(--tinta)}
+.gv-comp .c-iconos{display:flex;gap:8px}
+.c-btn{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;padding:0;border:1px solid var(--linea);background:var(--fondo);color:var(--tinta);text-decoration:none;cursor:pointer}
+.c-btn:hover,.c-btn:focus-visible{border-color:var(--tinta)}
+.gv-comp .c-ok{width:100%;text-align:right;font-size:var(--t-s);color:var(--gris);word-break:break-all}
+.gv-comp .c-ok:empty{display:none}
+@media (max-width:520px){.gv-comp .c-eti{width:100%;margin:0 0 4px}.gv-comp .c-iconos{width:100%}.gv-comp .c-iconos .c-btn{flex:1;width:auto;height:48px}}
 </style>
 </head>
 <body>
@@ -1002,11 +1012,64 @@ function propuestas(tema, PR){
       : citas.length ? "" : `<p class="g-vacio">No hemos encontrado propuestas públicas de ${esc(p.nombre)} sobre este tema.</p>`)
     + (p.nota ? `<p class="gv-fuente">${esc(p.nota)}</p>` : "");
 }
+// Compartir un tema o un partido: la dirección propia (con su imagen para redes) y un texto con las propuestas,
+// que es lo que engancha en WhatsApp: una línea por partido o por tema
+const ICONO = {
+  nativo: '<path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  whatsapp: '<path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.4.8 3.2.6a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/>',
+  x: '<path fill="currentColor" d="M17.8 3h3l-6.6 7.6L22 21h-6.1l-4.8-6.3L5.6 21h-3l7.1-8.1L2.3 3h6.2l4.4 5.8L17.8 3zm-1 16.2h1.7L7.3 4.7H5.5l11.3 14.5z"/>',
+  telegram: '<path fill="currentColor" d="M21.9 4.3 18.7 19.5c-.2 1-.9 1.3-1.7.8l-4.8-3.6-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.5 13.2l-4.7-1.5c-1-.3-1-1 .2-1.5L20.5 3c.9-.3 1.6.2 1.4 1.3z"/>',
+  copiar: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+};
+const icono = k => `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">${ICONO[k]}</svg>`;
+const corta80 = (t, n = 95) => { t = String(t || "").replace(/\s+/g, " ").trim(); return t.length > n ? t.slice(0, n - 1).replace(/[\s,;:.]+\S*$/, "") + "…" : t; };
+function textosCompartir(tipo, id){
+  if (tipo === "tema") {
+    const t = GUIA.temas.find(x => x.id === id), L = POST ? POST.temas[id] || {} : {};
+    const filas = POST ? POST.partidos.filter(p => (L[p.id] || []).length).map(p => `• ${p.nombre}: ${corta80(L[p.id][0].t)}`) : [];
+    return { url: urlPag(id), titulo: `${t.nombre}: qué propone cada partido para el 29N`,
+      largo: `29N · ${t.nombre}: qué propone cada partido\n\n${filas.join("\n")}\n\nCada propuesta, con su fuente y su fecha:`,
+      x: `${t.nombre}: qué propone cada partido para el 29N. ${filas.length} partidos, cada propuesta con su fuente y su fecha.` };
+  }
+  const f = FICHA_P.find(x => x.id === id), pr = PROG ? PROG.partidos.find(x => x.id === id) : null, po = POST && f.post ? POST.partidos.find(x => x.id === f.post) : null;
+  const nombre = f.nombre || (po && po.nombre) || (pr && pr.nombre) || id;
+  const filas = POST && f.post ? GUIA.temas.filter(t => ((POST.temas[t.id] || {})[f.post] || []).length).map(t => `• ${t.nombre}: ${corta80(POST.temas[t.id][f.post][0].t, 85)}`) : [];
+  return { url: urlPag(id), titulo: `Qué propone ${nombre} para el 29N, tema a tema`,
+    largo: filas.length ? `29N · Qué propone ${nombre}, tema a tema\n\n${filas.join("\n")}\n\nCon la fuente de cada propuesta y lo que ha votado en el Congreso:` : `29N · ${nombre}: su programa y lo que ha votado en el Congreso`,
+    x: filas.length ? `Qué propone ${nombre} para el 29N, tema a tema: ${filas.length} temas, cada propuesta con su fuente.` : `${nombre} ante el 29N: su programa y lo que ha votado en el Congreso.` };
+}
+function barraCompartir(tipo, id){
+  if (!GUIA || (tipo === "tema" && !POST)) return "";
+  const c = textosCompartir(tipo, id);
+  return `<div class="gv-comp" role="group" aria-label="Compartir">
+    <span class="c-eti">Compartir ${tipo === "tema" ? "este tema" : "este partido"}</span>
+    <div class="c-iconos">
+    ${navigator.share ? `<button type="button" class="c-btn" data-comp-nativo="${tipo}:${id}" aria-label="Compartir…" title="Compartir…">${icono("nativo")}</button>` : ""}
+    <a class="c-btn" data-comp-red href="https://wa.me/?text=${encodeURIComponent(c.largo + "\n" + c.url)}" target="_blank" rel="noopener" aria-label="WhatsApp" title="WhatsApp">${icono("whatsapp")}</a>
+    <a class="c-btn" data-comp-red href="https://x.com/intent/post?text=${encodeURIComponent(c.x)}&url=${encodeURIComponent(c.url)}" target="_blank" rel="noopener" aria-label="X" title="X">${icono("x")}</a>
+    <a class="c-btn" data-comp-red href="https://t.me/share/url?url=${encodeURIComponent(c.url)}&text=${encodeURIComponent(c.largo)}" target="_blank" rel="noopener" aria-label="Telegram" title="Telegram">${icono("telegram")}</a>
+    <button type="button" class="c-btn" data-comp-copiar="${esc(c.url)}" aria-label="Copiar enlace" title="Copiar enlace">${icono("copiar")}</button>
+    </div><span class="c-ok" role="status"></span></div>`;
+}
+document.addEventListener("click", async e => {
+  const n = e.target.closest("[data-comp-nativo]"), cp = e.target.closest("[data-comp-copiar]"), r = e.target.closest("[data-comp-red]");
+  if (r) { evento("compartir-29n"); return; }
+  if (n) { const [tipo, id] = n.dataset.compNativo.split(":"), c = textosCompartir(tipo, id); evento("compartir-29n");
+    try { await navigator.share({ title: c.titulo, text: c.largo, url: c.url }); } catch (er) {} return; }
+  if (cp) { const ok = cp.closest(".gv-comp").querySelector(".c-ok"); evento("compartir-29n");
+    try { await navigator.clipboard.writeText(cp.dataset.compCopiar); ok.textContent = "Enlace copiado"; } catch (er) { ok.textContent = cp.dataset.compCopiar; } }
+});
 // Tema y partido elegidos (el tema se guarda en la dirección: elecciones.html#vivienda)
-let TEMA = (location.hash.slice(1).split("-")[0]) || "vivienda", PARTIDO = "todos";
+// 12/11: cada tema y cada partido tiene su página para compartir (elecciones-vivienda.html, elecciones-psoe.html), que genera
+// seo/generar.py con su título e imagen para redes. Esta misma página las sirve: lee el tema o el partido de la dirección.
+const PAG = (location.pathname.match(/elecciones-([a-z]+)(?:\.html)?\/?$/) || [])[1] || "";
+const BASE_URL = "https://vistaplena.es/";
+const dirPag = id => `elecciones-${id}.html`;
+const urlPag = id => `${BASE_URL}elecciones-${id}`;
+let TEMA = (location.hash.slice(1).split("-")[0]) || PAG || "vivienda", PARTIDO = "todos";
 document.addEventListener("click", e => {
   const bt = e.target.closest("#gvTemas [data-tema]");
-  if (bt) { TEMA = bt.dataset.tema; PARTIDO = "todos"; history.replaceState(null, "", "#" + TEMA); pintar();
+  if (bt) { TEMA = bt.dataset.tema; PARTIDO = "todos"; history.replaceState(null, "", dirPag(TEMA)); pintar();
     bt.scrollIntoView({ inline: "center", block: "nearest" }); const v = document.getElementById("gvVista"); if (v.getBoundingClientRect().top < 0) v.scrollIntoView(); return; }
   const bp = e.target.closest("[data-partido]");
   if (bp) { PARTIDO = bp.dataset.partido; pintar(); }
@@ -1072,6 +1135,7 @@ function pintar(){
     : `${nVot === 1 ? "1 votación" : nVot + " votaciones"} sobre ${esc(t.nombre.toLowerCase())} en el Pleno, de ${mesAno(LV[LV.length - 1].fecha)} a ${mesAno(LV[0].fecha)}. Ábrelo para ver quién votó a favor y quién en contra.`;
   document.getElementById("gvVista").innerHTML = `
     <div class="gv-cab" id="${t.id}"><h2>${esc(t.nombre)}</h2>${s ? `<p class="gv-cis">Le preocupa al<b>${String(s.cis).replace(".", ",")} %</b>de los españoles${info(`${esc(s.cisNota)} · CIS, septiembre de 2026`, "De dónde sale")}</p>` : ""}</div>
+    ${barraCompartir("tema", t.id)}
     <div class="gv-cols">
       <section class="gv-caja gv-datos-caja"><span class="eti">El problema, en datos</span>
         <div class="gv-datos">${t.datos.map(d => `<div class="gv-dato"><span class="c">${esc(d.cifra)}</span><span class="q">${esc(d.que)}</span><span class="f">${esc(d.fuente)} · ${esc(d.periodo)} · <a href="${esc(d.url)}" target="_blank" rel="noopener">fuente</a></span></div>`).join("")}</div></section>
@@ -1096,7 +1160,8 @@ const FICHA_P = [
     votNota: "Compromís-Front Valencià es una coalición nueva. Mostramos lo que votaron los diputados de Compromís en el Congreso." },
   { id: "adelante", vot: "", nombre: "Adelante Andalucía", votNota: "Adelante Andalucía no tenía diputados en el Congreso en esta legislatura." }
 ];
-let FICHA = (location.hash.match(/^#partidos-([a-z]+)/) || [])[1] || "psoe";
+const ES_PARTIDO = id => FICHA_P.some(f => f.id === id);
+let FICHA = (location.hash.match(/^#partidos-([a-z]+)/) || [])[1] || (ES_PARTIDO(PAG) ? PAG : "psoe");
 const VOTO_K = { "Sí": ["s", "A favor"], "No": ["n", "En contra"], "Abstención": ["a", "Abstención"] };
 function fichaPartido(){
   if (!PROG || !GUIA) return `<p class="g-vacio">Cargando…</p>`;
@@ -1110,7 +1175,7 @@ function fichaPartido(){
   const p = datos(FICHA_P.find(f => f.id === FICHA));
   let h = tabs + `<div class="fp-cab"><h3>${esc(p.nombre)}</h3>${p.web ? `<a href="${esc(p.web)}" target="_blank" rel="noopener">${esc(p.web.replace(/^https?:\/\/(www\.)?/, ""))}</a>` : ""}</div>`
     + `<p class="fp-estado">${p.programa ? `Programa para el 29N: <a href="${esc(p.programa.url)}" target="_blank" rel="noopener">publicado el ${fechaLarga(p.programa.fecha)}</a>` : p.resumen ? `Todavía no ha publicado su programa completo; hay <a href="${esc(p.resumen)}" target="_blank" rel="noopener">un resumen en su web</a>.` : p.presentacion ? `Todavía no ha publicado su programa para el 29N: lo presenta el ${diaMes(p.presentacion)}.` : "Todavía no ha publicado su programa para el 29N."}</p>`
-    + (p.nota ? `<p class="fp-nota">${esc(p.nota)}</p>` : "");
+    + (p.nota ? `<p class="fp-nota">${esc(p.nota)}</p>` : "") + barraCompartir("partido", p.id);
   // Propuestas, en el orden de los temas de la guía
   h += `<div class="fp-bloque"><span class="eti">Qué propone, tema a tema</span>`;
   if (!POST) h += `<p class="g-vacio">Cargando…</p>`;
@@ -1149,10 +1214,10 @@ function fichaPartido(){
 }
 document.addEventListener("click", e => {
   const bf = e.target.closest("[data-ficha]");
-  if (bf) { FICHA = bf.dataset.ficha; history.replaceState(null, "", "#partidos-" + FICHA); document.getElementById("fichaPartido").innerHTML = fichaPartido();
+  if (bf) { FICHA = bf.dataset.ficha; history.replaceState(null, "", dirPag(FICHA)); document.getElementById("fichaPartido").innerHTML = fichaPartido();
     document.querySelector(`[data-ficha="${FICHA}"]`)?.scrollIntoView({ inline: "center", block: "nearest" }); return; }
   const bi = e.target.closest("[data-ir-tema]");
-  if (bi) { TEMA = bi.dataset.irTema; PARTIDO = bi.dataset.irPartido || "todos"; history.replaceState(null, "", "#" + TEMA); pintar();
+  if (bi) { TEMA = bi.dataset.irTema; PARTIDO = bi.dataset.irPartido || "todos"; history.replaceState(null, "", dirPag(TEMA)); pintar();
     modo("tema"); document.getElementById("gvVista").scrollIntoView(); }
 });
 // Dos caminos: comparar por tema o ver un partido
@@ -1163,7 +1228,7 @@ function modo(m, escribir = true){
   document.getElementById("gvVista").hidden = p;
   document.getElementById("estadoProgramas").hidden = p;
   document.getElementById("partidos").hidden = !p;
-  if (escribir) history.replaceState(null, "", p ? "#partidos-" + FICHA : "#" + TEMA);
+  if (escribir) history.replaceState(null, "", dirPag(p ? FICHA : TEMA));
 }
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-modo]"); if (!b) return;
@@ -1173,7 +1238,7 @@ document.addEventListener("click", e => {
 const modoDeDireccion = () => {
   const h = location.hash;
   if (h === "#como") { document.getElementById("como").open = true; return; }
-  if (h.startsWith("#partidos")) { const f = (h.match(/^#partidos-([a-z]+)/) || [])[1]; if (f && f !== FICHA) { FICHA = f; document.getElementById("fichaPartido").innerHTML = fichaPartido(); } modo("partido", false); }
+  if (h.startsWith("#partidos") || (!h && ES_PARTIDO(PAG))) { const f = (h.match(/^#partidos-([a-z]+)/) || [])[1]; if (f && f !== FICHA) { FICHA = f; document.getElementById("fichaPartido").innerHTML = fichaPartido(); } modo("partido", false); }
   else modo("tema", false);
 };
 window.addEventListener("hashchange", () => { modoDeDireccion(); document.querySelector(".gv-modos").scrollIntoView(); });
@@ -1182,7 +1247,7 @@ modoDeDireccion();
 (() => { const d = Math.ceil((new Date("2026-11-29T09:00:00+01:00") - Date.now()) / 864e5); document.getElementById("dias").textContent = d > 0 ? d : "Hoy"; })();
 pintar();
 Promise.all([fetch("programas.json").then(r => r.json()), fetch("guia.json").then(r => r.json()), fetch("posturas.json").then(r => r.json()).catch(() => null)])
-  .then(([p, g, q]) => { PROG = p; GUIA = g; POST = q; pintar(); if (location.hash.startsWith("#partidos")) document.querySelector(".gv-modos").scrollIntoView(); else if (location.hash && location.hash !== "#" + TEMA) document.querySelector(location.hash)?.scrollIntoView(); }).catch(() => {});
+  .then(([p, g, q]) => { PROG = p; GUIA = g; POST = q; pintar(); if (location.hash.startsWith("#partidos") || (!location.hash && ES_PARTIDO(PAG))) document.querySelector(".gv-modos").scrollIntoView(); else if (location.hash && location.hash !== "#" + TEMA) document.querySelector(location.hash)?.scrollIntoView(); }).catch(() => {});
 (async () => {
   const h = { apikey: SUPA.key, Authorization: "Bearer " + SUPA.key };
   try {
