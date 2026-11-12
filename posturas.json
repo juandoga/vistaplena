@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-09",
+ "actualizado": "2026-11-11",
  "criterio": "Mientras los partidos no publiquen sus programas para el 29N, recogemos lo que cada uno ha propuesto en público: documentos del partido, declaraciones recogidas por la prensa y su programa de 2023. Siempre con fuente y fecha. No valoramos las propuestas: solo indicamos si el partido explica cómo lo haría y cómo lo pagaría.",
  "fuentes": {
   "EDB23": {
@@ -141,6 +141,11 @@
    "nombre": "Programa electoral del PNV",
    "url": "https://www.eaj-pnv.eus/es/adjuntos-documentos/21765/pdf/programa-electoral-29n",
    "fecha": "2026-11-09"
+  },
+  "PP_PROG": {
+   "nombre": "Programa del PP «Reconstrucción nacional»",
+   "url": "https://www.pp.es/wp-content/uploads/2026/11/LA-RECONSTRUCCION-NACIONAL.pdf",
+   "fecha": "2026-11-10"
   }
  },
  "partidos": [
@@ -206,10 +211,10 @@
    ],
    "pp": [
     {
-     "t": "Un millón de viviendas en cuatro años liberando suelo público; avales públicos del 95-100 % de la hipoteca para jóvenes; bajar hasta un 60 % los impuestos de la compra para jóvenes; derogar la ley de vivienda y una ley contra la okupación.",
-     "f": "INFOBAE",
+     "t": "Construir un millón de viviendas con suelo público y privado y una nueva ley del suelo; derogar la ley de vivienda (fuera las zonas tensionadas y el índice de precios); bajar el IVA de la primera vivienda del 10 % al 4 % a los menores de 40 años; aval público de hasta el 20 % del precio; una «hucha hogar joven» que desgrava el 20 % de lo ahorrado, y desalojar a los okupas en 48 horas.",
+     "f": "PP_PROG",
      "como": "parcial",
-     "nota": "Dice los instrumentos, pero no cuánto cuestan, cuántos avales habría ni cómo se compensaría lo que se deja de recaudar."
+     "nota": "Programa, pág. 53-55. Explica los instrumentos, pero no cuánto costarían las rebajas y los avales."
     }
    ],
    "vox": [
@@ -310,16 +315,10 @@
    ],
    "pp": [
     {
-     "t": "Presentar los Presupuestos de 2027 en los tres primeros meses del año y quitar trabas burocráticas.",
-     "f": "PP_EE",
-     "como": "no",
-     "nota": "Avance del programa que presenta el 10 de noviembre."
-    },
-    {
-     "t": "IVA del 0 % en algunos alimentos básicos y del 10 % en la luz; movilizar hasta 300.000 millones en infraestructuras (carreteras, trenes, agua, energía).",
-     "f": "FORBES",
-     "como": "no",
-     "nota": "No explica de dónde saldría el dinero de las infraestructuras («junto con los sectores implicados») ni el coste de bajar el IVA."
+     "t": "Bajar la deuda con objetivos para cada año según las reglas europeas; que ningún gasto nuevo se apruebe sin decir cómo se paga; revisar cada año los programas de gasto; que dos prórrogas seguidas de los presupuestos obliguen a convocar elecciones, y un plan de infraestructuras de más de 300.000 millones en 15 años con el sector privado.",
+     "f": "PP_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 13, 30 y 45. Da la cifra del plan de infraestructuras, pero no cuánto pondría el Estado y cuánto las empresas."
     }
    ],
    "vox": [
@@ -385,16 +384,10 @@
    ],
    "pp": [
     {
-     "t": "Fijar cada año un cupo de inmigración legal según la capacidad de acogida y los empleos que hagan falta, pedir más agentes de Frontex y recortar la ayuda a los países que no colaboren en el control de fronteras.",
-     "f": "PP_EE",
+     "t": "Una autoridad única para toda la inmigración; más agentes y apoyo de las Fuerzas Armadas en la frontera sur; identificar en siete días a quien entre de forma irregular; cupos anuales de trabajadores según el paro y la capacidad de acogida; prohibir por ley las regularizaciones masivas; expulsar a los extranjeros condenados por delitos graves, y una ley de nacionalidad más exigente.",
+     "f": "PP_PROG",
      "como": "parcial",
-     "nota": "Avance del programa que presenta el 10 de noviembre."
-    },
-    {
-     "t": "Visado por puntos (como en Canadá o Australia), que un delito grave suponga perder el permiso de residencia, que los reincidentes no puedan quedarse, ligar el ingreso mínimo vital a buscar empleo y exigir integración para dar la nacionalidad.",
-     "f": "PP_INMIG",
-     "como": "parcial",
-     "nota": "Dice las medidas, pero no cómo se puntuaría el visado ni los plazos."
+     "nota": "Programa, pág. 21-23 y 50. No dice cuánto costaría el refuerzo de la frontera."
     }
    ],
    "vox": [
@@ -470,10 +463,10 @@
    ],
    "pp": [
     {
-     "t": "Premiar a las empresas con menos bajas laborales, que las mutuas puedan dar el alta en algunas enfermedades, cambiar el límite de horas extra, cuota cero para nuevos autónomos y un año sin cotizar por el primer trabajador contratado.",
-     "f": "INFOBAE",
-     "como": "no",
-     "nota": "No da cifras ni coste. Para el salario mínimo no fija cifra."
+     "t": "Los nuevos autónomos no pagarán cuota el primer año (ni el segundo si ganan menos del salario mínimo); quien facture menos de 85.000 € no tendrá que cobrar ni declarar el IVA; bonificar el 100 % de las cotizaciones del primer trabajador que se contrate; cotizar menos por desempleo las empresas con plantillas estables, y un cheque para que cada trabajador se forme en inteligencia artificial.",
+     "f": "PP_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 58-59. No dice cuánto dejaría de ingresar la Seguridad Social."
     }
    ],
    "vox": [
@@ -555,10 +548,10 @@
    ],
    "pp": [
     {
-     "t": "Más plazas MIR para formar médicos, mejorar las guardias y quitar burocracia a los médicos.",
-     "f": "PP_SANIDAD",
-     "como": "no",
-     "nota": "No dice cuántas plazas ni cuánto dinero."
+     "t": "Un pacto de Estado por la sanidad con las comunidades y un plan urgente contra las listas de espera; al menos 4.500 médicos más en atención primaria y más plazas para formar especialistas, y un plan nacional de salud mental 2027-2037.",
+     "f": "PP_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 68-70. No dice cuánto costaría ni cómo se pagarían los nuevos médicos."
     }
    ],
    "vox": [
@@ -610,16 +603,10 @@
    ],
    "pp": [
     {
-     "t": "Una ley para que las pensiones suban con el IPC aunque no haya presupuestos.",
-     "f": "PP_PENS",
-     "como": "parcial",
-     "nota": "Dice el mecanismo, no el coste."
-    },
-    {
-     "t": "«Mochila austriaca»: un fondo que pagan empresa y trabajador y que este recupera al ser despedido o al jubilarse.",
-     "f": "CAT23",
+     "t": "Que las pensiones suban cada año con el IPC; rehacer el Pacto de Toledo; desgravar en la renta a quien siga trabajando después de jubilarse, y que el Estado cotice por quien deje de trabajar para cuidar a un familiar dependiente.",
+     "f": "PP_PROG",
      "como": "no",
-     "nota": ""
+     "nota": "Programa, pág. 42-44. No explica cómo se pagaría. Una medida de este capítulo, la 109, se conocerá durante la campaña."
     }
    ],
    "vox": [
@@ -708,16 +695,10 @@
    ],
    "pp": [
     {
-     "t": "Duplicar el mínimo personal de la renta, la parte de los ingresos que no paga IRPF.",
-     "f": "PP_EE",
+     "t": "Subir los mínimos personales y familiares y bajar la renta (IRPF) a las rentas medias y bajas; que no pague IRPF quien cobre el salario mínimo; actualizar el impuesto con la inflación; que los jóvenes de 18 a 35 años no paguen IRPF el primer año y paguen menos los tres siguientes, e IVA del 0 % en los alimentos básicos, carne y pescado incluidos, mientras dure la crisis de precios.",
+     "f": "PP_PROG",
      "como": "parcial",
-     "nota": "Avance del programa que presenta el 10 de noviembre."
-    },
-    {
-     "t": "Actualizar la renta con la inflación; duplicar lo que no tributa por hijos (de 2.400 a 4.800 € el primero y de 2.700 a 5.400 € el segundo); IVA 0 % en alimentos básicos; IVA de la luz al 10 %; sin IVA para autónomos que facturen menos de 85.000 € al año.",
-     "f": "FORBES",
-     "como": "parcial",
-     "nota": "Las medidas están concretadas, pero no cuánto se dejaría de recaudar ni cómo se compensaría."
+     "nota": "Programa, pág. 60-61. Dice que lo que se recupere luchando contra el fraude pagaría las rebajas, pero no cuánto cuestan ni cuánto se recuperaría."
     }
    ],
    "vox": [
@@ -791,10 +772,10 @@
    ],
    "pp": [
     {
-     "t": "Cambiar la ley educativa actual (LOMLOE), un examen de acceso a la universidad igual en toda España, más becas y libertad para elegir colegio.",
-     "f": "EDB23",
+     "t": "Un examen de acceso a la universidad igual en toda España; garantizar la enseñanza en castellano en todas las etapas; poder elegir colegio en todo el municipio y no quitar conciertos donde haya demanda; en la ESO, volver a pasar de curso con todo aprobado y con refuerzo obligatorio; becas como derecho por ley y FP sin matrícula en los ciclos con más empleo.",
+     "f": "PP_PROG",
      "como": "no",
-     "nota": ""
+     "nota": "Programa, pág. 39 y 67-68. No dice cuánto costarían las becas ni la FP gratuita."
     }
    ],
    "vox": [
@@ -855,10 +836,10 @@
    ],
    "pp": [
     {
-     "t": "Un plan de 650 millones para Ceuta y Melilla y que se reconozcan como frontera europea.",
-     "f": "PP_EE",
-     "como": "parcial",
-     "nota": "Avance del programa que presenta el 10 de noviembre."
+     "t": "Volver a castigar la sedición y la convocatoria de referéndums ilegales; ninguna cesión en Hacienda, Seguridad Social o inmigración a cambio de apoyos para gobernar; un nuevo modelo de financiación autonómica pactado entre todas las comunidades, sin que ninguna salga del sistema común, y que cada comunidad responda de su deuda.",
+     "f": "PP_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 16-17, 29 y 40-41."
     },
     {
      "t": "Pidió devolver al Gobierno la ley que perdona parte de la deuda de las comunidades (julio de 2026). Volver a castigar la sedición y endurecer la malversación.",
@@ -935,16 +916,10 @@
    ],
    "pp": [
     {
-     "t": "Blindar las centrales nucleares para bajar el precio de la luz y auditar las redes de transporte y de energía.",
-     "f": "PP_EE",
-     "como": "no",
-     "nota": "Avance del programa que presenta el 10 de noviembre."
-    },
-    {
-     "t": "Alargar la vida de las centrales nucleares, quitar el impuesto a la producción de electricidad y agilizar la conexión a la red.",
-     "f": "FORBES",
+     "t": "Quitar la fecha de cierre de las centrales nucleares de Almaraz, Ascó, Vandellós, Cofrentes y Trillo; eliminar el impuesto del 7 % a la producción de electricidad y bajar los impuestos del recibo de la luz; una tarifa social única para los hogares vulnerables; desbloquear en 18 meses las conexiones a la red y revisar los plazos de la transición climática.",
+     "f": "PP_PROG",
      "como": "parcial",
-     "nota": "Dice qué haría, no cuánto costaría."
+     "nota": "Programa, pág. 71-72. No dice cuánto se dejaría de recaudar con la rebaja del recibo."
     }
    ],
    "vox": [
@@ -1025,10 +1000,10 @@
    ],
    "pp": [
     {
-     "t": "Plan de Limpieza Institucional: que los ministros no puedan ampararse en el Congreso para no declarar ante un juez, regular a los lobbies, prohibir indultar a condenados por corrupción y nombramientos públicos independientes.",
-     "f": "PP_LIMPIEZA",
+     "t": "Derogar la ley de amnistía y prohibir los indultos a cambio de apoyos; que el fiscal general no dependa del Gobierno (un solo mandato de cinco años); que los jueces elijan a los doce vocales judiciales del CGPJ; incompatibilidades para entrar en el Tribunal Constitucional, y volver a castigar más la malversación.",
+     "f": "PP_PROG",
      "como": "no",
-     "nota": "No detalla cómo se aplicaría cada medida."
+     "nota": "Programa, pág. 29, 31-32 y 34."
     }
    ],
    "vox": [
