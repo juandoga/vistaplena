@@ -64,9 +64,15 @@ url_tema = lambda id_, n: f"/tema/{slug(n)}-{id_}/"
 
 
 def pedir(ruta):
-    req = urllib.request.Request(f"{SUPA}/rest/v1/{ruta}", headers={"apikey": KEY, "Authorization": "Bearer " + KEY})
+    # 14/11: pedido comprimido. Este script baja cada hora unos 6,5 MB (las noticias de 14 días con sus titulares y el archivo)
+    # y sin comprimir eran ~4,7 GB al mes: casi todo el tráfico de salida del plan gratuito de Supabase (5 GB).
+    req = urllib.request.Request(f"{SUPA}/rest/v1/{ruta}", headers={"apikey": KEY, "Authorization": "Bearer " + KEY, "Accept-Encoding": "gzip"})
     with urllib.request.urlopen(req, timeout=60) as r:
-        return json.load(r)
+        datos = r.read()
+        if r.headers.get("Content-Encoding") == "gzip":
+            import gzip
+            datos = gzip.decompress(datos)
+        return json.loads(datos)
 
 
 def todo(ruta):
