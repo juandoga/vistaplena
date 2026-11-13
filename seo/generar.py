@@ -623,15 +623,17 @@ def portada_estatica(historias, ahora):
     # Puntos ciegos vigentes (8/11, igual que en la portada): titulares nuevos en 48 h, empezados hace menos de 4 días
     # y de política española (los de fuera se ven aparte en la sección)
     creada = lambda h: dt.datetime.fromisoformat(h["creada"].replace("Z", "+00:00"))
-    ciegos = [h for h in historias if h.get("punto_ciego") and (ahora - hace(h)).total_seconds() < 48 * 3600
-              and (ahora - creada(h)).total_seconds() < 96 * 3600]
+    # 14/11: más cortos, igual que en la portada: empezada hace menos de 36 h, algún titular en 24 h y sin piezas de servicio
+    servicio = re.compile(r"^\s*[¿\"«']?\s*(qu[eé] es|qu[eé] son|c[oó]mo|cu[aá]ndo|d[oó]nde|cu[aá]nt[oa]s?|qui[eé]n(es)? (es|son)|por qu[eé])\b", re.I)
+    ciegos = [h for h in historias if h.get("punto_ciego") and (ahora - hace(h)).total_seconds() < 24 * 3600
+              and (ahora - creada(h)).total_seconds() < 36 * 3600 and not servicio.match(h["titulo"] or "")]
     if ciegos:
         try:
             fuera = {x["id"] for x in pedir(f"historias?select=id&ia_ambito=eq.fuera&id=in.({','.join(str(h['id']) for h in ciegos)})")}
         except Exception:
             fuera = set()
         ciegos = [h for h in ciegos if h["id"] not in fuera]
-    ciegos = sorted(ciegos, key=lambda h: h.get("total") or 0, reverse=True)[:6]
+    ciegos = sorted(ciegos, key=lambda h: (h.get("total") or 0) / (1 + (ahora - creada(h)).total_seconds() / (12 * 3600)), reverse=True)[:6]
     if not top:
         return
     def li(h):

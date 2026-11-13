@@ -764,8 +764,14 @@ try {
 const PARAM = new URLSearchParams(location.search);
 let vista = ["ciegos","izquierda","derecha","todas"].includes(PARAM.get("vista")) ? PARAM.get("vista") : "portada";
 // Punto ciego vigente (8/11): la noticia ha tenido titulares nuevos en las últimas 48 horas y empezó hace menos de 4 días
-const CIEGO_VIGENTE = 48 * 3600e3, CIEGO_MAX_EDAD = 96 * 3600e3;
-const ciegoVigente = x => Date.now() - new Date(x.actualizada) < CIEGO_VIGENTE && Date.now() - new Date(x.creada) < CIEGO_MAX_EDAD;
+// 14/11: los puntos ciegos duraban demasiado (un titular tardío bastaba para mantener días una noticia de la huelga general).
+// Ahora: empezada hace menos de 36 horas y con algún titular en las últimas 24. Las piezas de servicio («¿Qué es un piquete?»,
+// «Cómo saber si…», «Cuándo…») no cuentan como punto ciego: no son una noticia que un lado calle.
+const CIEGO_VIGENTE = 24 * 3600e3, CIEGO_MAX_EDAD = 36 * 3600e3;
+const SERVICIO = /^\s*[¿"«']?\s*(qu[eé] es|qu[eé] son|c[oó]mo|cu[aá]ndo|d[oó]nde|cu[aá]nt[oa]s?|qui[eé]n(es)? (es|son)|por qu[eé])\b/i;
+const ciegoVigente = x => Date.now() - new Date(x.actualizada) < CIEGO_VIGENTE && Date.now() - new Date(x.creada) < CIEGO_MAX_EDAD && !SERVICIO.test(x.titulo || "");
+// Orden: los medios que la publican, pero los recientes pesan más (a las 12 horas cuenta la mitad)
+const pesoCiego = h => (h.tot || 0) / (1 + (Date.now() - new Date(h.cr || h.act)) / (12 * 3600e3));
 const fh = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
 document.getElementById("fechaHoy").textContent = fh.charAt(0).toUpperCase() + fh.slice(1);
 function pieza(h){
@@ -953,7 +959,7 @@ function portadaNueva(c, H, ci, cd){
   P.forEach((h, i) => h.idx = i);
   const yaVistas = new Set();
   // Puntos ciegos vigentes de España: abre el de más medios; después, alternando lados si hay de los dos
-  const porMedios = (a, b) => b.tot - a.tot || new Date(b.act) - new Date(a.act);
+  const porMedios = (a, b) => pesoCiego(b) - pesoCiego(a) || new Date(b.act) - new Date(a.act);
   const todosC = [...ci, ...cd].sort(porMedios);
   const ciegos = [];
   if (todosC.length) {
@@ -964,7 +970,7 @@ function portadaNueva(c, H, ci, cd){
   ciegos.forEach(h => yaVistas.add(h.id));
   if (ciegos.length) {
     const unLado = ciegos.every(h => h.ciego === "izquierda") && ciegos.length > 1;
-    c.insertAdjacentHTML("beforeend", `<div class="cab-seccion" id="s-ciegos"><h2>Puntos ciegos de hoy</h2><p>Noticias políticas de las últimas 48 horas que casi solo publica un lado.${unLado ? ` Hoy las cuentan sobre todo medios de derecha, que publican casi el doble de titulares que los de izquierda. <a href="metodologia.html#ciegos">Cómo se calcula</a>` : ""}</p></div>`);
+    c.insertAdjacentHTML("beforeend", `<div class="cab-seccion" id="s-ciegos"><h2>Puntos ciegos de hoy</h2><p>Noticias políticas del último día y medio que casi solo publica un lado.${unLado ? ` Hoy las cuentan sobre todo medios de derecha, que publican casi el doble de titulares que los de izquierda. <a href="metodologia.html#ciegos">Cómo se calcula</a>` : ""}</p></div>`);
     c.insertAdjacentHTML("beforeend", aperturaHTML(ciegos[0], true));
     if (ciegos.length > 1) c.insertAdjacentHTML("beforeend", `<div class="c-lista">${ciegos.slice(1).map(ciegoFila).join("")}</div>`);
     const nTodos = ci.length + cd.length;
@@ -1052,7 +1058,7 @@ function render(){
     c.insertAdjacentHTML("beforeend", cab("Puntos ciegos", "Noticias que casi solo está contando un lado. Si lees sobre todo medios del otro, probablemente no te han llegado. Se recalcula cada hora.", true));
     c.insertAdjacentHTML("beforeend", `<div class="filtro" role="group" aria-label="Filtrar por lado">${[["todos", "Todos"], ["izquierda", "La izquierda apenas la cuenta"], ["derecha", "La derecha apenas la cuenta"]]
       .map(([k, t]) => `<button type="button" data-filtro="${k}" aria-pressed="${k === filtro}">${t} <span>${n[k]}</span></button>`).join("")}</div>`);
-    const lista = filtro === "izquierda" ? ci : filtro === "derecha" ? cd : [...ci, ...cd].sort((a, b) => new Date(b.act) - new Date(a.act));
+    const lista = filtro === "izquierda" ? ci : filtro === "derecha" ? cd : [...ci, ...cd].sort((a, b) => pesoCiego(b) - pesoCiego(a));
     const rej = document.createElement("div"); rej.className = "rejilla";
     if (!lista.length) rej.innerHTML = `<p class="vacia">Ahora mismo no hay puntos ciegos${filtro === "todos" ? "" : " de este lado"}. Se recalcula cada hora.</p>`;
     lista.forEach(h => rej.appendChild(pieza(h)));
