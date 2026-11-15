@@ -23,9 +23,9 @@ drop policy if exists "programas: lectura pública" on public.programas;
 create policy "programas: lectura pública" on public.programas for select to anon, authenticated using (true);
 grant select on public.programas to anon, authenticated;
 
--- Estado comprobado a mano el 11/11/2026 en las webs oficiales
+-- Estado comprobado a mano el 11/11/2026 en las webs oficiales; PSOE y Adelante Andalucía, actualizados el 15/11/2026
 insert into public.programas (partido, estado, url, fecha, presentacion, nota, comprobado) values
-  ('psoe', 'pendiente', null, null, null, 'Aún no ha publicado su programa ni ha dado fecha oficial. Según El Independiente (7 de noviembre), lo presentaría a finales de la semana del 9 de noviembre, después de la huelga general del 11. Recogemos lo que ha prometido en la precampaña.', now()),
+  ('psoe', 'publicado', 'https://www.psoe.es/actualidad/noticias-actualidad/pedro-sanchez-el-29n-haremos-un-referendum-en-favor-de-la-buena-politica-frente-a-la-mala-educacion-de-la-derecha-y-la-ultraderecha/', '2026-11-15', null, 'Su programa, «La fuerza de seguir avanzando», tiene 113 páginas. Lo presentó el 15 de noviembre en Alcorcón; el PDF está adjunto a esta noticia de su web.', now()),
   ('pp', 'publicado', 'https://www.pp.es/wp-content/uploads/2026/11/LA-RECONSTRUCCION-NACIONAL.pdf', '2026-11-10', null, 'Su programa, «Reconstrucción nacional», tiene 249 medidas en 82 páginas. Ocho de ellas (por ejemplo, la 109, sobre pensiones) no se cuentan aún: el PP dice que las dará a conocer durante la campaña.', now()),
   ('vox', 'publicado', 'https://www.voxespana.es/wp-content/uploads/2026/10/RECUPERAR-ESPANA-A4.pdf', '2026-10-20', null, 'Su programa es «Recuperar España», un documento de seis páginas con tres ejes: prioridad nacional, desregulación y remigración.', now()),
   ('fa', 'pendiente', null, null, null, 'Aún no ha publicado un programa completo ni ha dado fecha; su web (frenteamplio.info) solo tiene notas de prensa con medidas sueltas. Recogemos las medidas que ha anunciado.', now()),
@@ -38,6 +38,6 @@ insert into public.programas (partido, estado, url, fecha, presentacion, nota, c
   ('cc', 'publicado', 'https://coalicioncanaria.org/wp-content/uploads/2026/11/CCA-26-Programa_Electoral-29NOV.pdf', '2026-11-08', null, 'Su programa, «Defiende Canarias», es común con Municipalistas Primero Canarias. Lo presentó el 9 de noviembre.', now()),
   ('upn', 'pendiente', null, null, null, 'Se presenta en coalición con el PP en Navarra. No ha publicado un programa propio.', now()),
   ('compromis', 'resumen', 'https://frontvalencia.org/#programa', null, null, 'Coalición de Compromís, Podemos, Esquerra Unida y ERPV que solo se presenta en la Comunidad Valenciana. En su web (frontvalencia.org) hay un resumen en seis ejes (vivienda, trabajo, trato justo, territorio, movilidad e igualdad); el programa completo aún no está.', now()),
-  ('adelante', 'pendiente', null, null, null, 'Se presenta solo en Andalucía. En su web solo está su programa de las elecciones andaluzas de mayo; el de las generales aún no lo ha publicado.', now())
+  ('adelante', 'publicado', 'https://programa.adelanteandalucia.org/programa-29n-adelante-andalucia.pdf', '2026-11-10', null, 'Se presenta solo en Andalucía. Su programa, «Un programa para frenar a las derechas», tiene 719 propuestas; las 29 principales están resumidas en «Las 29 del 29N». Lo presentó el 10 de noviembre.', now())
 on conflict (partido) do update set estado = excluded.estado, url = excluded.url, fecha = excluded.fecha,
   presentacion = excluded.presentacion, nota = excluded.nota, comprobado = excluded.comprobado;
