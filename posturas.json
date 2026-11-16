@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-12",
+ "actualizado": "2026-11-16",
  "criterio": "Mientras los partidos no publiquen sus programas para el 29N, recogemos lo que cada uno ha propuesto en público: documentos del partido, declaraciones recogidas por la prensa y su programa de 2023. Siempre con fuente y fecha. No valoramos las propuestas: solo indicamos si el partido explica cómo lo haría y cómo lo pagaría.",
  "fuentes": {
   "EDB23": {
@@ -151,6 +151,11 @@
    "nombre": "Programa de Adelante Andalucía «Un programa para frenar a las derechas»",
    "url": "https://programa.adelanteandalucia.org/programa-29n-adelante-andalucia.pdf",
    "fecha": "2026-11-10"
+  },
+  "PSOE_PROG": {
+   "nombre": "Programa del PSOE «La fuerza de seguir avanzando»",
+   "url": "https://www.psoe.es/media-content/2026/11/PROGRAMAPSOE29N26.pdf",
+   "fecha": "2026-11-15"
   }
  },
  "partidos": [
@@ -206,16 +211,10 @@
   "vivienda": {
    "psoe": [
     {
-     "t": "Préstamos públicos sin intereses de hasta 50.000 € para pagar la entrada de la primera vivienda (10.000 millones en total), deducción del alquiler en la declaración de la renta, prórroga de hasta 2 años para inquilinos al corriente de pago con límite a las subidas, y que los pisos turísticos tributen como un negocio.",
-     "f": "EURONEWS",
+     "t": "Dedicar cada año el 1 % del PIB a vivienda; un parque público estatal de 100.000 viviendas y reforzar CASA 47, la empresa pública de vivienda; préstamos sin intereses de hasta 50.000 € (programa TU CASA, 10.000 millones); más de 25.000 millones del ICO en avales y préstamos; actualizar las deducciones de los inquilinos, y un impuesto a los solares residenciales sin construir.",
+     "f": "PSOE_PROG",
      "como": "parcial",
-     "nota": "Explica cómo funcionan los préstamos, pero no de dónde sale el dinero ni cuánto cuestan las rebajas fiscales."
-    },
-    {
-     "t": "Plan Estatal de Vivienda 2026-2030 con 7.000 millones y una empresa estatal de vivienda; que el parque público pase del 6 % de las viviendas.",
-     "f": "FORBES",
-     "como": "si",
-     "nota": "Dice la cifra y quién paga: 60 % el Estado y 40 % las comunidades."
+     "nota": "Programa, pág. 27-33. Da cifras de varios instrumentos y de dónde sale parte del dinero (el ICO, el Plan Social del Clima), pero no de dónde saldría el 1 % del PIB al año."
     }
    ],
    "pp": [
@@ -318,16 +317,10 @@
   "economia": {
    "psoe": [
     {
-     "t": "Reindustrialización y transición energética, y que los autónomos coticen según lo que ganan de verdad.",
-     "f": "FORBES",
-     "como": "no",
-     "nota": "Sin medidas concretas sobre precios ni cifras."
-    },
-    {
-     "t": "Mantener los impuestos temporales a la banca y a las energéticas.",
-     "f": "EDB23",
-     "como": "no",
-     "nota": ""
+     "t": "Un Fondo España Crece que movilizaría 120.000 millones de euros; una nueva Ley de Industria y Autonomía Estratégica; llevar la inversión pública en ciencia al 1,25 % del PIB que fija la Ley de la Ciencia y subir el objetivo al 1,5 % en 2035; 19.000 millones para conservar la red de ferrocarril hasta 2030, y bajar el déficit y la deuda con un nuevo plan fiscal que se presentaría a la Comisión Europea en la primavera de 2027.",
+     "f": "PSOE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 14-20 y 48-49. Dice que las inversiones se pagarían con el Fondo España Crece, el ICO y los presupuestos, pero no cuánto pondría el Estado ni cuánto bajarían el déficit y la deuda cada año."
     }
    ],
    "pp": [
@@ -395,16 +388,16 @@
   "inmigracion": {
    "psoe": [
     {
+     "t": "Un Plan de Integración y Ciudadanía 2026-2030 con una dotación inicial de 500 millones de euros; más vías legales y seguras para pedir protección internacional (reasentamiento y visados humanitarios) y reforzar el sistema público de acogida y asilo; poner en marcha la Autoridad Independiente para la Igualdad de Trato y un pacto de Estado contra los discursos y delitos de odio.",
+     "f": "PSOE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 93-94. Da la dotación inicial del plan de integración, pero no de dónde sale ni cuánto costaría reforzar la acogida."
+    },
+    {
      "t": "Regularizar a los extranjeros que ya viven y trabajan en España.",
      "f": "INFOBAE",
      "como": "no",
      "nota": "No dice a cuántas personas ni con qué requisitos."
-    },
-    {
-     "t": "Más plazas en el sistema de acogida y plan contra el racismo.",
-     "f": "EDB23",
-     "como": "no",
-     "nota": ""
     }
    ],
    "pp": [
@@ -488,10 +481,10 @@
   "empleo": {
    "psoe": [
     {
-     "t": "Bajar la jornada máxima a 36 horas semanales antes de 2030, salario mínimo en el 60 % del salario medio y un Estatuto del Becario.",
-     "f": "FORBES",
+     "t": "Fijar por ley que el salario mínimo esté siempre por encima del 60 % del salario medio y se actualice con los precios; completar la bajada de la jornada a 37,5 horas y animar a llegar a 35 en los convenios; un registro digital de la jornada; cambiar el despido improcedente para que la reparación sea «efectiva, proporcionada y disuasoria», y protección por desempleo para quienes hagan prácticas.",
+     "f": "PSOE_PROG",
      "como": "parcial",
-     "nota": "Dice el objetivo y el plazo, pero no cómo se aplicaría en cada sector ni qué pasaría con las pequeñas empresas."
+     "nota": "Programa, pág. 38 y 42-43. Son sobre todo cambios de ley; no da cifras de coste."
     }
    ],
    "pp": [
@@ -581,10 +574,10 @@
   "sanidad": {
    "psoe": [
     {
-     "t": "Tiempos máximos de espera fijados por ley, Agencia Estatal de Salud Pública e historia clínica digital común.",
-     "f": "EDB23",
-     "como": "no",
-     "nota": "No dice cuánto dinero ni de dónde. La Agencia de Salud Pública se votó en marzo de 2025 y el Congreso la rechazó."
+     "t": "Acabar con las listas de espera con un gasto público en sanidad en torno al 7 % del PIB; ir incluyendo en la sanidad pública los empastes y otros tratamientos dentales básicos de los adultos y, mientras tanto, una ayuda de hasta 200 euros al año por persona, empezando por los hogares de rentas medias y bajas; que la gestión directa sea la forma preferente para limitar la privatización, y atención psicológica gratuita con la primera consulta en 30 días como máximo.",
+     "f": "PSOE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 50-51. Fija el gasto en torno al 7 % del PIB, pero no de dónde saldría el dinero ni cuánto cuestan las nuevas prestaciones."
     }
    ],
    "pp": [
@@ -638,16 +631,10 @@
   "pensiones": {
    "psoe": [
     {
-     "t": "Subir las pensiones con la inflación (IPC) por decreto antes de que acabe 2026.",
-     "f": "PENS_PSOE",
+     "t": "Proteger en la Constitución las pensiones públicas y su subida con el IPC; un año más de cotización por cada hijo o hija; subir la pensión de orfandad del 20 % al 30 %, y estudiar que los trabajos más penosos puedan jubilarse antes.",
+     "f": "PSOE_PROG",
      "como": "parcial",
-     "nota": "Explica cómo (un decreto), pero no el coste. Recuerda que el fondo de reserva tendrá 20.000 millones."
-    },
-    {
-     "t": "Que la subida con el IPC esté garantizada siempre y sin tope.",
-     "f": "CAT23",
-     "como": "no",
-     "nota": ""
+     "nota": "Programa, pág. 40-42. Dice de dónde saldría parte del dinero (la cuota de solidaridad, que el Estado pague algunas prestaciones con sus presupuestos y aportaciones de empresas con beneficios que hagan despidos colectivos), pero sin cifras."
     }
    ],
    "pp": [
@@ -738,16 +725,10 @@
   "impuestos": {
    "psoe": [
     {
-     "t": "Que pague más quien más tiene y más lucha contra el fraude.",
-     "f": "FORBES",
-     "como": "no",
-     "nota": "Sin medidas concretas ni cifras."
-    },
-    {
-     "t": "Más deducciones en la renta por hijos y por personas dependientes a cargo.",
-     "f": "CAT23",
-     "como": "no",
-     "nota": ""
+     "t": "Subir poco a poco hasta el 35 % el tipo máximo de las rentas del capital de más de 300.000 €; más impuestos a las grandes tecnológicas, además de la «tasa Google»; una tasa a los viajes de lujo que más contaminan; más impuesto de sociedades a las empresas cotizadas cuando su primer ejecutivo cobre mucho más que su plantilla; doblar la «tasa Tobin» (del 0,2 % al 0,4 %), y convertir el mínimo por hijo del IRPF en una ayuda que se cobra aunque no se pague el impuesto.",
+     "f": "PSOE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 48-50. Dice que lo que se recaude con los grandes patrimonios pagaría la prestación por crianza y la lucha contra la pobreza infantil, pero no cuánto se recaudaría ni cuánto costaría la ayuda por hijo."
     }
    ],
    "pp": [
@@ -829,10 +810,10 @@
   "educacion": {
    "psoe": [
     {
-     "t": "Escolarización universal de 0 a 18 años, libros de texto gratis y matrícula gratis en la universidad y la FP para quien apruebe a la primera.",
-     "f": "EDB23",
+     "t": "Educación de 0 a 3 años para todos; más becas y menos alumnos por aula; bajar el abandono escolar temprano por debajo del 10 % antes de 2030; comedor escolar gratis para el alumnado en situación de pobreza o exclusión; más plazas públicas de FP; becas Erasmus de hasta 1.000 o 1.500 € al mes según la renta, y matrícula gratis en el primer curso de grado de las universidades públicas.",
+     "f": "PSOE_PROG",
      "como": "no",
-     "nota": "No dice el coste."
+     "nota": "Programa, pág. 52-55. No dice cuánto costarían la matrícula gratis, el comedor ni la educación de 0 a 3 años, ni de dónde saldría el dinero."
     }
    ],
    "pp": [
@@ -900,6 +881,12 @@
   },
   "territorial": {
    "psoe": [
+    {
+     "t": "Sacar adelante el nuevo sistema de financiación autonómica propuesto por el Gobierno, que aporta 21.000 millones de euros más; que el Estado asuma 83.000 millones de deuda de las comunidades; convertir el Senado en una cámara territorial, con circunscripciones por comunidad; reunir la Conferencia de Presidentes con fecha fija, y reconocer las distintas lenguas en las instituciones comunes.",
+     "f": "PSOE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 49, 61-62 y 92. Da las cifras, pero no de dónde saldría el dinero; solo dice que la nueva financiación cabrá en el gasto previsto para el conjunto de las administraciones."
+    },
     {
      "t": "Perdonar parte de la deuda que las comunidades autónomas tienen con el Estado y aprobar un nuevo sistema de financiación autonómica.",
      "f": "VOT",
@@ -989,10 +976,10 @@
   "energia": {
    "psoe": [
     {
-     "t": "Más renovables y electrificación; ley de zonas aptas para renovables y proteger el 30 % de la tierra y el mar en 2030.",
-     "f": "EDB23",
-     "como": "no",
-     "nota": ""
+     "t": "Que el 81 % de la electricidad sea renovable en 2030; mantener el calendario de cierre de las centrales nucleares hasta 2035; más autoconsumo, almacenamiento de energía e hidrógeno renovable; defender en la UE una reforma del mercado eléctrico para que las ventajas de las renovables lleguen a hogares y empresas, y el Plan Social para el Clima para proteger a los hogares vulnerables.",
+     "f": "PSOE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 64-67. Cita los más de 9.000 millones del Plan Social para el Clima, pero no cuánto costaría el resto ni quién lo pagaría."
     }
    ],
    "pp": [
@@ -1075,15 +1062,15 @@
   "justicia": {
    "psoe": [
     {
+     "t": "Más jueces y fiscales y acabar con el abuso de los puestos temporales; oposiciones a juez y fiscal con pruebas anónimas y casos prácticos; prohibir que las asociaciones de jueces y fiscales reciban dinero privado; un mandato de cinco años para el fiscal general; quitar el aforamiento a los cargos públicos en los delitos que no tengan que ver con su cargo; una ley de integridad pública con una estrategia anticorrupción, y una ley de lobbies con registro obligatorio.",
+     "f": "PSOE_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 91 y 101-103. No dice cuántos jueces y fiscales más ni cuánto costarían."
+    },
+    {
      "t": "Registrar y regular a los lobbies (grupos de presión). Lo aprobó por decreto en agosto de 2026 y el Congreso lo anuló en septiembre.",
      "f": "VOT",
      "como": "parcial",
-     "nota": ""
-    },
-    {
-     "t": "Plan de Justicia 2030 y ley del derecho de defensa (aprobada en 2024).",
-     "f": "EDB23",
-     "como": "no",
      "nota": ""
     }
    ],
