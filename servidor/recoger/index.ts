@@ -117,11 +117,25 @@ async function leerUno(entrada: string): Promise<Item[]> {
   throw new Error(ultimo);
 }
 // Un medio puede tener varios canales (portada, política...) separados por espacios.
+// Opciones (20/11), en la misma lista separadas por espacios:
+//   solo:/es/      solo titulares cuya dirección contiene ese texto (p. ej. la edición en castellano)
+//   solo:castellano  descarta titulares en euskera o francés (el canal en castellano de naiz.eus los mezcla)
+// Los canales de Google News («site:medio») sirven para medios que bloquean la lectura: se quita « - Medio» del titular.
+const ES = /(^|[\s«"'‘(])(de|la|el|en|los|las|con|por|para|que|del|una|un|se|su|al|y|a|sobre|tras|contra)(?=[\s,.:;»"'’)]|$)/;
+const OTRA = /(^|[\s«"'‘(])(le|les|des|du|et|est|aux|eta|ez|bat|beste|egin|behar|dira|baina|dela|duela|ere)(?=[\s,.:;»"'’)]|$)/;
+const enCastellano = (t: string) => ES.test(t) && !OTRA.test(t);
 async function leer(rss: string): Promise<Item[]> {
-  const urls = rss.split(/\s+/).filter(Boolean);
+  const partes = rss.split(/\s+/).filter(Boolean);
+  const solo = partes.filter((p) => p.startsWith("solo:")).map((p) => p.slice(5));
+  const castellano = solo.includes("castellano");
+  const urls = partes.filter((p) => !p.startsWith("solo:"));
   const res = await Promise.allSettled(urls.map(leerUno));
-  const items = res.flatMap((r) => r.status === "fulfilled" ? r.value : []);
+  let items = res.flatMap((r) => r.status === "fulfilled" ? r.value : []);
   if (!items.length) throw (res.find((r) => r.status === "rejected") as PromiseRejectedResult)?.reason ?? new Error("sin noticias");
+  const rutas = solo.filter((t) => t !== "castellano");
+  if (rutas.length) items = items.filter((i) => rutas.some((t) => i.url.includes(t)));
+  if (castellano) items = items.filter((i) => enCastellano(i.titulo));
+  for (const i of items) if (i.url.startsWith("https://news.google.com/")) i.titulo = i.titulo.replace(/\s+-\s+[^-]{2,40}$/, "");
   const vistos = new Set<string>();
   return items.filter((i) => !vistos.has(i.url) && vistos.add(i.url));
 }
@@ -291,7 +305,9 @@ Deno.serve(async (req) => {
   const fase = new URL(req.url).searchParams.get("fase") ?? "todo";
   if (fase === "depurar") return new Response(JSON.stringify(await depurar(new URL(req.url)), null, 1), { headers: { "Content-Type": "application/json" } });
   const informe: Record<string, string | number> = {};
-  const { data: medios } = await db.from("medios").select("*").eq("activo", true);
+  // Los medios «en espera» (20/11) se leen, pero sus titulares van a articulos_espera: no se publican ni cuentan
+  // hasta que tengan etiqueta. Sirven para medir qué noticias eligen.
+  const { data: medios } = await db.from("medios").select("*").or("activo.eq.true,espera.eq.true");
   const desde = Date.now() - VENTANA_H * 3600e3;
   if (fase !== "agrupar" && fase !== "simular") {
 
@@ -303,6 +319,12 @@ Deno.serve(async (req) => {
       const items = (await leer(m.rss)).filter((i) => +i.publicado >= desde && +i.publicado <= Date.now() + 3600e3 && !FUERA.test(i.url) && !esLigera(i.titulo, i.url))
         .sort((x, y) => +y.publicado - +x.publicado).slice(0, 50);
       if (items.length) {
+        if (!m.activo) {
+          await db.from("articulos_espera").upsert(items.map((i) => ({
+            medio_id: m.id, titulo: i.titulo, url: i.url, resumen: i.resumen || null,
+            publicado: i.publicado.toISOString(), palabras: palabras(i.titulo + " " + i.resumen.slice(0, 160)),
+          })), { onConflict: "url", ignoreDuplicates: true });
+        } else {
         await db.from("articulos").upsert(items.map((i) => ({
           medio_id: m.id, titulo: i.titulo, url: i.url, resumen: i.resumen || null,
           publicado: i.publicado.toISOString(), palabras: palabras(i.titulo + " " + i.resumen.slice(0, 160)), imagen: i.imagen ?? null,
@@ -310,6 +332,7 @@ Deno.serve(async (req) => {
         // Completa la foto de artículos que ya teníamos guardados sin ella
         const conFoto = items.filter((i) => i.imagen).map((i) => ({ url: i.url, imagen: i.imagen }));
         if (conFoto.length) await db.rpc("poner_imagenes", { datos: conFoto });
+        }
       }
       await db.from("medios").update({ ultima_lectura: new Date().toISOString(), ultimo_error: null }).eq("id", m.id);
       informe[m.nombre] = items.length;

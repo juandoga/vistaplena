@@ -553,9 +553,18 @@ def archivo(historias, tpl_h, tpl_t, temas):
 
 
 # ---------- Fichas de medios ----------
-CONFIANZA = {"alta": "Alta: dos mediciones independientes coinciden.",
-             "media": "Media: hay una medición, o las dos no coinciden del todo y decide una tercera fuente.",
-             "baja": "Baja: no hay mediciones de su audiencia; la etiqueta se basa en su línea editorial y en clasificaciones externas."}
+# 20/11: manda el CIS 2025; si no llega, el medio entra solo si dos fuentes independientes coinciden en su lado
+CONFIANZA = {"alta": "Alta: el CIS lo mide directamente (cómo lo sitúan los encuestados o sus propios lectores).",
+             "media": "Media: etiqueta estimada. O sale de la ideología de sus lectores en el CIS, o el CIS no llega y coinciden al menos dos fuentes independientes.",
+             "baja": "Baja: no hay mediciones suficientes."}
+
+
+def cambio_txt(c):
+    if c.get("antes") is None:
+        return "entra en Vista Plena."
+    if c.get("despues") is None:
+        return "pasa a «en espera»."
+    return f"de {ETIQUETA[c['antes']].lower()} a {ETIQUETA[c['despues']].lower()}."
 
 
 def fichas_medios(historias, tpl_t):
@@ -563,7 +572,7 @@ def fichas_medios(historias, tpl_t):
         d = json.load(open(os.environ["VP_DATOS"]))
         medios, cambios = d.get("medios", []), d.get("cambios", [])
     else:
-        medios = pedir("medios?select=nombre,web,orientacion,grupo,revisado,nota_etiqueta,medicion_cis,medicion_twitter,confianza,activo&activo=eq.true&order=orientacion,nombre")
+        medios = pedir("medios?select=nombre,web,orientacion,grupo,revisado,nota_etiqueta,medicion_cis,medicion_twitter,medicion_propia,confianza,activo&activo=eq.true&order=orientacion,nombre")
         cambios = pedir("medios_cambios?select=fecha,medio,antes,despues,motivo&order=fecha.desc")
     grandes = sorted(historias, key=lambda h: -(h.get("total") or 0))[:30]
     mapa, filas_indice = [], []
@@ -576,9 +585,11 @@ def fichas_medios(historias, tpl_t):
         faltan = [h for h in grandes if h not in suyas][:5]
         mediciones = []
         if m.get("medicion_cis") is not None:
-            mediciones.append(f"Barómetro del CIS (ideología media de su audiencia, de 1 izquierda a 10 derecha): <b>{num(m['medicion_cis'])}</b>")
+            mediciones.append(f"Encuesta del CIS de 2025 (de 1, izquierda, a 10, derecha): <b>{num(m['medicion_cis'])}</b>")
         if m.get("medicion_twitter") is not None:
-            mediciones.append(f"Estudio de sus seguidores en Twitter (misma escala): <b>{num(m['medicion_twitter'])}</b>")
+            mediciones.append(f"Estudio de quién comparte sus noticias en Twitter (2022, su propia escala): <b>{num(m['medicion_twitter'])}</b>")
+        if m.get("medicion_propia") is not None:
+            mediciones.append(f"Qué noticias elige contar, comparado con los medios que mide el CIS (datos de Vista Plena, misma escala): <b>{num(m['medicion_propia'])}</b>")
         hist = [c for c in cambios if c["medio"] == m["nombre"]]
         bloque = (f'<section class="hist-cob"><h2>Su etiqueta</h2><p class="resumen"><b>{ETIQUETA[m["orientacion"]]}</b>'
                   f'{" · grupo " + esc(m["grupo"]) if m.get("grupo") and m["grupo"] != m["nombre"] else ""}</p>'
@@ -587,7 +598,7 @@ def fichas_medios(historias, tpl_t):
                   + (f'<p><b>Confianza en la etiqueta:</b> {CONFIANZA.get(m.get("confianza") or "baja")}</p>')
                   + f'<p class="aparte">Revisada el {fecha(m["revisado"]) if m.get("revisado") else "—"}. '
                     f'<a href="/metodologia.html">Cómo etiquetamos</a> · <a href="{esc(m["web"])}" rel="noopener" target="_blank">Web del medio</a></p></section>'
-                  + (f'<section class="hist-cob"><h2>Cambios de etiqueta</h2><ul>{"".join(f"<li>{fecha(c['fecha'])}: de {ETIQUETA[c['antes']].lower()} a {ETIQUETA[c['despues']].lower()}. {esc(c['motivo'])}</li>" for c in hist)}</ul></section>' if hist else "")
+                  + (f'<section class="hist-cob"><h2>Cambios de etiqueta</h2><ul>{"".join(f"<li>{fecha(c['fecha'])}: {cambio_txt(c)} {esc(c['motivo'])}</li>" for c in hist)}</ul></section>' if hist else "")
                   + f'<section class="hist-cob"><h2>Qué publica</h2><p>En los últimos {DIAS} días aparece en <b>{len(suyas)}</b> historias. '
                     f'De las 30 historias que más medios contaron, ha publicado <b>{en_grandes}</b>.</p>'
                   + (f'<p>Grandes historias que no ha publicado: {"; ".join(f"<a href='{url_noticia(h["id"], h["titulo"])}'>{esc(h["titulo"])}</a>" for h in faltan)}.</p>' if faltan else "")
@@ -595,9 +606,9 @@ def fichas_medios(historias, tpl_t):
         # Título en forma de pregunta: es como lo busca la gente en Google («¿X es de izquierdas o de derechas?»)
         pagina_lista(tpl_t, url=url, titulo=f"¿{m['nombre']} es de izquierdas o de derechas? Lo que dicen los datos · Vista Plena",
                      h1=f"¿{m['nombre']} es de izquierdas o de derechas?",
-                     sub=f"{ETIQUETA[m['orientacion']]}, según la ideología de su audiencia · {len(suyas)} historias en los últimos {DIAS} días",
+                     sub=f"{ETIQUETA[m['orientacion']]}, según {'el CIS' if m.get('medicion_cis') is not None else 'dos fuentes que coinciden'} · {len(suyas)} historias en los últimos {DIAS} días",
                      cuerpo_extra=bloque + "<h2 style='margin-top:32px'>Sus historias más recientes</h2>",
-                     desc=f"{m['nombre']}: {ETIQUETA[m['orientacion']].lower()}, según encuestas del CIS y estudios de su audiencia. De dónde sale la etiqueta, qué publica y qué grandes noticias no ha contado.",
+                     desc=f"{m['nombre']}: {ETIQUETA[m['orientacion']].lower()}, según la encuesta del CIS u otras fuentes independientes. De dónde sale la etiqueta, qué publica y qué grandes noticias no ha contado.",
                      items=lista_html(suyas[:20]))
         mapa.append((url, None))
         filas_indice.append(f'<li><div><a href="{url}">{esc(m["nombre"])}</a><span class="m">{ETIQUETA[m["orientacion"]]} · confianza {m.get("confianza") or "baja"}</span></div></li>')
