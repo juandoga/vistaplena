@@ -23,9 +23,9 @@ drop policy if exists "programas: lectura pública" on public.programas;
 create policy "programas: lectura pública" on public.programas for select to anon, authenticated using (true);
 grant select on public.programas to anon, authenticated;
 
--- Estado comprobado a mano el 11/11/2026 en las webs oficiales; PSOE y Adelante Andalucía, actualizados el 15/11/2026
+-- Estado comprobado a mano el 11/11/2026 en las webs oficiales; PSOE y Adelante Andalucía, actualizados el 15/11/2026 (enlace al PDF del PSOE, 17/11/2026)
 insert into public.programas (partido, estado, url, fecha, presentacion, nota, comprobado) values
-  ('psoe', 'publicado', 'https://www.psoe.es/actualidad/noticias-actualidad/pedro-sanchez-el-29n-haremos-un-referendum-en-favor-de-la-buena-politica-frente-a-la-mala-educacion-de-la-derecha-y-la-ultraderecha/', '2026-11-15', null, 'Su programa, «La fuerza de seguir avanzando», tiene 113 páginas. Lo presentó el 15 de noviembre en Alcorcón; el PDF está adjunto a esta noticia de su web.', now()),
+  ('psoe', 'publicado', 'https://www.psoe.es/media-content/2026/11/PROGRAMAPSOE29N26.pdf', '2026-11-15', null, 'Su programa, «La fuerza de seguir avanzando», se presentó el 15 de noviembre en Alcorcón. Tiene nueve capítulos de propuestas numeradas, de la economía a la política exterior.', now()),
   ('pp', 'publicado', 'https://www.pp.es/wp-content/uploads/2026/11/LA-RECONSTRUCCION-NACIONAL.pdf', '2026-11-10', null, 'Su programa, «Reconstrucción nacional», tiene 249 medidas en 82 páginas. Ocho de ellas (por ejemplo, la 109, sobre pensiones) no se cuentan aún: el PP dice que las dará a conocer durante la campaña.', now()),
   ('vox', 'publicado', 'https://www.voxespana.es/wp-content/uploads/2026/10/RECUPERAR-ESPANA-A4.pdf', '2026-10-20', null, 'Su programa es «Recuperar España», un documento de seis páginas con tres ejes: prioridad nacional, desregulación y remigración.', now()),
   ('fa', 'pendiente', null, null, null, 'Aún no ha publicado un programa completo ni ha dado fecha; su web (frenteamplio.info) solo tiene notas de prensa con medidas sueltas. Recogemos las medidas que ha anunciado.', now()),
