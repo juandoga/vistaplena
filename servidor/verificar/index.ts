@@ -52,7 +52,7 @@ async function gemini(modelo: string, sistema: string, texto: string): Promise<R
   if (modelo.startsWith("gemini-2.5")) config.thinkingConfig = { thinkingBudget: 0 };
   else if (modelo.startsWith("gemini-3")) config.thinkingConfig = { thinkingLevel: "minimal" };
   const llamada = (cfg: Record<string, unknown>) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
-    method: "POST", headers: { "x-goog-api-key": CLAVE, "Content-Type": "application/json" }, signal: AbortSignal.timeout(30000),
+    method: "POST", headers: { "x-goog-api-key": CLAVE, "Content-Type": "application/json" }, signal: AbortSignal.timeout(20000),
     body: JSON.stringify({ systemInstruction: { parts: [{ text: sistema }] }, contents: [{ role: "user", parts: [{ text: texto }] }], generationConfig: cfg }),
   });
   let r = await llamada(config);
@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
   if (rehacer.length && url.searchParams.get("reset") === "1") await db.from("articulos").update({ ia_revisado: null }).in("historia_id", rehacer);
   const desde = new Date(Date.now() - 3 * 864e5).toISOString();
   const { data: ds } = await db.from("historias_dudosas").select("articulo_id, historia_id").is("ia", null).is("decision", null).gt("creado", desde).limit(1000);
-  const { data: nuevos } = await db.from("articulos").select("id, historia_id").is("ia_revisado", null).not("historia_id", "is", null).gt("publicado", new Date(Date.now() - 2 * 864e5).toISOString()).limit(3000); // 48 h, la misma ventana con la que agrupa recoger
+  const { data: nuevos } = await db.from("articulos").select("id, historia_id").is("ia_revisado", null).not("historia_id", "is", null).gt("publicado", new Date(Date.now() - 3 * 864e5).toISOString()).limit(3000); // 24/11: 72 h (antes 48, la ventana de recoger): si la IA estuvo caída, lo pendiente aún se revisa
   const porH = new Map<number, Set<number>>();
   if (rehacer.length) {
     const { data: pendR } = await db.from("articulos").select("id, historia_id").is("ia_revisado", null).in("historia_id", rehacer).limit(3000);
@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
   }
   const dudosoSet = new Set((ds ?? []).map((x) => x.articulo_id));
   const informe: any[] = [];
-  let sacados = 0, revisados = 0;
+  let sacados = 0, revisados = 0, fallos = 0;
   const inicio = Date.now();
   for (const [hid, pend] of porH) {
     if (quedan <= 0 || Date.now() - inicio > (rehacer.length ? 110e3 : 60e3)) break; // lo que no dé tiempo, en la siguiente hora
@@ -186,14 +186,19 @@ Deno.serve(async (req) => {
     if (!cola.length) continue;
     // Primero se pregunta por todos; después se decide (hace falta ver todas las respuestas para saber si falla el título)
     const resultados: { a: any; r: string }[] = [];
+    let fallo = false;
     for (let i = 0; i < cola.length && quedan > 0; i += 12) {
       const cand = cola.slice(i, i + 12);
       quedan--;
       let res: string[];
       try { res = await preguntar(modelo, ref, cand.map(conFecha)); }
-      catch (e) { informe.push({ historia: hid, error: String(e).slice(0, 200) }); quedan = 0; break; }
+      catch (e) { informe.push({ historia: hid, error: String(e).slice(0, 200) }); fallo = true; break; }
       cand.forEach((a, j) => resultados.push({ a, r: res[j] }));
     }
+    // 24/11: si Gemini falla (503 por saturación o tiempo agotado), esta noticia se deja para la siguiente pasada y se sigue con
+    // las demás. Antes un solo fallo paraba toda la hora: el 24/11 fallaron 4 de 12 pasadas y en 10 días quedaron 631 titulares
+    // sin revisar. Solo se para si fallan 3 noticias en la misma pasada (Gemini caído de verdad).
+    if (fallo) { if (++fallos >= 3) break; continue; }
     // ¿Es el título el que no encaja? Si la IA dice que la mitad o más de los demás titulares de la noticia (y al menos 2)
     // cuentan otra cosa, lo más probable es que el raro sea el titular que da el título («Burnham recibe a Zelenski» en una
     // noticia sobre la cumbre de la UE). Entonces esos titulares no se sacan: se hace la segunda pregunta (abajo) y, si
@@ -350,5 +355,5 @@ Deno.serve(async (req) => {
     }
   }
   if (juntadas || ligeras || sacados || enlazadas || politicas) await db.rpc("refrescar_portada");
-  return json({ ok: true, modelo, automatico: auto, consultas: informe.length, revisados, sacados, juntadas, enlazadas, ligeras, politicas, detalle: informe.filter((x) => !x.respuestas || x.respuestas.length).slice(0, 60) });
+  return json({ ok: true, modelo, automatico: auto, consultas: informe.length, revisados, sacados, fallos, juntadas, enlazadas, ligeras, politicas, detalle: informe.filter((x) => !x.respuestas || x.respuestas.length).slice(0, 60) });
 });
