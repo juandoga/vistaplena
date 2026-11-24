@@ -10,7 +10,9 @@ Telegram no ejecutan código, así que al compartir una noticia solo verían el 
 - /og/<id>.png              la imagen para redes de cada noticia reciente: titular, un titular de cada lado y el reparto
 - /archivo/                 las historias de 10 o más medios se quedan para siempre (las demás caducan a los 14 días)
 - /medio/<nombre>/          una ficha por medio: etiqueta, de dónde sale, grado de confianza, cambios y qué ha publicado
-Las noticias de menos de 6 medios tienen página, pero con «noindex»: son demasiado pequeñas para que Google las muestre.
+Solo se indexan las noticias que se quedan para siempre (10 o más medios, las del archivo); las demás tienen página, pero con
+«noindex» y fuera del mapa del sitio, porque caducan a los 14 días. Los temas grandes (asuntos) se indexan; los temas por
+palabras, no.
 - /sitemap.xml y /robots.txt
 - /estilos/*.css            los estilos, en un archivo aparte para que cada página pese poco
 
@@ -34,7 +36,10 @@ KEY = "sb_publishable_1As_Elit5MJVUOZFOLeDjA_YMVv6jjF"  # clave pública de solo
 BASE = "https://vistaplena.es"
 DIAS = 14          # noticias con página propia
 OG_HORAS = 72      # noticias con imagen propia para redes (las demás usan la genérica)
-MIN_INDEXAR = 6    # por debajo de estos medios, la página lleva noindex y no va al mapa del sitio
+MIN_INDEXAR = 10   # por debajo de estos medios, la página lleva noindex y no va al mapa del sitio
+# 24/11: antes 6. Search Console (23/11) marcaba 747 noticias como «rastreada: actualmente sin indexar» y 369 como 404:
+# Google indexaba noticias que caducan a los 14 días y luego encontraba el error. Ahora solo se indexa lo que no caduca
+# (archivo, 10 medios o más), los temas grandes, las fichas de medio y las páginas fijas.
 MIN_ARCHIVO = 10   # desde estos medios, la historia se guarda para siempre en /archivo/
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SALIDA = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else "_site")
@@ -719,6 +724,13 @@ def boletin_ejemplo(historias, tpl_t, ahora):
 
 
 # ---------- Programa principal ----------
+def fecha_mapa(mod):
+    """Fecha para <lastmod>. 24/11: las páginas de las elecciones dan solo el día («2026-11-22») y salía «2026-11-22+00:00»,
+    que no es una fecha válida. Un día solo se escribe tal cual; una fecha con hora, en UTC."""
+    mod = str(mod)
+    return mod if len(mod) == 10 else mod[:19] + "+00:00"
+
+
 def main():
     copiar_web()
     open(os.path.join(SALIDA, "robots.txt"), "w").write(f"User-agent: *\nAllow: /\n\nSitemap: {BASE}/sitemap.xml\n")
@@ -790,7 +802,9 @@ def main():
         lista = "".join(f'<li><time datetime="{h["creada"]}">{fecha(h["creada"])}</time><div><a href="{url_noticia(h["id"], h["titulo"])}">'
                         f'{esc(h["titulo"])}</a><span class="m">{h["total"]} medios · izquierda {h["pct_izq"]} %, centro {h["pct_cen"]} %, '
                         f'derecha {h["pct_der"]} %</span></div></li>' for h in hs)
-        cuerpo = (f'<header class="hist-cab"><div class="hist-etis"><span class="tema-eti">Tema</span></div><h1>{esc(t["nombre"])}</h1>'
+        grande = str(tid).startswith("a")  # tema grande (asunto): se indexa; tema por palabras: noindex
+        desc_tema = f'<p class="tema-desc">{esc(t["descripcion"])}</p>' if grande and t.get("descripcion") else ""
+        cuerpo = (f'<header class="hist-cab"><div class="hist-etis"><span class="tema-eti">Tema</span></div><h1>{esc(t["nombre"])}</h1>{desc_tema}'
                   f'<p class="tema-sub">{len(hs)} noticia{"s" if len(hs) != 1 else ""} desde el {fecha(hs[-1]["creada"])}</p></header><section class="tema-crono"><h2>Todas las noticias del tema, día a día</h2>'
                   f'<div class="tc-dia"><ol>{lista}</ol></div></section>')
         jsonld = {"@context": "https://schema.org", "@graph": [
@@ -802,8 +816,9 @@ def main():
                 {"@type": "ListItem", "position": 1, "name": "Portada", "item": BASE + "/"},
                 {"@type": "ListItem", "position": 2, "name": t["nombre"], "item": BASE + url}]}]}
         escribir(url, montar(tpl_t, titulo=f"{t['nombre']}: todas las noticias, en orden · Vista Plena", desc=desc, url=url,
-                             imagen=BASE + "/og.png", tipo="website", jsonld=jsonld, id_=tid, cuerpo=cuerpo))
-        mapa.append((url, t["actualizado"]))
+                             imagen=BASE + "/og.png", tipo="website", jsonld=jsonld, id_=tid, cuerpo=cuerpo, indexar=grande))
+        if grande:
+            mapa.append((url, t["actualizado"]))
     # Archivo permanente y fichas de medios (si fallan, el resto de la web se publica igual)
     try:
         mapa += archivo(historias, tpl_h, tpl_t, temas)
@@ -823,10 +838,10 @@ def main():
         print("Ejemplo del boletín sin generar:", e)
     # Mapa del sitio y robots.txt
     fijas = [("/", ahora.isoformat()), ("/metodologia.html", None), ("/elecciones", None), ("/quienes-somos.html", None),
-             ("/?vista=ciegos", ahora.isoformat()), ("/medio/", None), ("/archivo/", None)]
+             ("/medio/", None), ("/archivo/", None)]  # 24/11: fuera «/?vista=ciegos», que tiene la portada como canónica
     xml = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for url, mod in fijas + mapa:
-        xml.append(f"<url><loc>{esc(BASE + url)}</loc>" + (f"<lastmod>{mod[:19]}+00:00</lastmod>" if mod else "") + "</url>")
+        xml.append(f"<url><loc>{esc(BASE + url)}</loc>" + (f"<lastmod>{fecha_mapa(mod)}</lastmod>" if mod else "") + "</url>")
     xml.append("</urlset>")
     open(os.path.join(SALIDA, "sitemap.xml"), "w", encoding="utf-8").write("\n".join(xml))
     print(f"{len(historias)} noticias, {len(por_tema)} temas, {con_og} imágenes para redes")
