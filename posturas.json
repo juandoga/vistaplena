@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-25",
+ "actualizado": "2026-11-27",
  "criterio": "Mientras los partidos no publiquen sus programas para el 29N, recogemos lo que cada uno ha propuesto en público: documentos del partido, declaraciones recogidas por la prensa y su programa de 2023. Siempre con fuente y fecha. No valoramos las propuestas: solo indicamos si el partido explica cómo lo haría y cómo lo pagaría.",
  "fuentes": {
   "EDB23": {
@@ -176,6 +176,11 @@
    "nombre": "Programa del PSOE «La fuerza de seguir avanzando»",
    "url": "https://www.psoe.es/actualidad/noticias-actualidad/pedro-sanchez-el-29n-haremos-un-referendum-en-favor-de-la-buena-politica-frente-a-la-mala-educacion-de-la-derecha-y-la-ultraderecha/",
    "fecha": "2026-11-15"
+  },
+  "PODEMOS_PROG": {
+   "nombre": "Programa de Podemos «Así de básico: paz, casa y trabajo»",
+   "url": "https://pazcasaytrabajo.es/programa-electoral/programa-electoral-paz-casa-y-trabajo.pdf",
+   "fecha": "2026-11-17"
   }
  },
  "partidos": [
@@ -277,10 +282,10 @@
    ],
    "podemos": [
     {
-     "t": "Bajar un 40 % los alquileres por decreto y quitar a los grandes propietarios el uso de 650.000 viviendas para hacerlas públicas, igual que los pisos turísticos ilegales.",
-     "f": "POD_VIV",
+     "t": "Bajar un 40 % los alquileres (sin bajar del 60 % del precio medio de la zona); contratos de alquiler indefinidos por defecto; que las viviendas que se compren se usen para vivir al menos cuatro años; expropiar el uso de viviendas a los grandes propietarios (más de diez); prohibir los desahucios de personas vulnerables sin una alternativa; acabar con el uso turístico de las viviendas residenciales, y una inmobiliaria pública con alquileres de como máximo el 30 % de la renta media del municipio.",
+     "f": "PODEMOS_PROG",
      "como": "parcial",
-     "nota": "Dice el mecanismo (decreto y expropiación), pero no cuánto costaría ni cómo se compensaría a los dueños."
+     "nota": "Programa, pág. 8-11. Nombra algunos instrumentos (una inmobiliaria pública y un cuerpo público de inspectores de vivienda), pero no cómo se haría la rebaja de los alquileres ni cuánto costarían la vivienda pública y las expropiaciones."
     }
    ],
    "erc": [
@@ -389,10 +394,10 @@
    ],
    "podemos": [
     {
-     "t": "Una cadena pública de supermercados con alimentos básicos baratos y un tope al margen de beneficio de las grandes distribuidoras.",
-     "f": "POD_VIV",
-     "como": "no",
-     "nota": "No dice cuánto costaría ni el límite del margen."
+     "t": "Una banca pública que una el ICO, el CDTI y ENISA; una red pública de supermercados sin margen de beneficio; un tope a los márgenes de los productos de primera necesidad; una empresa pública de energía con las centrales hidroeléctricas cuya concesión vuelva al Estado; que el Estado compre la mayoría de las acciones de Repsol, y derogar la reforma de 2011 del artículo 135 de la Constitución.",
+     "f": "PODEMOS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 18-19 y 23. Dice de dónde saldrían la banca pública y la empresa de energía, pero no cómo se fijaría el tope a los márgenes ni cuánto costarían comprar Repsol y montar los supermercados."
     }
    ],
    "erc": [
@@ -481,7 +486,14 @@
      "nota": "Programa, pág. 149-151. Dice qué leyes cambiaría y pone plazos a los trámites, pero no cuánto costaría ni de dónde saldría el dinero."
     }
    ],
-   "podemos": [],
+   "podemos": [
+    {
+     "t": "Derogar la Ley de Extranjería y aprobar una ley integral nueva; cerrar todos los centros de internamiento de extranjeros (CIE); una regularización permanente que no dependa solo de tener contrato de trabajo; que quien acredite arraigo pueda pedir la nacionalidad tras un año de residencia; que los hijos de extranjeros nacidos en España sean españoles de origen en algunos casos; una ley contra el racismo, y abolir Frontex y derogar el Pacto Europeo de Migración y Asilo.",
+     "f": "PODEMOS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 32-34 y 66-68. Dice qué leyes cambiaría (la Ley de Extranjería, el Código Civil y el reglamento de extranjería), pero no cuánto costaría."
+    }
+   ],
    "erc": [
     {
      "t": "Pasar a Cataluña toda la gestión de inmigración y asilo y abrir vías legales y seguras para migrar.",
@@ -588,15 +600,10 @@
    ],
    "podemos": [
     {
-     "t": "Salario mínimo de 1.800 € al mes y semana laboral de 30 horas.",
-     "f": "POD_EJES",
-     "como": "no"
-    },
-    {
-     "t": "Semana de 35 horas y salario mínimo de 1.800 € al mes.",
-     "f": "FORBES",
-     "como": "no",
-     "nota": "No dice en cuánto tiempo ni cómo afectaría a las pequeñas empresas."
+     "t": "Salario mínimo de 1.800 € al mes en una legislatura; bajar la jornada a 35 horas y después a 30 durante la legislatura, sin bajar el sueldo; un nuevo Estatuto de los Trabajadores que derogue las reformas laborales de 2010 y 2012; volver a 45 días de indemnización por año trabajado en el despido improcedente, y un mes de paro por cada dos meses cotizados.",
+     "f": "PODEMOS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 41-44. Da plazos y dice qué leyes cambiaría, pero no cuánto costaría ampliar el paro."
     }
    ],
    "erc": [
@@ -703,7 +710,14 @@
      "nota": "Programa, pág. 30-33. Dice qué leyes cambiaría y que el dinero saldría de los Presupuestos del Estado, pero no cuánto costaría en euros."
     }
    ],
-   "podemos": [],
+   "podemos": [
+    {
+     "t": "Derogar la ley de 1997 que permite otras formas de gestión en la sanidad pública y prohibir externalizar servicios; llegar a 2.900 € de gasto sanitario por habitante y año (ahora 2.247 €), en torno al 8 % del PIB, con un fondo estatal; que al menos el 25 % del presupuesto sanitario vaya a atención primaria, con un máximo de 1.300 pacientes por médico de familia y cita en 48 horas; una ley de salud mental con más psiquiatras y psicólogos; cubrir del todo la salud bucodental, la vista y el oído, y una empresa farmacéutica pública.",
+     "f": "PODEMOS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 89-93. Dice cuánto quiere gastar y qué leyes aprobaría, pero no de dónde saldría el dinero."
+    }
+   ],
    "junts": [
     {
      "t": "Una financiación de la sanidad suficiente y para varios años, acercándose al 8 % del PIB de gasto sanitario público de los estándares europeos, con el 25 % del presupuesto de salud para la atención primaria; que el Estado pague lo que impone al sistema sanitario catalán; más plazas MIR, y que los medicamentos aprobados en la Unión Europea lleguen antes a la sanidad pública.",
@@ -790,7 +804,14 @@
      "nota": "Programa, pág. 63-64. Dice de dónde saldría más dinero, pero sin cifras, y no da fecha para volver a la jubilación a los 65."
     }
    ],
-   "podemos": [],
+   "podemos": [
+    {
+     "t": "Pensión mínima igual al salario mínimo y pensión no contributiva del 80 % del salario mínimo; adelantar la edad ordinaria de jubilación a los 63 años; quitar el recorte por jubilación anticipada a quien haya cotizado 40 años, también para quien ya se jubiló, y quitar el tope a las cotizaciones.",
+     "f": "PODEMOS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 42 y 45. Dice que el adelanto de la jubilación lo pagarían los Presupuestos del Estado, pero no cuánto costaría; anuncia una memoria económica para la jubilación anticipada que el programa no incluye."
+    }
+   ],
    "erc": [
     {
      "t": "Subir las pensiones con el IPC, ajustadas al coste de la vida de cada territorio, y jubilación anticipada sin penalización en oficios penosos.",
@@ -897,10 +918,10 @@
    ],
    "podemos": [
     {
-     "t": "Que paguen más las grandes empresas y los grandes patrimonios, y gravar los beneficios extraordinarios.",
-     "f": "FORBES",
+     "t": "Un impuesto estatal y permanente a las grandes fortunas en todas las comunidades; que la banca devuelva al Estado al menos el 50 % de sus beneficios extraordinarios; subir el tipo mínimo efectivo del impuesto de sociedades del 15 % al 19 % (29 % para los oligopolios); más tramos de IRPF por encima de 60.000 € al año; que las rentas del capital paguen lo mismo que las del trabajo; IVA del 21 % en los pisos turísticos; cuadruplicar el IRPF de las viviendas vacías, y bajar al 10 % el IVA de peluquerías y veterinarios.",
+     "f": "PODEMOS_PROG",
      "como": "no",
-     "nota": ""
+     "nota": "Programa, pág. 17 y 21-23. Da algunos tipos, pero no cuánto se recaudaría."
     }
    ],
    "erc": [
@@ -1001,10 +1022,10 @@
    ],
    "podemos": [
     {
-     "t": "Libros y material escolar gratis para todo el alumnado.",
-     "f": "POD_VIV",
-     "como": "no",
-     "nota": ""
+     "t": "Invertir en educación el 7 % del PIB durante la legislatura; menos alumnos por clase (15 en Primaria, 20 en Secundaria y 23 en Bachillerato); subir un 30 % los sueldos del personal de los centros públicos; no dar nuevos conciertos a centros privados; libros gratis; universidad sin tasas y becas-salario de hasta 800 € al mes, y suprimir la enseñanza de religión.",
+     "f": "PODEMOS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 80-86. Dice cuánto quiere gastar y en qué plazo, pero no de dónde saldría el dinero."
     }
    ],
    "erc": [
@@ -1101,7 +1122,14 @@
      "nota": "Programa, pág. 117-118 y 167. Da cifras, pero no de dónde saldría el dinero."
     }
    ],
-   "podemos": [],
+   "podemos": [
+    {
+     "t": "Una constitución republicana que reconozca la plurinacionalidad, con un referéndum para elegir entre monarquía y república; quitar la inviolabilidad del rey (artículo 56.3 de la Constitución); que cada comunidad sea una circunscripción electoral; un Senado con la misma representación para todas las comunidades, y votar desde los 16 años.",
+     "f": "PODEMOS_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 129-130. Dice qué artículo de la Constitución cambiaría, pero no cómo ni cuándo se harían la reforma y el referéndum."
+    }
+   ],
    "erc": [
     {
      "t": "Negociar un referéndum de autodeterminación en Cataluña, una financiación basada en lo que se recauda allí (unos 4.700 millones más al año) y perdonar los 17.100 millones de deuda del FLA.",
@@ -1208,10 +1236,10 @@
    ],
    "podemos": [
     {
-     "t": "Una empresa pública de energía y acelerar las renovables.",
-     "f": "FORBES",
-     "como": "no",
-     "nota": ""
+     "t": "Una empresa pública de energía y que Red Eléctrica sea 100 % pública; limitar las tarifas de la luz y el gas; un cheque energético de 300 € al año; reducir a la mitad la energía fósil en 2030, llegar al 95 % de electricidad renovable en 2035 y a la neutralidad climática en 2040; cumplir el calendario de cierre de las centrales nucleares, empezando por Almaraz, y que los vecinos de las plantas renovables puedan tener hasta el 30 % de ellas y pagar hasta un 30 % menos de luz.",
+     "f": "PODEMOS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 14, 19 y 95-104. Dice que la rebaja de la luz a los vecinos la pagaría un canon a las empresas productoras, pero no cuánto costarían la empresa pública, comprar Red Eléctrica ni el cheque energético."
     }
    ],
    "erc": [
@@ -1316,7 +1344,14 @@
      "nota": ""
     }
    ],
-   "podemos": [],
+   "podemos": [
+    {
+     "t": "Que para elegir el Consejo General del Poder Judicial y el Tribunal Constitucional haga falta mayoría absoluta y el apoyo de al menos la mitad de los grupos; que los fiscales instruyan las causas, vigilados por un juez de garantías; suprimir la Audiencia Nacional y los aforamientos; que la mitad de las plazas de juez se cubran por concurso; derogar la Ley de Seguridad Ciudadana (la llamada «ley mordaza»), y prohibir que los partidos paguen sus campañas con créditos bancarios.",
+     "f": "PODEMOS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 129-134. Dice qué leyes cambiaría, pero no en qué plazo ni cuánto costaría."
+    }
+   ],
    "erc": [
     {
      "t": "Derogar la «ley mordaza», suprimir los delitos de ofensas religiosas e injurias a la Corona y crear un Consejo de Justicia de Cataluña.",
