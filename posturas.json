@@ -147,6 +147,21 @@
    "url": "https://www.pp.es/wp-content/uploads/2026/11/LA-RECONSTRUCCION-NACIONAL.pdf",
    "fecha": "2026-11-10"
   },
+  "FA_PROG": {
+   "nombre": "Programa del Frente Amplio «Un programa como una casa»",
+   "url": "https://frenteamplio.info/pdf/ProgramaFrenteAmplio.pdf",
+   "fecha": "2026-11-16"
+  },
+  "COMPROMIS_PROG": {
+   "nombre": "Programa de Compromís-Front Valencià",
+   "url": "https://frontvalencia.org/programa-compromis-front-valencia.pdf",
+   "fecha": "2026-11-17"
+  },
+  "BILDU_PROG": {
+   "nombre": "Programa de EH Bildu «Garantía y derechos»",
+   "url": "https://ehbildu.eus/media/dokumentuak/posibleegin-programa-cas.pdf",
+   "fecha": "2026-11-16"
+  },
   "ADELANTE_PROG": {
    "nombre": "Programa de Adelante Andalucía «Un programa para frenar a las derechas»",
    "url": "https://programa.adelanteandalucia.org/programa-29n-adelante-andalucia.pdf",
@@ -175,7 +190,7 @@
   {
    "id": "fa",
    "nombre": "Frente Amplio",
-   "nota": "Coalición de Movimiento Sumar, IU, Comuns y Más Madrid, con Ada Colau de candidata. Sus propuestas de 2023 son del programa de Sumar."
+   "nota": "Coalición de Movimiento Sumar, IU, Comuns y Más Madrid, con Ada Colau de candidata."
   },
   {
    "id": "podemos",
@@ -197,6 +212,10 @@
   {
    "id": "cc",
    "nombre": "Coalición Canaria"
+  },
+  {
+   "id": "bildu",
+   "nombre": "EH Bildu"
   },
   {
    "id": "pnv",
@@ -241,21 +260,10 @@
    ],
    "fa": [
     {
-     "t": "Una ley para expropiar más de 100.000 viviendas a fondos de inversión y un recargo del 10 % a quien tenga cuatro o más viviendas y especule con el alquiler.",
-     "f": "FA_PUBLICO",
-     "como": "parcial"
-    },
-    {
-     "t": "Invertir el 1 % del PIB al año en vivienda pública, contratos de alquiler indefinidos y un fondo estatal que financie nuevas promociones con créditos que se devuelven con los alquileres asequibles. Ventajas fiscales a quien alquile a precio social.",
-     "f": "FA_ACTO",
+     "t": "Dedicar cada año el 1 % del PIB (unos 17.000 millones) a vivienda pública, para tener 1,5 millones de viviendas públicas en 12 años y que en 2035 sean el 20 % del total; una ley para expropiar viviendas a los grandes propietarios empresariales, por fases según cuántas tengan; que el alquiler no pase del 25 % de los ingresos de los hogares de la zona (calcula que bajaría un 35 % de media); quitar las licencias de pisos turísticos en las zonas tensionadas en 3 años como máximo; un impuesto del 10 % a la acumulación de viviendas, y que el derecho a la vivienda se pueda exigir ante los jueces, reformando la Constitución.",
+     "f": "FA_PROG",
      "como": "parcial",
-     "nota": "Explica cómo se pagarían las nuevas promociones (con los alquileres futuros), pero no cuánto cuesta el 1 % del PIB ni de dónde sale."
-    },
-    {
-     "t": "Invertir el 1 % del PIB al año en vivienda pública de alquiler (2 millones de viviendas en 10 años), alquiler social obligatorio para grandes propietarios e impuesto al suelo sin usar.",
-     "f": "EDB23",
-     "como": "parcial",
-     "nota": "Dice cuánto invertir, no de dónde sale el dinero."
+     "nota": "Programa, pág. 13-22. Dice cuánto dinero dedicaría cada año y algunos impuestos que lo pagarían, pero no cuánto costarían en total las viviendas ni las expropiaciones."
     }
    ],
    "podemos": [
@@ -276,9 +284,18 @@
    ],
    "compromis": [
     {
-     "t": "Limitar la compra de vivienda, empezando por los fondos y los grandes especuladores; bajar los alquileres en zonas tensionadas y acabar con los desahucios.",
-     "f": "CFV_MICO",
-     "como": "no"
+     "t": "Prohibir que las sociedades especulativas y los fondos buitre compren viviendas y una ley para expropiar a los grandes fondos; dedicar el 1 % del PIB al año a comprar viviendas; un fondo estatal que reúna 18.000 millones de ahorro privado; un impuesto del 10 % sobre el valor catastral de las viviendas adicionales; que los ayuntamientos puedan declarar zonas tensionadas, y un registro estatal obligatorio de los alquileres.",
+     "f": "COMPROMIS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 4-5. Da cifras, pero no de dónde saldría el 1 % del PIB ni cuánto costaría en total."
+    }
+   ],
+   "bildu": [
+    {
+     "t": "Contratos de alquiler con prórroga automática y que la renta no pueda subir más de un 2 % al año; no desahuciar a familias vulnerables; IVA del 21 % para los alojamientos turísticos de corta duración, y eliminar las SOCIMI como forma de promover vivienda.",
+     "f": "BILDU_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 5-6. Dice qué cambiaría, pero no cuánto costaría ni de dónde saldría el dinero."
     }
    ],
    "pnv": [
@@ -347,10 +364,10 @@
    ],
    "fa": [
     {
-     "t": "Financiación pública para pymes, medidas contra los impagos y sin IVA para autónomos que facturen menos de 85.000 €.",
-     "f": "FORBES",
-     "como": "no",
-     "nota": ""
+     "t": "Poder poner topes a los precios de los alimentos básicos si hay una emergencia o abusos probados, un impuesto a los márgenes de la alimentación ligado a cuánto han crecido desde antes de la pandemia y que la CNMC pueda fijar precios máximos; convertir la SEPI en una agencia industrial pública; invertir el 3 % del PIB en investigación en 2030; un banco público a partir de Correos; un crédito del ICO de 3.000 millones al año para pymes; que los autónomos que facturen menos de 85.000 € no tengan que cobrar IVA, y una tarifa plana de 88 € para los que ingresen menos del salario mínimo.",
+     "f": "FA_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 62-63, 89-93 y 103. Dice de dónde saldría el crédito para pymes (fondos europeos e instrumentos públicos), pero no cuánto costarían el banco público, la agencia industrial ni las rebajas a los autónomos."
     }
    ],
    "podemos": [
@@ -371,9 +388,18 @@
    ],
    "compromis": [
     {
-     "t": "Invertir 1.500 millones en transporte público, sobre todo en Cercanías, y topar el precio de la energía y de los alimentos básicos.",
-     "f": "CFV_ELCHE",
-     "como": "parcial"
+     "t": "Una banca pública de inversión y crédito, coordinada con el ICO, para que las pymes tengan crédito; transparencia en los precios y los márgenes de cada paso de la cadena alimentaria, y multas de hasta el 10 % de sus beneficios mundiales a las empresas que usen algoritmos para coordinar los precios del alquiler.",
+     "f": "COMPROMIS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 4, 18 y 21. No dice cuánto costaría la banca pública ni de dónde saldría el dinero."
+    }
+   ],
+   "bildu": [
+    {
+     "t": "Poder intervenir de forma extraordinaria los márgenes de las grandes empresas, con reglas claras sobre cuándo y durante cuánto tiempo; volver a topar el precio del gas que se usa para producir electricidad; más medios para la CNMC y el observatorio de márgenes; aplicar a fondo la ley de la cadena alimentaria, y descarbonizar y electrificar la industria.",
+     "f": "BILDU_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 8-9 y 16-17. No dice cuánto costarían las ayudas ni de dónde saldría el dinero."
     }
    ],
    "adelante": [
@@ -424,10 +450,10 @@
    ],
    "fa": [
     {
-     "t": "Ley contra el racismo, reformar la ley de extranjería, cerrar los centros de internamiento (CIE) y sanidad para todos.",
-     "f": "EDB23",
-     "como": "no",
-     "nota": ""
+     "t": "Terminar la regularización extraordinaria de 2026 y crear un procedimiento estable para regularizar, con una reforma completa de la ley de extranjería; cerrar los centros de internamiento de extranjeros (CIE); citas en las oficinas de extranjería en 7 días como máximo; una agencia de asilo única que dependa de la Presidencia del Gobierno, con 5 días como máximo para registrar cada petición, y una ley integral contra el racismo.",
+     "f": "FA_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 149-151. Dice qué leyes cambiaría y pone plazos a los trámites, pero no cuánto costaría ni de dónde saldría el dinero."
     }
    ],
    "podemos": [],
@@ -437,6 +463,22 @@
      "f": "ERC_PROG",
      "como": "no",
      "nota": "Programa electoral, pág. 14 y 16."
+    }
+   ],
+   "compromis": [
+    {
+     "t": "Regularizar y dar derechos a quienes ya viven aquí; que se cierren los centros de internamiento de extranjeros (CIE), y obligar a los ayuntamientos a empadronar a todas las personas, sea cual sea su situación.",
+     "f": "COMPROMIS_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 55. No explica cómo ni con qué requisitos se regularizaría."
+    }
+   ],
+   "bildu": [
+    {
+     "t": "Una regularización efectiva, accesible y estable, con una nueva ley de extranjería; rechazar las partes más restrictivas del Pacto Europeo de Migración y Asilo, y que el País Vasco y Navarra tengan todas las competencias de inmigración para un modelo propio de acogida.",
+     "f": "BILDU_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 20 y 25. No explica con qué requisitos ni cómo se haría la regularización."
     }
    ],
    "pnv": [
@@ -505,10 +547,10 @@
    ],
    "fa": [
     {
-     "t": "Semana laboral de 32 horas y subir el salario mínimo por encima del IPC.",
-     "f": "FA_ACTO",
-     "como": "no",
-     "nota": "No dice en cuánto tiempo, cuánto subiría el salario mínimo ni cómo afectaría a las pequeñas empresas. En 2023 proponía 37,5 horas."
+     "t": "Fijar por ley que el salario mínimo sea al menos el 60 % del salario medio neto; bajar la jornada a 37,5 horas en 2026 (35 en el sector público) y después, poco a poco, hasta 32 horas; que los despidos colectivos vuelvan a necesitar permiso de la Administración y que la indemnización por despido improcedente repare el daño real; subir el paro del 70 % al 80 % de la base durante los seis primeros meses, y un registro digital de la jornada.",
+     "f": "FA_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 57-62. Dice qué leyes cambiaría y da fecha para las 37,5 horas, pero no para las 32 horas ni cuánto costaría subir el paro."
     }
    ],
    "podemos": [
@@ -530,6 +572,22 @@
      "f": "ERC_PROG",
      "como": "no",
      "nota": "Programa electoral, pág. 26."
+    }
+   ],
+   "compromis": [
+    {
+     "t": "Jornada de cuatro días (32 horas) sin bajar el sueldo; que por ley el salario mínimo llegue al 60 % del salario medio; volver a 45 días de indemnización por año trabajado en el despido improcedente, con salarios de tramitación, y reforzar la Inspección de Trabajo.",
+     "f": "COMPROMIS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 6-7. Dice qué leyes cambiaría, pero no en qué plazo."
+    }
+   ],
+   "bildu": [
+    {
+     "t": "Bajar la jornada a 32 horas semanales o cuatro días sin bajar el sueldo, reformando el Estatuto de los Trabajadores (en las pymes, primero a 35 horas y en 3 años como máximo); fijar por ley el salario mínimo según la Carta Social Europea y que las comunidades puedan tener uno propio, y al menos 45 días de indemnización por despido improcedente.",
+     "f": "BILDU_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 6. Dice qué ley cambiaría y da plazo para las pymes."
     }
    ],
    "pnv": [
@@ -598,13 +656,29 @@
    ],
    "fa": [
     {
-     "t": "Más inversión en la sanidad pública, mejores condiciones para el personal y un plan de choque de salud mental.",
-     "f": "EDB23",
-     "como": "no",
-     "nota": ""
+     "t": "Que el gasto sanitario público sea el 8 % del PIB, con ese compromiso en los Presupuestos del Estado; derogar la ley de 1997 sobre nuevas formas de gestión para que la gestión directa sea la norma; un real decreto que amplíe a 25 operaciones los tiempos máximos de espera garantizados, y que al final de la legislatura al menos la mitad de la población tenga el dentista cubierto por la sanidad pública.",
+     "f": "FA_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 30-33. Dice qué leyes cambiaría y que el dinero saldría de los Presupuestos del Estado, pero no cuánto costaría en euros."
     }
    ],
    "podemos": [],
+   "compromis": [
+    {
+     "t": "Derogar la ley de 1997 sobre nuevas formas de gestión para proteger la gestión pública de la sanidad; fijar por ley una financiación mínima, con ratios de profesionales y tiempos máximos de espera; una industria farmacéutica pública que investigue, fabrique y venda medicamentos esenciales, y un pacto estatal por la salud mental.",
+     "f": "COMPROMIS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 8-9. No dice cuánto costaría ni de dónde saldría el dinero."
+    }
+   ],
+   "bildu": [
+    {
+     "t": "Derogar la ley de 1997 sobre nuevas formas de gestión de la sanidad pública; avanzar con las comunidades autónomas hacia una farmacia pública, y más competencias para las comunidades en sanidad.",
+     "f": "BILDU_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 10-11. No dice cuánto costaría ni de dónde saldría el dinero."
+    }
+   ],
    "pnv": [
     {
      "t": "Formar más médicos especialistas donde hacen falta, adaptando las plazas MIR a las necesidades reales.",
@@ -661,10 +735,10 @@
    ],
    "fa": [
     {
-     "t": "Que la subida con el IPC esté garantizada siempre y sin tope.",
-     "f": "CAT23",
-     "como": "no",
-     "nota": ""
+     "t": "Proteger las pensiones públicas en la Constitución, con una reforma constitucional; volver a la jubilación a los 65 años; publicar enseguida una auditoría independiente de las cuentas de la Seguridad Social, y más ingresos con una aportación extra de las empresas más automatizadas y subiendo el tope de cotización.",
+     "f": "FA_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 63-64. Dice de dónde saldría más dinero, pero sin cifras, y no da fecha para volver a la jubilación a los 65."
     }
    ],
    "podemos": [],
@@ -678,9 +752,18 @@
    ],
    "compromis": [
     {
-     "t": "Proteger las pensiones en la Constitución.",
-     "f": "CFV_MICO",
-     "como": "no"
+     "t": "Volver a la jubilación a los 65 años; que la Constitución garantice que las pensiones suban con el coste de la vida; subir las pensiones no contributivas hasta 800 €, y un impuesto a los robots para reforzar el sistema público de pensiones.",
+     "f": "COMPROMIS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 7-8 y 17. Propone un impuesto a los robots para pagarlas, pero sin cifras, y no dice cuánto costarían las medidas."
+    }
+   ],
+   "bildu": [
+    {
+     "t": "Subir las pensiones mínimas al menos hasta 1.220 €; subir al menos un 15 % las de viudedad y las no contributivas, y terminar de aprobar la ley que reconoce el derecho a la pensión sin penalización.",
+     "f": "BILDU_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 7-8. No dice cuánto costaría ni cómo se pagaría."
     }
    ],
    "pnv": [
@@ -749,15 +832,10 @@
    ],
    "fa": [
     {
-     "t": "Un impuesto del 2 % a los patrimonios de más de un millón de euros y del 3 % a los de más de 50 millones.",
-     "f": "FA_PUBLICO",
-     "como": "parcial"
-    },
-    {
-     "t": "Impuesto permanente a las grandes fortunas, reformar el impuesto de sociedades para que las pymes no paguen proporcionalmente más que las grandes empresas y gravar los beneficios extraordinarios que genere la inteligencia artificial.",
-     "f": "FA_INFOBAE",
-     "como": "no",
-     "nota": "No da tipos ni cuánto recaudaría. En 2023 también proponía subir la renta a quien gane más de 120.000 € al año."
+     "t": "Que las empresas paguen al menos un 20 % efectivo en el impuesto de sociedades; un impuesto del 3 % al año a los patrimonios de más de 50 millones (la tasa Zucman) para pagar una prestación por crianza; bajar el IRPF a las rentas del trabajo de hasta 27.000 € y subirlo hasta el 52 % a partir de 300.000 €; un IVA de la luz según el consumo, del 0 % al 21 %; un impuesto a la minería (más de 470 millones al año), y duplicar en cuatro años la plantilla de la Agencia Tributaria.",
+     "f": "FA_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 49-53. Da los tipos y a qué irían algunos impuestos, pero no cuánto se recaudaría en total ni cuánto costarían las rebajas."
     }
    ],
    "podemos": [
@@ -774,6 +852,22 @@
      "f": "ERC_PROG",
      "como": "parcial",
      "nota": "Programa electoral, pág. 21-22."
+    }
+   ],
+   "compromis": [
+    {
+     "t": "Ajustar el IRPF a la inflación para las rentas de menos de 30.000 €; mantener y ampliar el impuesto a las grandes fortunas, acercándolo a la tasa Zucman; bajar la amortización de los inmuebles del 3 % al 1 % (más de 465 millones al año); quitar las ventajas fiscales de la aviación y dedicar esos 6.000 millones al año al tren, y más personal en la Agencia Tributaria contra el fraude.",
+     "f": "COMPROMIS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 16-17. Dice cuánto recaudarían dos medidas, pero no cuánto costaría ajustar el IRPF ni cuánto darían las demás."
+    }
+   ],
+   "bildu": [
+    {
+     "t": "Recuperar el impuesto a las energéticas y hacerlo permanente; un impuesto nuevo a los beneficios de las grandes distribuidoras de alimentación; que la banca y las grandes fortunas paguen más; gravar siempre los beneficios extraordinarios, e IVA del 21 % para los pisos turísticos. Los impuestos nuevos se acordarían con las haciendas forales vascas y navarra.",
+     "f": "BILDU_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 14 y 18. No da tipos (salvo el del IVA) ni cuánto se recaudaría."
     }
    ],
    "pnv": [
@@ -834,10 +928,10 @@
    ],
    "fa": [
     {
-     "t": "Escuela infantil pública y gratis de 0 a 3 años y una nueva ley de FP.",
-     "f": "EDB23",
-     "como": "no",
-     "nota": ""
+     "t": "Una ley de financiación para que el gasto público en educación llegue al 7 % del PIB en 2030; un máximo de alumnos por clase fijado por ley (15 en Primaria y FP, 20 en Secundaria y 23 en Bachillerato); subir las becas hasta el 0,44 % del PIB, y plazas públicas gratis de 0 a 3 años para todas las familias que las pidan.",
+     "f": "FA_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 29 y 35-37. Da los objetivos en porcentaje del PIB y un plazo, pero no cuánto costarían en euros ni de dónde saldría el dinero."
     }
    ],
    "podemos": [
@@ -854,6 +948,22 @@
      "f": "ERC_PROG",
      "como": "no",
      "nota": "Programa electoral, pág. 10-11."
+    }
+   ],
+   "compromis": [
+    {
+     "t": "Llegar a una inversión en educación del 7 % del PIB; cambiar las normas de los conciertos para que la escuela concertada solo complemente a la pública, y que el comedor escolar sea gratis y para todos, reformando la LOE.",
+     "f": "COMPROMIS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 9. Da el objetivo en porcentaje del PIB, pero no cuánto costaría en euros ni de dónde saldría el dinero."
+    }
+   ],
+   "bildu": [
+    {
+     "t": "Menos alumnos por clase; mejores condiciones y más estabilidad para el profesorado, y subir poco a poco la inversión hasta el 6 % que recomienda la UNESCO.",
+     "f": "BILDU_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 11-12. No dice en qué plazo, cuánto costaría ni de dónde saldría el dinero."
     }
    ],
    "pnv": [
@@ -912,10 +1022,10 @@
    ],
    "fa": [
     {
-     "t": "España como «país de países»: más competencias y más financiación para las comunidades y diálogo con la Generalitat.",
-     "f": "EDB23",
-     "como": "no",
-     "nota": ""
+     "t": "Reformar de inmediato la financiación autonómica, partiendo de la propuesta del Gobierno, con al menos un 2,3 % del PIB más cada año (unos 38.000 millones); perdonar parte de la deuda de las comunidades, con una parte para vivienda asequible; un fondo de 735 millones para el cambio climático, y avanzar hacia un Estado republicano, federal y plurinacional.",
+     "f": "FA_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 117-118 y 167. Da cifras, pero no de dónde saldría el dinero."
     }
    ],
    "podemos": [],
@@ -929,9 +1039,18 @@
    ],
    "compromis": [
     {
-     "t": "Una financiación autonómica justa para la Comunitat Valenciana y perdonar parte de su deuda.",
-     "f": "CFV_MICO",
-     "como": "no"
+     "t": "Un concierto económico para la Comunitat Valenciana o, si no, un sistema en el que la Generalitat recaude la mayor parte de los impuestos; perdonar la deuda histórica de la Generalitat; un fondo transitorio que iguale su financiación a la media de las comunidades hasta que se reforme el sistema; que el Estado pague el 50 % de la dependencia, y avanzar hacia un Estado plurinacional, con reforma del Senado.",
+     "f": "COMPROMIS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 49-51. No dice cuánto costarían el perdón de la deuda ni el fondo, ni en qué plazo."
+    }
+   ],
+   "bildu": [
+    {
+     "t": "Reconocer a Euskal Herria como nación y el derecho a decidir del pueblo vasco; traspasar todas las competencias del Estatuto vasco que siguen pendientes; un nuevo modelo para negociar y calcular lo que el País Vasco y Navarra pagan al Estado (el Cupo y la Aportación), y competencias plenas en inmigración, Seguridad Social, paro, puertos y aeropuertos, energía y relaciones laborales.",
+     "f": "BILDU_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 24-25. No explica por qué vía ni en qué plazo."
     }
    ],
    "pnv": [
@@ -1000,16 +1119,10 @@
    ],
    "fa": [
     {
-     "t": "Empleo industrial en renovables, almacenamiento y movilidad; ayudas para pasarse al coche eléctrico primero para las rentas bajas y rehabilitación energética empezando por los barrios populares.",
-     "f": "FA_ACTO",
-     "como": "no",
-     "nota": "Sin cifras ni coste."
-    },
-    {
-     "t": "Renovables y almacenamiento de energía, en contra de alargar algunas nucleares; en 2023, impuesto a los beneficios extraordinarios de las energéticas y tarifa social.",
-     "f": "FORBES",
-     "como": "no",
-     "nota": ""
+     "t": "Dedicar el 3,5 % del PIB al año a la transición ecológica; reducir las emisiones un 38 % respecto a 1990 en 2035 y que el 81 % de la electricidad sea renovable en 2030; autoconsumo compartido en los tejados de las comunidades de vecinos antes de 2030, con el Estado adelantando el dinero; cerrar Almaraz en 2027-2028, como estaba previsto, y tres horas de luz gratis al día en las horas de sol, pagadas con un impuesto a las grandes energéticas.",
+     "f": "FA_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 10 y 65-71. Dice cómo pagaría algunas medidas (un impuesto a las grandes energéticas o el dinero que iba al gasoducto H2Med), pero no de dónde saldría el 3,5 % del PIB."
     }
    ],
    "podemos": [
@@ -1026,6 +1139,22 @@
      "f": "ERC_PROG",
      "como": "no",
      "nota": "Programa electoral, pág. 22 y 27-28."
+    }
+   ],
+   "compromis": [
+    {
+     "t": "Quitar de la factura de la luz el impuesto eléctrico y los cargos de política energética, y pagarlos con los Presupuestos del Estado; contratos a largo plazo y a precio fijo para las renovables; una empresa pública de energía; un fondo para rehabilitar viviendas con ayudas y préstamos del ICO al 0 %, y dejar los combustibles fósiles con el horizonte de 2040.",
+     "f": "COMPROMIS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 25-27. Dice de dónde saldría parte del dinero (los Presupuestos y el ICO), pero no cuánto costaría."
+    }
+   ],
+   "bildu": [
+    {
+     "t": "Adelantar la descarbonización al menos a 2045, revisando al alza el plan de energía y clima (PNIEC); mantener el calendario de cierre de las nucleares; alquiler a largo plazo (leasing) de coches eléctricos para los hogares vulnerables; ayudas para rehabilitar viviendas que pueden llegar al 100 % para las personas más vulnerables, y un impuesto permanente a los beneficios extraordinarios.",
+     "f": "BILDU_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 15-18. Explica los instrumentos, pero no cuánto costarían ni cuánto recaudaría el impuesto."
     }
    ],
    "pnv": [
@@ -1086,6 +1215,12 @@
    ],
    "fa": [
     {
+     "t": "Una ley de integridad pública con un registro de los dueños reales de las sociedades; una oficina independiente contra la corrupción y una autoridad que proteja a quien denuncie; que las empresas y personas condenadas no puedan contratar con la Administración durante 20 años; más jueces hasta llegar a la media europea (más de 17 por cada 100.000 habitantes) en dos legislaturas, y una ley de justicia digital.",
+     "f": "FA_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 168-169 y 175-176. Dice qué leyes haría y algún plazo, pero no cuánto costarían los nuevos jueces ni la oficina contra la corrupción."
+    },
+    {
      "t": "Crear una oficina para prevenir la corrupción (el Congreso la rechazó en septiembre de 2025) y renovar el CGPJ.",
      "f": "VOT",
      "como": "parcial",
@@ -1099,6 +1234,22 @@
      "f": "ERC_PROG",
      "como": "no",
      "nota": "Programa electoral, pág. 8 y 15."
+    }
+   ],
+   "compromis": [
+    {
+     "t": "Una oficina antifraude que persiga cualquier ilegalidad en la Administración, con un buzón anónimo y protección por ley para quien denuncie; cumplir lo que pide el grupo anticorrupción del Consejo de Europa (GRECO); que el Congreso ratifique al fiscal general, y cambiar poco a poco el acceso a la carrera de juez y fiscal, con exámenes más prácticos en lugar de memorizar temas.",
+     "f": "COMPROMIS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 32 y 35-36. Dice qué órganos crearía o cambiaría, pero no cuánto costaría."
+    }
+   ],
+   "bildu": [
+    {
+     "t": "Derogar la Ley de Secretos Oficiales y hacer una que garantice la transparencia y el acceso a la información; reformar la ley de publicidad institucional y exigir transparencia y control sobre las plataformas digitales y sus algoritmos, y aplicar la ley penitenciaria ordinaria a todos los presos, sin medidas de excepción. No trae medidas concretas contra la corrupción ni sobre los jueces.",
+     "f": "BILDU_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 22 y 28. No explica cómo ni en qué plazo."
     }
    ],
    "pnv": [
