@@ -162,6 +162,11 @@
    "url": "https://ehbildu.eus/media/dokumentuak/posibleegin-programa-cas.pdf",
    "fecha": "2026-11-16"
   },
+  "JUNTS_PROG": {
+   "nombre": "Programa electoral de Junts",
+   "url": "https://www.tualcentre.cat/app/uploads/2026/11/PROGRAMA-ELECTORAL_JUNTS_29N.pdf",
+   "fecha": null
+  },
   "ADELANTE_PROG": {
    "nombre": "Programa de Adelante Andalucía «Un programa para frenar a las derechas»",
    "url": "https://programa.adelanteandalucia.org/programa-29n-adelante-andalucia.pdf",
@@ -200,6 +205,10 @@
   {
    "id": "erc",
    "nombre": "ERC"
+  },
+  {
+   "id": "junts",
+   "nombre": "Junts"
   },
   {
    "id": "compromis",
@@ -280,6 +289,14 @@
      "f": "ERC_PROG",
      "como": "parcial",
      "nota": "Programa electoral, pág. 19-20."
+    }
+   ],
+   "junts": [
+    {
+     "t": "Desalojar las ocupaciones ilegales en 48 horas como máximo, con un juicio inmediato; recuperar la deducción del 15 % en el IRPF por el alquiler de la vivienda habitual; bajar del 10 % al 5 % el IVA de la vivienda nueva; prohibir hasta 2028 que los bancos, sus inmobiliarias y los fondos de inversión compren viviendas, y que el Estado ceda gratis a la Generalitat y a los ayuntamientos las viviendas y el suelo que la Sareb y Casa 47 tienen en Cataluña.",
+     "f": "JUNTS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 17-18. Dice que el Estado debe compensar a la Generalitat por lo que deje de recaudar con las rebajas, pero no cuánto costarían."
     }
    ],
    "compromis": [
@@ -386,6 +403,14 @@
      "nota": "Programa electoral, pág. 21."
     }
    ],
+   "junts": [
+    {
+     "t": "Bajar más deprisa el impuesto de sociedades a pymes, microempresas y cooperativas; que los autónomos y las empresas que facturen menos de dos millones de euros paguen el IVA cuando cobren sus facturas; que los autónomos y las pequeñas empresas que facturen hasta 85.000 € al año puedan elegir no cobrar IVA (el llamado IVA franquiciado), y llegar a invertir en I+D el 3 % del PIB.",
+     "f": "JUNTS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 69-70. No dice cuánto costarían las rebajas ni de dónde saldría el dinero para la I+D."
+    }
+   ],
    "compromis": [
     {
      "t": "Una banca pública de inversión y crédito, coordinada con el ICO, para que las pymes tengan crédito; transparencia en los precios y los márgenes de cada paso de la cadena alimentaria, y multas de hasta el 10 % de sus beneficios mundiales a las empresas que usen algoritmos para coordinar los precios del alquiler.",
@@ -463,6 +488,14 @@
      "f": "ERC_PROG",
      "como": "no",
      "nota": "Programa electoral, pág. 14 y 16."
+    }
+   ],
+   "junts": [
+    {
+     "t": "Una ley que delegue en la Generalitat la gestión de la inmigración en Cataluña: los permisos de residencia y trabajo, la contratación en origen y los expedientes de sanción y expulsión; que los Mossos d'Esquadra controlen los puertos y aeropuertos; exigir saber catalán para el arraigo y para renovar los permisos; oponerse a las regularizaciones masivas por decreto, y prohibir en los espacios públicos las prendas que tapan del todo o casi del todo la cara.",
+     "f": "JUNTS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 47-49. Dice por qué ley se haría el traspaso, pero no cuánto costaría ni cuánto dinero pediría al Estado para ejercer las competencias."
     }
    ],
    "compromis": [
@@ -574,6 +607,14 @@
      "nota": "Programa electoral, pág. 26."
     }
    ],
+   "junts": [
+    {
+     "t": "Un salario mínimo propio de Cataluña que suba poco a poco hasta el 60 % del salario medio catalán; frenar las subidas de las cuotas de los autónomos y que coticen según lo que ganan de verdad; cuota cero para los autónomos de hasta 35 años en sus tres primeros años; ampliar el límite de horas extra para quien quiera trabajar más y cobrar más, y un Estatuto de los Trabajadores propio de Cataluña.",
+     "f": "JUNTS_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 61 y 68-70. No explica cómo conseguiría la competencia para fijar el salario mínimo ni en qué plazo, ni cuánto costaría la cuota cero."
+    }
+   ],
    "compromis": [
     {
      "t": "Jornada de cuatro días (32 horas) sin bajar el sueldo; que por ley el salario mínimo llegue al 60 % del salario medio; volver a 45 días de indemnización por año trabajado en el despido improcedente, con salarios de tramitación, y reforzar la Inspección de Trabajo.",
@@ -663,6 +704,14 @@
     }
    ],
    "podemos": [],
+   "junts": [
+    {
+     "t": "Una financiación de la sanidad suficiente y para varios años, acercándose al 8 % del PIB de gasto sanitario público de los estándares europeos, con el 25 % del presupuesto de salud para la atención primaria; que el Estado pague lo que impone al sistema sanitario catalán; más plazas MIR, y que los medicamentos aprobados en la Unión Europea lleguen antes a la sanidad pública.",
+     "f": "JUNTS_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 51-52. Pide que lo pague el Estado, pero no dice cuánto costaría ni en qué plazo."
+    }
+   ],
    "compromis": [
     {
      "t": "Derogar la ley de 1997 sobre nuevas formas de gestión para proteger la gestión pública de la sanidad; fijar por ley una financiación mínima, con ratios de profesionales y tiempos máximos de espera; una industria farmacéutica pública que investigue, fabrique y venda medicamentos esenciales, y un pacto estatal por la salud mental.",
@@ -748,6 +797,14 @@
      "f": "ERC_PROG",
      "como": "no",
      "nota": "Programa electoral, pág. 26-27."
+    }
+   ],
+   "junts": [
+    {
+     "t": "Subir cada año las pensiones según el IPC de Cataluña y su mayor coste de la vida; subir las pensiones mínimas y de viudedad hasta igualarlas al salario mínimo catalán (1.400 € al mes en 14 pagas); que quien se jubile con 40 años cotizados o más cobre la pensión entera, sin recorte por jubilarse antes y con efecto retroactivo, y que la Generalitat gestione la Seguridad Social en materia de pensiones.",
+     "f": "JUNTS_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 56-58. No dice cuánto costaría ni cómo se pagaría."
     }
    ],
    "compromis": [
@@ -854,6 +911,14 @@
      "nota": "Programa electoral, pág. 21-22."
     }
    ],
+   "junts": [
+    {
+     "t": "Ajustar cada año el IRPF a la inflación y bajar sus primeros tramos; eliminar el impuesto de sucesiones y donaciones; bajar al 10 % el IVA de la luz y el gas, de los servicios funerarios y de las peluquerías, y una deducción del 15 % en el IRPF por comprar la vivienda habitual.",
+     "f": "JUNTS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 68-69. Da los tipos del IVA y de la deducción, pero no cuánto se dejaría de recaudar ni cómo se compensaría."
+    }
+   ],
    "compromis": [
     {
      "t": "Ajustar el IRPF a la inflación para las rentas de menos de 30.000 €; mantener y ampliar el impuesto a las grandes fortunas, acercándolo a la tasa Zucman; bajar la amortización de los inmuebles del 3 % al 1 % (más de 465 millones al año); quitar las ventajas fiscales de la aviación y dedicar esos 6.000 millones al año al tren, y más personal en la Agencia Tributaria contra el fraude.",
@@ -950,6 +1015,14 @@
      "nota": "Programa electoral, pág. 10-11."
     }
    ],
+   "junts": [
+    {
+     "t": "Que el presupuesto de educación llegue al 6 % del PIB, como fija la ley catalana de educación; que el Estado pague la etapa de 0 a 3 años; que los estudios de 16 a 18 años sean gratis para todos; subir la inversión en universidades del 0,40 % al 0,6 % del PIB en cinco años, y un distrito universitario propio de Cataluña.",
+     "f": "JUNTS_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 53-54. Pide que el Estado pague la etapa de 0 a 3 años, pero no dice cuánto costaría el resto ni de dónde saldría el dinero."
+    }
+   ],
    "compromis": [
     {
      "t": "Llegar a una inversión en educación del 7 % del PIB; cambiar las normas de los conciertos para que la escuela concertada solo complemente a la pública, y que el comedor escolar sea gratis y para todos, reformando la LOE.",
@@ -1035,6 +1108,14 @@
      "f": "ERC_PROG",
      "como": "parcial",
      "nota": "Programa electoral, pág. 8 y 12."
+    }
+   ],
+   "junts": [
+    {
+     "t": "Garantizar el derecho de Cataluña a la autodeterminación; salir del sistema común de financiación (LOFCA) con un concierto económico, en una ley propia, para que la Agencia Tributaria de Cataluña recaude todos los impuestos y el Parlament decida cómo se gastan; perdonar toda la deuda de la Generalitat con el Fondo de Liquidez Autonómica (FLA), y más competencias, como inmigración, la gestión de las pensiones y un salario mínimo propio.",
+     "f": "JUNTS_PROG",
+     "como": "no",
+     "nota": "Programa, pág. 10, 13 y 67-68. Dice que el concierto iría en una ley propia, pero no explica cómo se ejercería la autodeterminación ni cuánto dinero supondría el concierto."
     }
    ],
    "compromis": [
@@ -1141,6 +1222,14 @@
      "nota": "Programa electoral, pág. 22 y 27-28."
     }
    ],
+   "junts": [
+    {
+     "t": "Revisar el calendario de cierre de las centrales nucleares catalanas para garantizar el suministro; abrir los nudos de la red eléctrica para que más proyectos renovables puedan conectarse; ampliar de 5 a 100 km la distancia máxima para el autoconsumo; que la Generalitat vuelva a autorizar las líneas eléctricas de alta tensión (220 y 400 kV), y ayudas y rebajas fiscales estables para la rehabilitación.",
+     "f": "JUNTS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 76-78. Explica los cambios, pero no cuánto costarían las ayudas ni de dónde saldría el dinero."
+    }
+   ],
    "compromis": [
     {
      "t": "Quitar de la factura de la luz el impuesto eléctrico y los cargos de política energética, y pagarlos con los Presupuestos del Estado; contratos a largo plazo y a precio fijo para las renovables; una empresa pública de energía; un fondo para rehabilitar viviendas con ayudas y préstamos del ICO al 0 %, y dejar los combustibles fósiles con el horizonte de 2040.",
@@ -1234,6 +1323,14 @@
      "f": "ERC_PROG",
      "como": "no",
      "nota": "Programa electoral, pág. 8 y 15."
+    }
+   ],
+   "junts": [
+    {
+     "t": "Reformar el delito de malversación según los estándares europeos contra la corrupción; derogar el artículo 384 bis de la Ley de Enjuiciamiento Criminal, que permite suspender a cargos públicos procesados; cambiar la ley del Poder Judicial para que los vocales del CGPJ dejen de verdad el cargo y despolitizar el Consejo; suprimir los aforamientos y las puertas giratorias; un Estatuto del juez y la jueza, y derogar la ley de secretos oficiales de la época de Franco, con plazos estrictos para desclasificar los casos de corrupción.",
+     "f": "JUNTS_PROG",
+     "como": "parcial",
+     "nota": "Programa, pág. 12-15. Dice qué leyes cambiaría, pero no en qué plazo."
     }
    ],
    "compromis": [
